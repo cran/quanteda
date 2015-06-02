@@ -26,12 +26,12 @@ summary(mycorpus3)
 
 ## ----eval=FALSE----------------------------------------------------------
 #  # Basic file import from directory
-#  d <- directory('~/Dropbox/QUANTESS/corpora/inaugural')
+#  d <- textfile('~/Dropbox/QUANTESS/corpora/inaugural/*.txt')
 #  myCorpus <- corpus(d)
 
 ## ----eval=FALSE----------------------------------------------------------
 #  # File import reading document variables from filenames
-#  d <- directory('~/Dropbox/QUANTESS/corpora/inaugural')
+#  d <- textfile('~/Dropbox/QUANTESS/corpora/inaugural/*.txt')
 #  
 #  # In this example the format of the filenames is `Year-President.txt`.
 #  # Because there are two variables in the filename, docvarnames must contain two names
