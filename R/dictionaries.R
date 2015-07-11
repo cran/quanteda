@@ -1,5 +1,5 @@
-#' @rdname dictionary
-#' @export 
+# @rdname dictionary
+# @export 
 # NEED TO ADD A VALIDATOR
 setClass("dictionary", contains = "list")
 
@@ -13,25 +13,27 @@ setClass("dictionary", contains = "list")
 #'   expressions (see examples)
 #' @param file file identifier for a foreign dictionary
 #' @param format character identifier for the format of the foreign dictionary. 
-#'   Available options are: \describe{ \item{\code{"wordstat"}}{format used by Provalis
-#'   Research's Wordstat software} \item{\code{"LIWC"}}{format used by the Linguistic 
-#'   Inquiry and Word Count software} }
-#' @param enc optional encoding value for dictionaries imported in Wordstat 
-#'   format
+#'   Available options are: \describe{ \item{\code{"wordstat"}}{format used by
+#'   Provalis Research's Wordstat software} \item{\code{"LIWC"}}{format used by
+#'   the Linguistic Inquiry and Word Count software} }
+#' @param enc optional encoding value for reading in imported dictionaries. 
+#'   This uses the \link{iconv} labels for encoding.  See the "Encoding" section
+#'   of the help for \link{file}.
 #' @param tolower if \code{TRUE}, convert all dictionary functions to lower
 #' @param maxcats optional maximum categories to which a word could belong in a 
 #'   LIWC dictionary file, defaults to 10 (which is more than the actual LIWC 
 #'   2007 dictionary uses).  The default value of 10 is likely to be more than 
 #'   enough.
-#' @return A list with a ductionary class label, to be used by other functions in quanteda.
-#' @note We will eventually change this to an S4 class with validators and additional methods.
-#' @references
-#' Wordstat dictionaries page, from Provalis Research 
-#'   \url{http://provalisresearch.com/products/content-analysis-software/wordstat-dictionary/}.
-#'   
-#'   Pennebaker, J.W., Chung, C.K., Ireland, M., Gonzales, A., & Booth, R.J. 
-#'   (2007). The development and psychometric properties of LIWC2007. [Software 
-#'   manual]. Austin, TX (\url{www.liwc.net}).
+#' @return A dictionary class object, essentially a specially classed named list
+#'   of characters.
+#' @note We will eventually change this to an S4 class with validators and
+#'   additional methods.
+#' @references Wordstat dictionaries page, from Provalis Research 
+#' \url{http://provalisresearch.com/products/content-analysis-software/wordstat-dictionary/}.
+#' 
+#' Pennebaker, J.W., Chung, C.K., Ireland, M., Gonzales, A., & Booth, R.J. 
+#' (2007). The development and psychometric properties of LIWC2007. [Software 
+#' manual]. Austin, TX (\url{www.liwc.net}).
 #' @seealso \link{dfm}
 #' @examples
 #' mycorpus <- subset(inaugCorpus, Year>1900)
@@ -94,7 +96,7 @@ dictionary <- function(x=NULL, file=NULL, format=NULL, enc="", tolower=TRUE, max
 # lgdict <- readWStatDict(path)
 # }
 readWStatDict <- function(path, enc="", lower=TRUE) {
-    d <- read.delim(path, header=FALSE, fileEncoding=enc)
+    d <- utils::read.delim(path, header=FALSE, fileEncoding=enc)
     d <- data.frame(lapply(d, as.character), stringsAsFactors=FALSE)
     thismajorcat <- d[1,1]
     # this loop fills in blank cells in the category|term dataframe
@@ -184,7 +186,7 @@ readWStatDictNested <- function(path) {
 # LIWCdict <- readLIWCdict("~/Dropbox/QUANTESS/corpora/LIWC/LIWC2001_English.dic") }
 readLIWCdict <- function(path, maxcats=10, enc="") {
     # read in the dictionary as a (big, uneven) table
-    d <- read.delim(path, header=FALSE, fileEncoding=enc,
+    d <- utils::read.delim(path, header=FALSE, fileEncoding=enc,
                     col.names=c("category", paste("catno", 1:maxcats, sep="")),
                     stringsAsFactors=FALSE)
     

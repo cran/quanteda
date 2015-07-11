@@ -1,5 +1,4 @@
-
-#' corpus source classes 
+#' corpus source classes
 #' 
 #' The \code{corpusSource} virtual class is a parent class for more specific 
 #' corpus source objects.
@@ -8,12 +7,31 @@
 #' @slot docvars document variables in a data.frame
 #' @slot source source recorded for the corpus, based on type of source
 #' @slot created a time stamp
+#' @slot cachedfile if read to a temporary file, a string containing the
+#'   location of the temporary file
 #' @name corpusSource-class
 #' @export
 setClass("corpusSource", slots = c(texts = "character",
                                    docvars = "data.frame",
                                    source = "character",
-                                   created = "character"))
+                                   created = "character",
+                                   cachedfile = "character"),
+         prototype = list(cachedfile = ""))
+
+
+#' @rdname corpusSource-class
+#' @param object corpusSource object to be printed
+#' @export
+setMethod("show",
+          signature(object = "corpusSource"), function(object) {
+              if (object@cachedfile != "") {
+                  cat("corpusSource object with data cached in", object@cachedfile, "\n")
+              } else {
+                  cat("corpusSource object containing ", length(texts(object)), 
+                      " text", ifelse(length(texts(object)) == 1, "", "s"), " and ", 
+                      ncol(docvars(object)), " docvar", ifelse(ncol(docvars(object)) == 1, "", "s"), ".\n", sep="")
+              }
+          })
 
 
 # textsourcefile(file="myfile.xlsx", textIndex = NULL, format = NULL)
@@ -37,13 +55,13 @@ setClass("corpusSource", slots = c(texts = "character",
 #'   file must be identified by specifying a \code{textField} value.} \item{a 
 #'   wildcard value}{any valid pathname with a wildcard ("glob") expression that
 #'   can be expanded by the operating system.  This may consist of multiple file
-#'   types.} \item{\code{doc, docx}:}{Word files coming soon.} 
+#'   types.} \item{\code{xml}:}{Basic flat XML documents are supported -- those 
+#'   of the kind supported by the function xmlToDataFrame function of the 
+#'   \strong{XML}  package.} \item{\code{doc, docx}:}{Word files coming soon.} 
 #'   \item{\code{pdf}:}{Adobe Portable Document Format files, coming soon.} }
 #' @param textField a variable (column) name or column number indicating where 
 #'   to find the texts that form the documents for the corpus.  This must be 
 #'   specified for file types \code{.csv} and \code{.json}.
-#' @param directory not used yet, and may be removed (if I move this to a new 
-#'   method called \code{textfiles})
 #' @param docvarsfrom  used to specify that docvars should be taken from the 
 #'   filenames, when the \code{textfile} inputs are filenames and the elements 
 #'   of the filenames are document variables, separated by a delimiter 
@@ -52,12 +70,21 @@ setClass("corpusSource", slots = c(texts = "character",
 #'   or from meta-data embedded in the text file header (\code{headers}).
 #' @param sep separator used in filenames to delimit docvar elements if 
 #'   \code{docvarsfrom="filenames"} is used
-#' @param docvarnames character vector of variable names for \code{docvars}, if
-#'   \code{docvarsfrom} is specified.  If this argument is not used, default
+#' @param docvarnames character vector of variable names for \code{docvars}, if 
+#'   \code{docvarsfrom} is specified.  If this argument is not used, default 
 #'   docvar names will be used (\code{docvar1}, \code{docvar2}, ...).
+#' @param cache If \code{TRUE}, write the object to a temporary file and store
+#'   the temporary filename in the \link{corpusSource-class} object definition. 
+#'   If \code{FALSE}, return the data in the object. Caching the file provides a
+#'   way to read in very large quantities of textual data without storing two
+#'   copies in memory: one as a \link{corpusSource-class} object and the second
+#'   as a \link{corpus} class object.  It also provides a way to try different
+#'   settings of encoding conversion when creating a corpus from a 
+#'   \link{corpusSource-class} object, without having to load in all of the
+#'   source data again.
 #' @param ... additional arguments passed through to other functions
 #' @details The constructor does not store a copy of the texts, but rather reads
-#'   in the texts and associated data, and saves them to a temporary R object 
+#'   in the texts and associated data, and saves them to a temporary disk file 
 #'   whose location is specified in the \link{corpusSource-class} object.  This 
 #'   prevents a complete copy of the object from cluttering the global 
 #'   environment and consuming additional space.  This does mean however that 
@@ -69,95 +96,88 @@ setClass("corpusSource", slots = c(texts = "character",
 #'   \link{corpus} to construct a corpus
 #' @author Kenneth Benoit and Paul Nulty
 #' @export
+#' @importFrom stats var
 setGeneric("textfile",
-           function(file, textField, directory=NULL, docvarsfrom=c("filenames"), sep="_", 
-                    docvarnames=NULL, ...) 
+           function(file, textField, docvarsfrom = c("filenames"), sep="_", 
+                    docvarnames = NULL, cache = TRUE, ...) 
                standardGeneric("textfile"),
-           signature = c("file", "textField", "directory", "docvarsfrom", "sep", "docvarnames"))
-# setGeneric("textfile", 
-#            function(file=NULL, textField=NULL, directory=NULL, ...) standardGeneric("textfile"))
+           signature = c("file", "textField", "docvarsfrom", "sep", "docvarnames"))
 
 # FROM THE MATRIX PACKAGE - no need to duplicate here
 # setClassUnion("index", members =  c("numeric", "integer", "logical", "character"))
 
 #' @rdname textfile
 #' @export
-# @importFrom streamR parseTweets
-# @importFrom jsonlite  fromJSON
-# (>= 0.9.10)
 #' @examples 
-#' # Twitter json
-#' \donttest{mytf <- textfile("~/Dropbox/QUANTESS/corpora/misc/NinTANDO_Me.json")
-#' summary(corpus(mytf))
+#' \donttest{#' # Twitter json
+#' mytf1 <- textfile("~/Dropbox/QUANTESS/social media/zombies/tweets.json")
+#' summary(corpus(mytf1), 5)
 #' # generic json - needs a textField specifier
 #' mytf2 <- textfile("~/Dropbox/QUANTESS/Manuscripts/Collocations/Corpora/sotu/sotu.json",
 #'                   textField = "text")
 #' summary(corpus(mytf2))
 #' # text file
-#' mytf3 <- textfile("~/Dropbox/QUANTESS/corpora/project_gutenberg/pg2701.txt")
+#' mytf3 <- textfile("~/Dropbox/QUANTESS/corpora/project_gutenberg/pg2701.txt", cache = FALSE)
 #' summary(corpus(mytf3))
-#' mytf4 <- textfile("~/Dropbox/QUANTESS/corpora/inaugural/*.txt")
+#' # multiple text files
+#' mytf4 <- textfile("~/Dropbox/QUANTESS/corpora/inaugural/*.txt", cache = FALSE)
 #' summary(corpus(mytf4))
+#' # multiple text files with docvars from filenames
 #' mytf5 <- textfile("~/Dropbox/QUANTESS/corpora/inaugural/*.txt", 
 #'                   docvarsfrom="filenames", sep="-", docvarnames=c("Year", "President"))
-#' summary(corpus(mytf5))}
+#' summary(corpus(mytf5))
+#' # XML data
+#' mytf6 <- textfile("~/Dropbox/QUANTESS/quanteda_working_files/xmlData/plant_catalog.xml", 
+#'                   textField = "COMMON")
+#' summary(corpus(mytf6))
+#' # csv file
+#' write.csv(data.frame(inaugSpeech = texts(inaugCorpus), docvars(inaugCorpus)), 
+#'           file = "/tmp/inaugTexts.csv", row.names = FALSE)
+#' mytf7 <- textfile("/tmp/inaugTexts.csv", textField = "inaugSpeech")
+#' summary(corpus(mytf7))
+#' }
 setMethod("textfile", 
-          signature(file = "character", textField = "index", directory = "missing", 
+          signature(file = "character", textField = "index", 
                     docvarsfrom="missing", sep="missing", docvarnames="missing"),
-          definition = function(file, textField, directory=NULL, ...) {
+          definition = function(file, textField, ...) {
+              if (length(textField) != 1)
+                  stop("textField must be a single field name or column number identifying the texts.")
               fileType <- getFileType(file)
-              if (fileType == "csv") {
-                  if (length(textField) != 1)
-                      stop("textField must be a single field name or column number identifying the texts.")
-                  sources <- get_csv(file, textField, ...) 
-              } else if (fileType == "json") {
-                  # general json
-                  sources <- get_json(file, textField, ...)
-              } else if (fileType=="filemask") {
-                  # only works for .csv multiple files at the moment
-                  # cat("file = ", file)
-                  sources <- get_csvs(file, textField, ...)
+              # print('1')
+              if (fileType == 'filemask'){
+                  sources <- get_datas(file, textField)
               } else {
-                  stop("File type ", fileType, " not yet implemented with textField.")
+                  sources <- get_data(file, textField, fileType)
               }
-              
-              tempCorpusFilename <- tempfile()
-              save(sources, file=tempCorpusFilename)
-              new("corpusSource", texts=tempCorpusFilename)
+              returnCorpusSource(sources, cache)
+          })
+
+
+#' @rdname textfile
+#' @export
+setMethod("textfile", 
+          signature(file = "character", textField = "missing",
+                    docvarsfrom="missing", sep="missing", docvarnames="missing"),
+          definition = function(file, textField=NULL, ...) {
+              fileType <- getFileType(file)
+              if (fileType=="filemask") {
+                  sources <- get_docs(file)
+              } else {
+                  sources <- get_doc(file)
+              }
+              returnCorpusSource(sources, cache)
           })
 
 #' @rdname textfile
 #' @export
 setMethod("textfile", 
-          signature(file = "character", textField = "missing", directory = "missing", 
-                    docvarsfrom="missing", sep="missing", docvarnames="missing"),
-          definition = function(file, textField=NULL, directory=NULL, ...) {
-              fileType <- getFileType(file)
-              if (fileType == "json") {
-                  # hard-wired for Twitter json only at the moment
-                  sources <- get_json_tweets(file)
-              } else if (fileType=="txt") {
-                  sources <- list(txts=paste(readLines(file), collapse="\n"), docv=NULL)
-              } else if (fileType=="filemask") {
-                  sources <- get_txts(file)
-              } else {
-                  stop("File type ", fileType, " not supported or requires textField.")
-              }
-              tempCorpusFilename <- tempfile()
-              save(sources, file=tempCorpusFilename)
-              new("corpusSource", texts=tempCorpusFilename)
-          })
-
-#' @rdname textfile
-#' @export
-setMethod("textfile", 
-          signature(file = "character", textField = "missing", directory = "missing", 
+          signature(file = "character", textField = "missing", 
                     docvarsfrom="character", sep="ANY", docvarnames="ANY"),
-          definition = function(file, textField=NULL, directory=NULL, 
+          definition = function(file, textField=NULL, 
                                 docvarsfrom=c("headers"), sep="_", docvarnames=NULL, ...) {
               fileType <- getFileType(file)
               if (fileType=="filemask") {
-                  sources <- get_txts(file, ...)
+                  sources <- get_docs(file)
               } else {
                   stop("File type ", fileType, " not supported with these arguments.")
               }
@@ -166,24 +186,104 @@ setMethod("textfile",
               } else {
                   warning("docvarsfrom=", docvarsfrom, " not supported.")
               }
-              
-              tempCorpusFilename <- tempfile()
-              save(sources, file=tempCorpusFilename)
-              new("corpusSource", texts=tempCorpusFilename)
+              returnCorpusSource(sources, cache)
           })
 
+## New internals
+
+# function common to all textfile methods to return either the cached
+# textfile object link, or the textfile object itself
+returnCorpusSource <- function(sources, cache) {
+    if (cache) {
+        tempCorpusFilename <- tempfile()
+        save(sources, file=tempCorpusFilename)
+        return(new("corpusSource", cachedfile=tempCorpusFilename))
+    } else
+        return(new("corpusSource", texts = sources$txts, docvars = sources$docv))
+}
 
 
-## INTERNALS
-## specific functions for reading file types
+# read a document from a text-only file.
+get_doc <- function(f) {
+    txts <- c()
+    fileType <- getFileType(f)
+    switch(fileType,
+           txt =  { return(list(txts = paste(suppressWarnings(readLines(f)), collapse="\n"), docv=data.frame())) },
+           doc =  { return(list(txts = get_word(f), docv=data.frame())) },
+           json = { return(get_json_tweets(f)) },
+           pdf =  { return(list(txts = get_pdf(f), docv=data.frame())) }
+    )
+    stop("unrecognized fileType:", fileType)
+}
+
+get_docs <- function(filemask, textnames = NULL, ...) {
+    # get the pattern at the end
+    pattern <- getRootFileNames(filemask)
+    # get the directory name
+    path <- substr(filemask, 1, nchar(filemask) - nchar(pattern))
+    # get the filenames
+    filenames <- list.files(path, pattern, full.names=TRUE)
+    # read texts from call to get_doc, discarding any docv
+    textsvec <- sapply(filenames, function(x) get_doc(x)$txts)
+    # name the vector with the filename by default, otherwise assign "names"
+    if (!is.null(textnames)) {
+        names(textsvec) <- textnames
+    } else {
+        names(textsvec) <- getRootFileNames(filenames)
+    }
+
+    list(txts=textsvec, docv=data.frame())    
+}
+
+# read a document from a structured file containing text and data
+get_data <- function(f, textField='index', sep=',', ...){
+    src <- list()
+    # print('fileType')
+    fileType <- getFileType(f)
+    switch(fileType,
+           csv = {src <- get_csv(f, textField, ...)},
+           json = {src <- get_json(f, textField, ...)},
+           xml = {src <- get_xml(f, textField, ...)}
+    )
+    # print(names(src))
+    return(src)
+}
+
+# read a document from a structured file containing text and data
+get_datas <- function(filemask, textField='index', fileType, ...){
+    # get the pattern at the end
+    pattern <- getRootFileNames(filemask)
+    # get the directory name
+    path <- substr(filemask, 1, nchar(filemask) - nchar(pattern))
+    # get the filenames
+    filenames <- list.files(path, utils::glob2rx(pattern), full.names=TRUE)
+    # read texts into a character vector
+    textsvec <- c()
+    docv <- data.frame()
+    for (f in filenames) {
+        src <- get_data(f,  textField, ...)
+        thisdocv <- src$docv
+        textsvec <- c(textsvec, thisdocv$txts)
+    }
+    list(txts=textsvec, docv=docv)
+    # return(src)
+}
+
+get_word <- function(f){
+    stop('doc files not implemented yet')
+}
+
+get_pdf <- function(f){
+    stop('pdf files not implemented yet')
+}
 
 ## csv format
-get_csv <- function(file, textField, ...) {
-    docv <- read.csv(file, stringsAsFactors=FALSE, ...)
+get_csv <- function(file, textField, sep=",", ...) {
+    docv <- utils::read.csv(file, stringsAsFactors=FALSE, sep=sep, ...)
     if (is.character(textField)) {
         textFieldi <- which(names(docv)==textField)
         if (length(textFieldi)==0)
-            stop("column name", textField, "not found.")
+            stop("column name ", textField, " not found.")
         textField <- textFieldi
     }
     txts <- docv[, textField]
@@ -191,38 +291,10 @@ get_csv <- function(file, textField, ...) {
     list(txts=txts, docv=docv)
 }
 
-## csv format multiple
-get_csvs <- function(filemask, textField, ...) {
-    # get the pattern at the end
-    pattern <- getRootFileNames(filemask)
-    # get the directory name
-    path <- substr(filemask, 1, nchar(filemask) - nchar(pattern))
-    # get the filenames
-    filenames <- list.files(path, glob2rx(pattern), full.names=TRUE)
-    # read texts into a character vector
-    textsvec <- c()
-    docv <- NULL
-    for (f in filenames) {
-        thisdocv <- read.csv(f, stringsAsFactors=FALSE, ...)
-        if (is.character(textField)) {
-            textFieldi <- which(names(thisdocv)==textField)
-            if (length(textFieldi)==0)
-                stop("column name ", textField, " not found.")
-            textField <- textFieldi
-        }
-        textsvec <- c(textsvec, thisdocv[, textField])
-        if (is.null(docv)) {
-            docv <- thisdocv[, -textField] 
-        } else {
-            docv <- rbind(docv, thisdocv[, -textField])
-        }
-    }
-    list(txts=textsvec, docv=docv)
-}
 
 
 ## Twitter json
-get_json_tweets <- function(path=NULL, source="twitter", enc = "unknown", ...) {
+get_json_tweets <- function(path=NULL, source="twitter", ...) {
     stopifnot(file.exists(path))
     if (!requireNamespace("streamR", quietly = TRUE))
         stop("You must have streamR installed to read Twitter json files.")
@@ -236,7 +308,7 @@ get_json_tweets <- function(path=NULL, source="twitter", enc = "unknown", ...) {
         fls <- path
     }
     # read raw json data
-    txt <- unlist(sapply(fls, readLines, encoding = enc))
+    txt <- unlist(sapply(fls, readLines))
     # crude json type check here
     if (!grepl("retweet_count", txt[1]))
         stop("Not a Twitter json formatted file.")
@@ -244,11 +316,11 @@ get_json_tweets <- function(path=NULL, source="twitter", enc = "unknown", ...) {
     # parsing into a data frame
     # reading tweets into a data frame
     results <- streamR::parseTweets(txt, verbose=FALSE, ...)
-    list(txts=results[, 1], docv=as.data.frame(results[, -1]))
+    list(txts = results[, 1], docv = as.data.frame(results[, -1]))
 }
 
 ## general json
-get_json <- function(path=NULL, textField, enc = "unknown", ...) {
+get_json <- function(path=NULL, textField, ...) {
     if (!requireNamespace("jsonlite", quietly = TRUE))
         stop("You must have jsonlite installed to read json files.")
     raw <- readLines(path)
@@ -260,6 +332,23 @@ get_json <- function(path=NULL, textField, enc = "unknown", ...) {
     if (length(textFieldi)==0)
         stop("column name", textField, "not found.")
     list(txts=df[, textFieldi], docv=df[, -textFieldi])
+}
+
+
+## flat xml format
+get_xml <- function(file, textField, sep=",", ...) {
+    if (!requireNamespace("XML", quietly = TRUE))
+        stop("You must have XML installed to read XML files.")
+    docv <- XML::xmlToDataFrame(file, stringsAsFactors = FALSE)
+    if (is.character(textField)) {
+        textFieldi <- which(names(docv)==textField)
+        if (length(textFieldi)==0)
+            stop("node", textField, "not found.")
+        textField <- textFieldi
+    }
+    txts <- docv[, textField]
+    docv <- docv[, -textField]
+    list(txts=txts, docv=docv)
 }
 
 
@@ -287,53 +376,10 @@ getFileType <- function(filenameChar) {
             return("tar")
         else if (x %in% c("xml"))
             return("xml")
+        else if (x %in% c("tab", "tsv"))
+            return("tab")
         else return("unknown") }, USE.NAMES=FALSE)
 }    
-
-    
-# BASED ON getTextFiles():
-# load text files from disk into a vector of character vectors
-#
-# points to files, reads them into a character vector of the texts
-# with optional names, default being filenames
-# returns a named vector of complete, unedited texts
-# 
-# @param filemask a glob expression for text files (includes * or ?)
-# @param textnames names to assign to the texts
-# @param enc a value for encoding that is a legal value for \link{Encoding}
-# @return character vector of texts read from disk
-# @author Paul Nulty
-# @export
-# @examples
-# \dontrun{
-# getTextFiles('/home/paul/documents/libdem09.txt')
-# }
-get_txts <- function(filemask, textnames=NULL, ...) {
-    # get the pattern at the end
-    pattern <- getRootFileNames(filemask)
-    # get the directory name
-    path <- substr(filemask, 1, nchar(filemask) - nchar(pattern))
-    # get the filenames
-    filenames <- list.files(path, pattern, full.names=TRUE)
-    # read texts into a character vector
-    textsvec <- c() 
-    for (f in filenames) {
-        #fc <- file(f, ...)
-        textsvec <- c(textsvec, paste(suppressWarnings(readLines(f)), collapse="\n"))
-        #textsvec <- c(textsvec, readChar(fc, nchars=10000000))
-        #close(fc)
-    }
-    # name the vector with the filename by default, otherwise assign "names"
-    if (!is.null(textnames)) {
-        names(textsvec) <- getRootFileNames(filenames)
-    } else {
-        names(textsvec) <- getRootFileNames(filenames)
-    }
-    # apply encoding
-    # Encoding(textsvec) <- enc
-    
-    list(txts=textsvec, docv=NULL)    
-}
 
 
 # Truncate absolute filepaths to root filenames
@@ -353,10 +399,11 @@ getRootFileNames <- function(longFilenames) {
     ## function to return just the filename, path not included
     ## might need to detect .Platform$OS.type to change the delimiter
     delim <- "/"
-    osName <- (Sys.info()[['sysname']] )
     
-    # it is possible to use forwardslashes in Windows in R
-    if ((osName=="Windows") & !('/') %in% longFilenames) { delim <- "\\\\" }
+    # replace forward slashes used in Windows
+    osName <- (Sys.info()[['sysname']] )
+    if (osName=="Windows") 
+        gsub("(\\\\)", "/", longFilenames) 
     splitFilenames <- strsplit(longFilenames, delim)
     return(sapply(splitFilenames, tail, n=1))
 }
@@ -366,7 +413,7 @@ getdocvarsFromHeaders <- function(fnames, sep="_", docvarnames=NULL) {
     snames <- fnames
     snames <- gsub(".txt", "", snames)
     parts <- strsplit(snames, sep)
-    if (var(sapply(parts, length)) != 0)
+    if (stats::var(sapply(parts, length)) != 0)
         stop("Filename elements are not equal in length.")
     dvars <-  data.frame(matrix(unlist(parts), nrow=length(parts), byrow=TRUE), 
                          stringsAsFactors=FALSE)
@@ -381,3 +428,18 @@ getdocvarsFromHeaders <- function(fnames, sep="_", docvarnames=NULL) {
     }
     dvars
 }
+
+#' @rdname texts
+#' @export
+texts.corpusSource <- function(x, groups = NULL, ...) {
+    if (!is.null(groups))
+        stop("groups argument not supported for texts() on a corpusSource object")
+    x@texts
+}
+
+#' @rdname docvars
+#' @export
+docvars.corpusSource <- function(x, ...) {
+    x@docvars
+}
+

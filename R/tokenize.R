@@ -1,166 +1,3 @@
-#' tokenize a set of texts
-#'
-#' Tokenize the texts from a character vector or from a corpus.
-#' @rdname tokenize
-#' @aliases tokenise
-#' @param x The text(s) or corpus to be tokenized
-#' @param ... additional arguments passed to \code{\link{clean}}
-#' @return A list of length \code{\link{ndoc}(x)} of the tokens found in each text.
-#' @author Kohei Watanabe (C++ code), Ken Benoit, and Paul Nulty
-#' @export
-#' @examples 
-#' # same for character vectors and for lists
-#' tokensFromChar <- tokenize(inaugTexts[1:3])
-#' tokensFromCorp <- tokenize(subset(inaugCorpus, Year<1798))
-#' identical(tokensFromChar, tokensFromCorp)
-#' str(tokensFromChar)
-#' 
-tokenize <- function(x, ...) {
-    UseMethod("tokenize")
-}
-
-#' @rdname tokenize
-#' @param sep by default, tokenize expects a "white-space" delimiter between 
-#'   tokens. Alternatively, \code{sep} can be used to specify another character 
-#'   which delimits fields.
-#' @param simplify If \code{TRUE}, return a character vector of tokens rather 
-#'   than a list of length \code{\link{ndoc}(texts)}, with each element of the 
-#'   list containing a character vector of the tokens corresponding to that 
-#'   text.
-# @param cpp if \code{TRUE}, tokenize and clean using C++ tokenizer, otherwise 
-#   use a slower R version
-# @param minLength the minimum length in characters for retaining a token,
-#   defaults to 1.  Only used if \code{cpp=TRUE}.
-#' @importFrom Rcpp evalCpp
-#' @useDynLib quanteda
-#' @export
-#' @examples 
-#' # returned as a list
-#' head(tokenize(inaugTexts[57])[[1]], 10)
-#' # returned as a character vector using simplify=TRUE
-#' head(tokenize(inaugTexts[57], simplify=TRUE), 10)
-#' 
-#' # demonstrate some options with clean
-#' head(tokenize(inaugTexts[57], simplify=TRUE, cpp=TRUE), 30)
-#' ## NOTE: not the same as
-#' head(tokenize(inaugTexts[57], simplify=TRUE, cpp=FALSE), 30)
-#' 
-#' ## MORE COMPARISONS
-#' tokenize("this is MY <3 4U @@myhandle gr8 stuff :-)", removeTwitter=FALSE, cpp=TRUE)
-#' tokenize("this is MY <3 4U @@myhandle gr8 stuff :-)", removeTwitter=FALSE, cpp=FALSE)
-#' tokenize("great website http://textasdata.com", removeURL=FALSE, cpp=TRUE)
-#' tokenize("great website http://textasdata.com", removeURL=FALSE, cpp=FALSE)
-#' tokenize("great website http://textasdata.com", removeURL=TRUE, cpp=TRUE)
-#' tokenize("great website http://textasdata.com", removeURL=TRUE, cpp=FALSE)
-#tokenize.character <- function(x, cpp=FALSE, simplify=FALSE, sep=" ", minLength=1, ... ) {
-tokenize.character <- function(x, simplify=FALSE, sep=" ", ... ) {
-    #if (cpp) {
-    if (FALSE) {
-        result <- lapply(x, tokenizeSingle, sep, minLength, ...) #toLower, removeDigits, removePunct, 
-        #removeTwitter, removeURL, removeAdditional)
-    } else {
-        result <- lapply(x, tokenizeSingleOld, sep, ...)
-        # remove empty "tokens" caused by multiple whitespace characters in sequence
-        result <- lapply(result, function(x) x[which(x != "")])
-    }
-    
-    if (simplify) 
-        return(unlist(result, use.names=FALSE))
-    else
-        return(result)
-}
-
-#' @rdname tokenize
-#' @export
-tokenize.corpus <- function(x, ...) {
-    # get the settings for clean from the corpus and use those, 
-    # unless more specific arguments are passed -- ADD THE ABILITY TO PASS THESE
-    # need to include sep in this list too 
-    tokenize(texts(x), ...)
-}
-
-tokenizeSingle <- tokenizeSingleOld <- function(s, sep=" ", ...) {
-    # function to tokenize a single element character
-    # profiling shows that using scan is 3x faster than using strsplit
-    # s <- unlist(s)
-    tokens <- scan(what="char", text=s, quiet=TRUE, quote="", sep=sep)
-    tokens <- clean(tokens, ...)
-    return(tokens)
-}
-
-# tokenizeSingle <- function(x, sep=' ', 
-#                        minLength=1, toLower=TRUE, removeDigits=TRUE, removePunct=TRUE,
-#                        removeTwitter=TRUE, removeURL=TRUE, removeAdditional='') {
-#     tokenizecpp(x, sep, minLength, toLower, removeDigits, removePunct, 
-#                 removeTwitter, removeURL, removeAdditional)
-# }
-
-
-
-
-#' @title tokenizeOnly
-#' @name tokenizeOnly
-#'   
-#' @description For performance comparisons of tokenize-only functions. All 
-#'   functions use \code{\link{lapply}} to return a list of tokenized texts, 
-#'   when \code{x} is a vector of texts.
-#' @param x text(s) to be tokenized
-#' @param sep separator delineating tokens
-#' @param minLength minimum length in characters of tokens to be retained
-#' @return a list of character vectors, with each list element consisting of a 
-#'   tokenized text
-#' @examples
-#' # on inaugural speeches
-#' # system.time(tmp1 <- tokenizeOnlyCppKW(inaugTexts))
-#' system.time(tmp2 <- tokenizeOnlyCppKB(inaugTexts))
-#' system.time(tmp3 <- tokenizeOnlyScan(inaugTexts))
-#' 
-#' \donttest{# on a longer set of texts
-#' load('~/Dropbox/QUANTESS/Manuscripts/Collocations/Corpora/lauderdaleClark/Opinion_files.RData')
-#' txts <- unlist(Opinion_files[1])
-#' names(txts) <- NULL
-#' # system.time(tmp4 <- tokenizeOnlyCppKW(txts))
-#' ## about  9.2 seconds on Ken's MacBook Pro
-#' system.time(tmp5 <- tokenizeOnlyCppKB(txts))
-#' ## about  7.0 seconds
-#' system.time(tmp6 <- tokenizeOnlyScan(txts))
-#' ## about 12.6 seconds
-#' }
-NULL
-
-# # @rdname tokenizeOnly
-# # @details \code{tokenizeOnlyCppKW} used to call KW's original C++ function, 
-# # with the cleaning options set to off -- but this has been (temporarily) removed.
-# # @export
-# tokenizeOnlyCppKW <- function(x, sep=" ", minLength=1) {
-#     lapply(x, tokenizeSingle, sep=sep, minLength=minLength, 
-#            toLower=FALSE, 
-#            removeDigits=FALSE, 
-#            removePunct=FALSE, 
-#            removeTwitter=FALSE, 
-#            removeURL=FALSE)
-# }
-
-#' @rdname tokenizeOnly
-#' @details \code{tokenizeOnlyCppKB} calls a C++ function that KB adapted from 
-#'   Kohei's code that does tokenization without the cleaning.
-#' @export
-tokenizeOnlyCppKB <- function(x, sep=" ", minLength=1) {
-    lapply(x, tokenizeOnlyCppCall, sep, minLength)
-}
-
-tokenizeOnlyCppCall <- function(x, sep=" ", minLength=1) {
-    justTokenizeCpp(x, sep, minLength)
-}
-
-
-#' @rdname tokenizeOnly
-#' @export
-#' @details \code{tokenizeOnlyScan} calls the R funtion \code{\link{scan}} for
-#'   tokenization.
-tokenizeOnlyScan <- function(x, sep=" ") {
-    lapply(x, function(s) scan(what="char", text=s, quiet=TRUE, quote="", sep=sep))
-}
 
 # @rdname segment
 # @return \code{segmentSentence} returns a character vector of sentences that
@@ -183,7 +20,7 @@ segmentSentence <- function(x, delimiter="[.!?:;]", perl=FALSE) {
                     "M", "MM")
     findregex <- paste("\\b(", paste(exceptions, collapse="|"), ")\\.", sep="")
     text <- gsub(findregex, "\\1", text)
-
+    
     # deal with i.e. e.g. pp. p. Cf. cf.
     text <- gsub("i\\.e\\.", "_IE_", text)
     text <- gsub("e\\.g\\.", "_EG_", text)
@@ -254,7 +91,7 @@ segmentParagraph <- function(x, delimiter="\\n{2}", perl=FALSE) {
 #' or arguments to be passed to \link{clean} if \code{what=tokens},
 #' @return A list of segmented texts, with each element of the list correponding
 #'   to one of the original texts.
-#' @details Tokens are delimited by whitespace.  For sentences, the delimiter 
+#' @details Tokens are delimited by Separators.  For sentences, the delimiter 
 #'   can be defined by the user.  The default for sentences includes \code{.}, 
 #'   \code{!}, \code{?}, plus \code{;} and \code{:}.
 #'   
@@ -414,5 +251,264 @@ tokenizeStrsplit <- function(s, sep=" ", ...) {
     # s <- unlist(s)
     tokens <- strsplit(s, " ")
     return(tokens)
+}
+
+
+
+#' tokenize a set of texts
+#'
+#' Tokenize the texts from a character vector or from a corpus.
+#' @rdname tokenize
+#' @aliases tokenise
+#' @param x The text(s) or corpus to be tokenized
+#' @param ... additional arguments not used
+#' @return A list of length \code{\link{ndoc}(x)} of the tokens found in each text.
+#' @author Ken Benoit and Paul Nulty
+#' @export
+#' @examples 
+#' # same for character vectors and for lists
+#' tokensFromChar <- tokenize(inaugTexts[1:3])
+#' tokensFromCorp <- tokenize(subset(inaugCorpus, Year<1798))
+#' identical(tokensFromChar, tokensFromCorp)
+#' str(tokensFromChar)
+#' @export
+tokenize <- function(x, ...) {
+    UseMethod("tokenize")
+}
+
+#' @rdname tokenize
+#' @param what the unit for splitting the text, defaults to \code{"word"}. 
+#'   Available alternatives are \code{c("character", "word", "line_break", 
+#'   "sentence")}. See \link[stringi]{stringi-search-boundaries}.
+#' @param removeNumbers remove tokens that consist only of numbers, but not 
+#'   words that start with digits, e.g. \code{2day}
+#' @param removePunct remove all punctuation
+#' @param removeTwitter remove Twitter characters \code{@@} and \code{#}; set to
+#'   \code{FALSE} if you wish to eliminate these
+#' @param removeSeparators remove Separators and separator characters (spaces 
+#'   and variations of spaces, plus tab, newlines, and anything else in the 
+#'   Unicode "separator" category) when \code{removePunct=FALSE}
+#' @param ngrams integer vector of the \emph{n} for \emph{n}-grams, defaulting 
+#'   to \code{1} (unigrams). For bigrams, for instance, use \code{2}; for 
+#'   bigrams and unigrams, use \code{1:2}.  You can even include irregular 
+#'   sequences such as \code{2:3} for bigrams and trigrams only.
+#' @param concatenator character to use in concatenating \emph{n}-grams, default
+#'   is "\code{_}", which is recommended since this is included in the regular 
+#'   expression and Unicode definitions of "word" characters
+
+#' @param simplify if \code{TRUE}, return a character vector of tokens rather 
+#'   than a list of length \code{\link{ndoc}(texts)}, with each element of the 
+#'   list containing a character vector of the tokens corresponding to that 
+#'   text.
+#' @param verbose if \code{TRUE}, print timing messages to the console; off by 
+#'   default
+#' @import stringi
+#' @details The tokenizer is designed to be fast and flexible as well as to 
+#'   handle Unicode correctly. Most of the time, users will construct \link{dfm}
+#'   objects from texts or a corpus, without calling \code{tokenize()} as an 
+#'   intermediate step.  Since \code{tokenize()} is most likely to be used by 
+#'   more technical users, we have set its options to default to minimal
+#'   intervention. This means that punctuation is tokenized as well, and that
+#'   nothing is removed from the
+#' @return a \strong{tokenizedText} (S3) object, essentially a list of character 
+#'   vectors. If \code{simplify=TRUE} then return a single character vector.
+#' @export
+#' @examples 
+#' # returned as a list
+#' head(tokenize(inaugTexts[57])[[1]], 10)
+#' # returned as a character vector using simplify=TRUE
+#' head(tokenize(inaugTexts[57], simplify=TRUE), 10)
+#' 
+#' # removing punctuation marks and lowecasing texts
+#' head(tokenize(toLower(inaugTexts[57]), simplify=TRUE, removePunct=TRUE), 30)
+#' # keeping case and punctuation
+#' head(tokenize(inaugTexts[57], simplify=TRUE), 30)
+#' 
+#' ## MORE COMPARISONS
+#' txt <- "#textanalysis is MY <3 4U @@myhandle gr8 #stuff :-)"
+#' tokenize(txt, removePunct=TRUE)
+#' tokenize(txt, removePunct=TRUE, removeTwitter=TRUE)
+#' #tokenize("great website http://textasdata.com", removeURL=FALSE)
+#' #tokenize("great website http://textasdata.com", removeURL=TRUE)
+#' 
+#' txt <- c(text1="This is $10 in 999 different ways,\n up and down; left and right!", 
+#'          text2="@@kenbenoit working: on #quanteda 2day\t4ever, http://textasdata.com?page=123.")
+#' tokenize(txt, verbose=TRUE)
+#' tokenize(txt, removeNumbers=TRUE, removePunct=TRUE)
+#' tokenize(txt, removeNumbers=FALSE, removePunct=TRUE)
+#' tokenize(txt, removeNumbers=TRUE, removePunct=FALSE)
+#' tokenize(txt, removeNumbers=FALSE, removePunct=FALSE)
+#' tokenize(txt, removeNumbers=FALSE, removePunct=FALSE, removeSeparators=FALSE)
+#' 
+#' # character level
+#' tokenize("Great website: http://textasdata.com?page=123.", what="character")
+#' tokenize("Great website: http://textasdata.com?page=123.", what="character", 
+#'          removeSeparators=FALSE)
+#' 
+#' # sentence level         
+#' tokenize(inaugTexts[c(2,40)], what = "sentence", simplify = TRUE)
+tokenize.character <- function(x, what=c("word", "sentence", "character", "fastestword", "fasterword"),
+                               removeNumbers = FALSE, 
+                               removePunct = FALSE,
+                               removeSeparators = TRUE,
+                               removeTwitter = FALSE,
+                               # removeURL = TRUE,
+                               ngrams = 1,
+                               concatenator = "_",
+                               simplify=FALSE,
+                               verbose = FALSE,  ## FOR TESTING
+                               ...) {
+    
+    if (.Platform$OS.type == "windows") {
+        cores <- 1
+    }
+    
+    what <- match.arg(what)
+    #     if (!(what %in% c("character", "word", "line_break", "sentence", "fastestword", "fasterword")))
+    #         stop(what, " not a valid text boundary, see help(\"stringi-search-boundaries\", package=\"stringi\")")
+    
+    if (verbose) cat("Starting tokenization...\n")
+    result <- x
+    
+    if (removeTwitter == FALSE & what != "fastword") {
+        if (verbose) cat("  ...preserving Twitter characters (#, @)")
+        startTimeClean <- proc.time()
+        result <- stringi::stri_replace_all_fixed(result, c("#", "@"), c("_ht_", "_as_"), vectorize_all = FALSE)
+        if (verbose) cat("...total elapsed:", (proc.time() - startTimeClean)[3], "seconds.\n")
+    }
+    
+    if (verbose) cat("  ...tokenizing texts")
+    startTimeTok <- proc.time()
+    if (what %in% c("fasterword", "fastestword")) {
+        
+        if (verbose & removeNumbers==TRUE) cat(", removing numbers")
+        if (verbose & removePunct==TRUE) cat(", removing punctuation")
+        regexToEliminate <- paste0(ifelse(removeNumbers, "\\b\\d+\\b|", ""),
+                                   ifelse(removePunct, paste0("(?![", ifelse(removeTwitter, "_", "@#_"), "])[[:punct:]]"), "|"))
+        if (regexToEliminate != "|")
+            result <- stri_replace_all_regex(result, regexToEliminate, "")
+        
+        if (verbose & removePunct==TRUE) cat(", ", what, "tokenizing", sep="")
+        if (what=="fastestword")
+            result <- stringi::stri_split_fixed(result, " ")
+        else if (what=="fasterword")
+            result <- stringi::stri_split_regex(result, "\\s")
+        
+    } else {
+        if (what != "character") {
+            result <- stringi::stri_split_boundaries(result, 
+                                                     type = what, 
+                                                     skip_word_none = removePunct, # this is what obliterates currency symbols, Twitter tags, and URLs
+                                                     skip_word_number = removeNumbers) # but does not remove 4u, 2day, etc.
+            ## remove newline chars and trailing spaces for sentence tokenization
+            if (what == "sentence") {
+                result <- lapply(result, stringi::stri_replace_all_fixed, "\n", "")
+                result <- lapply(result, stringi::stri_trim_right)
+            }
+            # remove any "sentences" that were completely blanked out
+            result <- lapply(result, function(x) x <- x[which(x != "")])
+        } else {
+            result <- stringi::stri_split_boundaries(result, type = "character")
+            if (removePunct) {
+                if (verbose) cat("   ...removing punctuation.\n")
+                result <- lapply(result, function(x) x[-which(stri_detect_charclass(x, "[\\p{P}\\p{S}]"))]) 
+            }
+            
+            
+            # note: does not implement removePunct or removeNumbers
+        }
+    }
+    if (verbose) cat("...total elapsed: ", (proc.time() - startTimeTok)[3], "seconds.\n")
+    
+    # if (removeSeparators & !removePunct & (what == "character" | what == "word")) {
+    if (removeSeparators & ((!removePunct & what == "word") | (what == "character"))) {
+        if (verbose) cat("   ...removing separators.\n")
+        result <- lapply(result, function(x) x[!stri_detect_charclass(x, "\\p{Z}")])
+    }
+    
+    if (removeTwitter == FALSE & what != "fastword") {
+        if (verbose) cat("  ...replacing Twitter characters (#, @)")
+        startTimeClean <- proc.time()
+        result <- lapply(result, stringi::stri_replace_all_fixed, c("_ht_", "_as_"), c("#", "@"), vectorize_all = FALSE)
+        if (verbose) cat("...total elapsed:", (proc.time() - startTimeClean)[3], "seconds.\n")
+    }
+    
+    if (simplify==FALSE) {
+        # stri_* destroys names, so put them back
+        startTimeClean <- proc.time()
+        if (verbose) cat("  ...replacing names")
+        names(result) <- names(x)
+        if (verbose) cat("...total elapsed: ", (proc.time() - startTimeClean)[3], "seconds.\n")
+        
+    } else {
+        # or just return the tokens as a single character vector
+        if (verbose) cat("  ...unlisting results\n")
+        result <- unlist(result)
+    }
+    
+    
+    if (!identical(ngrams, 1)) {
+        if (verbose) cat("  ...creating ngrams\n")
+        # is the ngram set serial starting with 1? use single call if so (most efficient)
+        if (sum(1:length(ngrams)) == sum(ngrams)) {
+            result <- lapply(result, ngram, n = length(ngrams), concatenator = concatenator, include.all = TRUE)
+        } else {
+            result <- lapply(result, function(x) {
+                xnew <- c()
+                for (n in ngrams) 
+                    xnew <- c(xnew, ngram(x, n, concatenator = concatenator, include.all = FALSE))
+                xnew
+            })
+        }
+    }
+
+    if (verbose) 
+        cat("Finished tokenizing and cleaning", format(length(result), big.mark=","), "texts\n") 
+        #, with a total of", format(length(unlist(result)), big.mark=","), "tokens.\n")
+
+    # make this an S3 class item, if a list
+    if (simplify == FALSE) {
+        class(result) <- c("tokenizedTexts", class(result))
+    }
+    
+    result
+}
+
+#' @rdname tokenize
+#' @export
+tokenize.corpus <- function(x, ...) {
+    # get the settings for clean from the corpus and use those, 
+    # unless more specific arguments are passed -- ADD THE ABILITY TO PASS THESE
+    # need to include sep in this list too 
+    tokenize(texts(x), ...)
+}
+
+
+ngram <- function(tokens, n = 2, concatenator = "_", include.all = FALSE) {
+
+    # start with lower ngrams, or just the specified size if include.all = FALSE
+    start <- ifelse(include.all, 
+                    1, 
+                    ifelse(length(tokens) < n, 1, n))
+    
+    # set max size of ngram at max length of tokens
+    end <- ifelse(length(tokens) < n, length(tokens), n)
+    
+    all_ngrams <- c()
+    # outer loop for all ngrams down to 1
+    for (width in start:end) {
+        new_ngrams <- tokens[1:(length(tokens) - width + 1)]
+        # inner loop for ngrams of width > 1
+        if (width > 1) {
+            for (i in 1:(width - 1)) 
+                new_ngrams <- paste(new_ngrams, 
+                                    tokens[(i + 1):(length(tokens) - width + 1 + i)], 
+                                    sep = concatenator)
+        }
+        # paste onto previous results and continue
+        all_ngrams <- c(all_ngrams, new_ngrams)
+    }
+    
+    all_ngrams
 }
 

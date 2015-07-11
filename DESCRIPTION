@@ -12,32 +12,32 @@ Author: Kenneth Benoit [aut, cre],
     Pablo Barberá [ctb],
     Kohei Watanabe [ctb],
     Benjamin Lauderdale [ctb]
-Version: 0.7.2-1
-Date: 2015-05-26
+Version: 0.8.0-3
+Date: 2015-07-10
 Description: A fast, flexible toolset for for the management, processing, and
     quantitative analysis of textual data in R.
 License: GPL-3
 Depends: R (>= 3.0)
-Imports: methods, Matrix (>= 1.1), data.table (>= 1.9.3), SnowballC,
-        wordcloud, proxy, Rcpp, ca
+Imports: methods, utils, stats, Matrix (>= 1.1), data.table (>= 1.9.3),
+        SnowballC, wordcloud, proxy, parallel, Rcpp, ca, stringi
 LinkingTo: Rcpp, RcppArmadillo
 Suggests: knitr, lda, topicmodels, jsonlite (>= 0.9.10), streamR, tm
-        (>= 0.6), slam, ggplot2
+        (>= 0.6), slam, ggplot2, XML, testthat
 URL: http://github.com/kbenoit/quanteda
 Encoding: UTF-8
 BugReports: https://github.com/kbenoit/quanteda/issues
 LazyData: TRUE
 VignetteBuilder: knitr
-Collate: 'RcppExports.R' 'clean.R' 'dictionaryFunctions.R'
-        'collocations.R' 'converters.R' 'corpus-sources-S4.R'
-        'corpus.R' 'dataDocs.R' 'describe-texts.R' 'dfm-classes.R'
-        'dfm-main.R' 'distance.R' 'gui.R' 'kwic.R' 'lexdiv.R'
-        'ngrams.R' 'onLoad.R' 'plots.R' 'quanteda-package.R'
-        'resample.R' 'settings.R' 'stopwords.R' 'syllables.R'
-        'textmodel-ca.R' 'textmodel-generics.R' 'textmodel-wordfish.R'
-        'textmodel-wordscores.R' 'tokenize.R'
+Collate: 'RcppExports.R' 'clean.R' 'dictionaries.R' 'collocations.R'
+        'converters.R' 'corpus.R' 'dataDocs.R' 'describe-texts.R'
+        'dfm-classes.R' 'dfm-main.R' 'dfm-methods.R' 'distance.R'
+        'encoding.R' 'kwic.R' 'lexdiv.R' 'ngrams.R' 'plots.R'
+        'quanteda-package.R' 'readability.R' 'resample.R' 'settings.R'
+        'stopwords.R' 'syllables.R' 'textfile.R' 'textmodel-ca.R'
+        'textmodel-generics.R' 'textmodel-wordfish.R'
+        'textmodel-wordscores.R' 'toLower.R' 'tokenize.R' 'wordstem.R'
 NeedsCompilation: yes
-Packaged: 2015-06-02 09:47:28 UTC; kbenoit
+Packaged: 2015-07-10 23:03:15 UTC; kbenoit
 Maintainer: Kenneth Benoit <kbenoit@lse.ac.uk>
 Repository: CRAN
-Date/Publication: 2015-06-02 16:51:36
+Date/Publication: 2015-07-11 11:02:23

@@ -1,30 +1,34 @@
-englishSyllables <- NULL
+
 
 #' count syllables in a text
 #' 
-#' @description This function takes a text and returns a count of the number of
-#' syllables it contains. For British English words, the syllable count is exact
-#' and looked up from the CMU pronunciation dictionary, from the default
-#' syllable dictionary \code{englishSyllables}. For any word not in the
-#' dictionary the syllable count is estimated by counting vowel clusters.
-#' 
-#' \code{englishSyllables} is a quanteda-supplied data object consisting of a
-#' named numeric vector of syllable counts for the words used as names.  This is
-#' the default object used to count English syllables.  This object that can be
-#' accessed directly, but we strongly encourage you to access it only through
-#' the \code{syllables()} wrapper function.
-#' 
-#' @param x character vector or list of character vectors whose syllables will
-#'   be counted
-#' @param syllableDict a named numeric vector of syllable counts where the names
-#'   are lower case tokens.  The default is \link{englishSyllables}, an English
-#'   pronunciation dictionary from CMU.
-#' @param ... additional arguments passed to clean
+#' @description Returns a count of the number of syllables in texts. For English
+#'   words, the syllable count is exact and looked up from the CMU pronunciation
+#'   dictionary, from the default syllable dictionary \code{englishSyllables}. 
+#'   For any word not in the dictionary, the syllable count is estimated by 
+#'   counting vowel clusters.
 #'   
-#' @return numeric Named vector or list of counts of the number of syllables for
-#'   each element of x. When a word is not available in the lookup table, its
-#'   syllables are estimated by counting the number of (English) vowels in the
-#'   word.
+#'   \code{englishSyllables} is a quanteda-supplied data object consisting of a 
+#'   named numeric vector of syllable counts for the words used as names.  This 
+#'   is the default object used to count English syllables.  This object that 
+#'   can be accessed directly, but we strongly encourage you to access it only 
+#'   through the \code{syllables()} wrapper function.
+#'   
+#' @param x character vector or \code{tokenizedText-class} object  whose 
+#'   syllables will be counted
+#' @param syllableDict optional named integer vector of syllable counts where 
+#'   the names are lower case tokens.  When set to \code{NULL} (default), then 
+#'   the function will use the quanteda data object \code{englishSyllables}, an 
+#'   English pronunciation dictionary from CMU.
+#' @param ... additional arguments passed to tokenize
+#'   
+#' @return If \code{x} is a character vector, a named numeric vector of the 
+#'   counts of the syllables in each text, without tokenization.  If \code{x} 
+#'   consists of (a list of) tokenized texts, then return a list of syllable 
+#'   counts corresponding to the tokenized texts.
+#' @note All tokens are automatically converted to lowercase to perform the
+#'   matching with the syllable dictionary, so there is no need to perform this
+#'   step prior to calling \code{syllables()}.
 #' @name syllables
 #' @export
 #' @examples
@@ -34,6 +38,7 @@ englishSyllables <- NULL
 #'              text2 = "Superduper text number two.", 
 #'              text3 = "One more for the road.")
 #' syllables(myTexts)
+#' syllables(tokenize(myTexts, removePunct = TRUE))
 #' syllables("supercalifragilisticexpialidocious")
 syllables <- function(x, ...) {
     UseMethod("syllables")
@@ -41,29 +46,65 @@ syllables <- function(x, ...) {
 
 #' @rdname syllables
 #' @export
-syllables.character <- function(x, syllableDict = englishSyllables, ...) { 
+syllables.character <- function(x, syllableDict = quanteda::englishSyllables, ...) { 
+    tokenizedwords <- tokenize(x, removePunct = TRUE, removeTwitter = TRUE, removeNumbers = TRUE, ...)
+    sapply(syllables(tokenizedwords, syllableDict), sum)
+}
 
-    words <- tokenize(clean(x, ...))
+
+#' @rdname syllables
+#' @export
+syllables.tokenizedTexts <- function(x, syllableDict = quanteda::englishSyllables, ...) { 
+
+    # make tokenized list into a data table
+    syllablesDT <- data.table(docIndex = rep(1:length(x), lengths(x)),
+                              word = unlist(x), 
+                              serial = 1:length(unlist(x)))
     
-    # match syllable counts to words in the list
-    nSyllables <- lapply(words, function(x) syllableDict[x])
+    # call the syllables data.table function
+    nSyllables <- syllables.data.table(syllablesDT, syllableDict)    
+
+    # restore names
+    names(nSyllables) <- names(x)    
     
-    # look up vowel counts for those not in the lst
-    for (i in 1:length(nSyllables)) {
-        naIndex <- which(is.na(nSyllables[[i]]))
-        if (length(naIndex)==0) next
-        # get the missing words as names
-        names(nSyllables[[i]])[naIndex] <- words[[i]][naIndex]
-        # replace NA counts with vowel counts    
-        nSyllables[[i]][naIndex] <- vowelCount(words[[i]][naIndex])
+    nSyllables
+}
+
+
+syllables.data.table <- function(x, syllableDict = quanteda::englishSyllables, ...) {
+    word <- serial <- NULL
+    
+    # retrieve or validate syllable list
+    englishSyllables <- NULL
+    if (is.null(syllableDict)) {
+        #data(englishSyllables, envir = environment())
+        #syllableDict <- englishSyllables
+    } else {
+        if (!is.integer(syllableDict))
+            stop("user-supplied syllableDict must be named integer vector.")
     }
-    return(sapply(nSyllables, sum))
+    
+    # make syllable list into a data table
+    syllableDictDT <- data.table(word = names(syllableDict), syllables = syllableDict)
+    setkey(syllableDictDT, word)
+    
+    # lowercase the tokenizedTexts object, needed for the matching in the next step
+    x[, word := toLower(word)]
+
+    # set the key for x
+    setkey(x, word)
+    
+    # merge words to get syllables
+    # suppressWarnings so it won't complain about mixed encodings
+    suppressWarnings(syllDT <- syllableDictDT[x])
+    
+    # look up vowel counts for those not in the syllables list
+    syllDT[is.na(syllables), syllables := stringi::stri_count_regex(word, "[aeiouy]+")]
+    # put back into original order
+    syllDT <- syllDT[order(serial)]
+    # split back to a list
+    syllcount <- split(syllDT[, syllables], syllDT$docIndex)
+
+    syllcount
 }
 
-
-## return a vector of vowel counts from a vector of texts
-vowelCount <- function(textVector) {
-    vowel.index.list <- 
-        lapply(gregexpr("[AEIOUYaeiouy]*", textVector), attr, "match.length")
-    sapply(vowel.index.list, sum)
-}
