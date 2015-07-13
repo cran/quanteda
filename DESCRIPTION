@@ -12,12 +12,12 @@ Author: Kenneth Benoit [aut, cre],
     Pablo Barberá [ctb],
     Kohei Watanabe [ctb],
     Benjamin Lauderdale [ctb]
-Version: 0.8.0-3
-Date: 2015-07-10
+Version: 0.8.0-4
+Date: 2015-07-13
 Description: A fast, flexible toolset for for the management, processing, and
     quantitative analysis of textual data in R.
 License: GPL-3
-Depends: R (>= 3.0)
+Depends: R (>= 3.2.1)
 Imports: methods, utils, stats, Matrix (>= 1.1), data.table (>= 1.9.3),
         SnowballC, wordcloud, proxy, parallel, Rcpp, ca, stringi
 LinkingTo: Rcpp, RcppArmadillo
@@ -37,7 +37,7 @@ Collate: 'RcppExports.R' 'clean.R' 'dictionaries.R' 'collocations.R'
         'textmodel-generics.R' 'textmodel-wordfish.R'
         'textmodel-wordscores.R' 'toLower.R' 'tokenize.R' 'wordstem.R'
 NeedsCompilation: yes
-Packaged: 2015-07-10 23:03:15 UTC; kbenoit
+Packaged: 2015-07-13 08:59:41 UTC; kbenoit
 Maintainer: Kenneth Benoit <kbenoit@lse.ac.uk>
 Repository: CRAN
-Date/Publication: 2015-07-11 11:02:23
+Date/Publication: 2015-07-13 12:44:49
