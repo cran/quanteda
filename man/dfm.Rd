@@ -13,16 +13,15 @@ dfm(x, ...)
 
 \method{dfm}{character}(x, verbose = TRUE, toLower = TRUE,
   removeNumbers = TRUE, removePunct = TRUE, removeSeparators = TRUE,
-  removeTwitter = TRUE, stem = FALSE, ignoredFeatures = NULL,
+  removeTwitter = FALSE, stem = FALSE, ignoredFeatures = NULL,
   keptFeatures = NULL, matrixType = c("sparse", "dense"),
   language = "english", thesaurus = NULL, dictionary = NULL,
-  dictionary_regex = FALSE, addto = NULL, ...)
+  dictionary_regex = FALSE, ...)
 
 \method{dfm}{tokenizedTexts}(x, verbose = TRUE, toLower = TRUE,
   stem = FALSE, ignoredFeatures = NULL, keptFeatures = NULL,
   matrixType = c("sparse", "dense"), language = "english",
-  thesaurus = NULL, dictionary = NULL, dictionary_regex = FALSE,
-  addto = NULL, ...)
+  thesaurus = NULL, dictionary = NULL, dictionary_regex = FALSE, ...)
 
 \method{dfm}{corpus}(x, verbose = TRUE, groups = NULL, ...)
 
@@ -65,7 +64,7 @@ to keep, while excluding all others.  This can be used in lieu of a
 dictionary if there are only specific features that a user wishes to keep.
 To extract only Twitter usernames, for example, set \code{keptFeatures =
 "^@\\\w+\\\b"} and make sure that \code{removeTwitter = FALSE} as an
-additional argument passed to \link{clean}.  (Note: \code{keptFeatures =
+additional argument passed to \link{tokenize}.  (Note: \code{keptFeatures =
 "^@"} will also retrieve usernames, but does not enforce the username
 convention that a username must contain one and only one \code{@} symbol,
 at the beginning of the username.)}
@@ -99,9 +98,6 @@ regular expressions (see examples)}
 \item{dictionary_regex}{\code{TRUE} means the dictionary is already in
 regular expression format, otherwise it will be converted from "wildcard"
 format}
-
-\item{addto}{\code{NULL} by default, but if an existing dfm object is
-specified, then the new dfm will be added to the one named}
 
 \item{groups}{character vector containing the names of document variables for
 aggregating documents}
@@ -174,19 +170,18 @@ testText <- "The quick brown fox named Seamus jumps over the lazy dog also named
              the newspaper from a boy named Seamus, in his mouth."
 testCorpus <- corpus(testText)
 # settings(testCorpus, "stopwords")
-dfm(testCorpus, ignoredFeatures=stopwords("english"))
-features(dfm(testCorpus, verbose=FALSE, bigrams=TRUE))
-features(dfm(testCorpus, verbose=FALSE, bigrams=TRUE, include.unigrams=FALSE))
+dfm(testCorpus, ignoredFeatures = stopwords("english"))
+features(dfm(testCorpus, verbose = FALSE, ngrams = 1:2))
+features(dfm(testCorpus, verbose = FALSE, ngrams = 2))
 
 # keep only certain words
-dfm(testCorpus, keptFeatures="s$", verbose=FALSE)  # keep only words ending in "s"
+dfm(testCorpus, keptFeatures = "s$", verbose = FALSE)  # keep only words ending in "s"
 
 # testing Twitter functions
 testTweets <- c("My homie @justinbieber #justinbieber shopping in #LA yesterday #beliebers",
                 "2all the ha8ers including my bro #justinbieber #emabiggestfansjustinbieber",
                 "Justin Bieber #justinbieber #belieber #fetusjustin #EMABiggestFansJustinBieber")
-dfm(testTweets, keptFeatures="^#", removePunct=FALSE)  # keep only hashtags
-## NOT WHAT WE WERE EXPECTING - NEED TO FIX
+dfm(testTweets, keptFeatures = "^#", removeTwitter = FALSE)  # keep only hashtags
 
 \dontrun{
 # try it with approx 35,000 court documents from Lauderdale and Clark (200?)

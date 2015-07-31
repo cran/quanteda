@@ -24,11 +24,12 @@
 #' @seealso \link{stopwords}
 #' @examples
 #' ## examples for character objects
-#' someText <- c(text1 = "Here's some text containing words we want to remove.")
+#' someText <- tokenize(c(text1 = "Here's some text containing words we want to remove."))
 #' removeFeatures(someText, stopwords("english"))
 #' removeFeatures(someText, stopwords("SMART"))
 #' removeFeatures(someText, c("some", "want"))
-#' someText <- c(someText, text2 = "A second sentence with a few stopwords.")
+#' someText <- tokenize(c(text1 = "Here's some text containing words we want to remove.",
+#'                        text2 = "A second sentence with a few stopwords."))
 #' removeFeatures(someText, stopwords("english"))
 #' 
 #' ## for tokenized texts 
@@ -36,11 +37,11 @@
 #'                    execute the functions of its Chief Magistrate.",
 #'          wash2 <- "When the occasion proper for it shall arrive, I shall endeavor to express
 #'                    the high sense I entertain of this distinguished honor.")
-#' removeFeatures(txt, stopwords("english"))
 #' removeFeatures(tokenize(txt), stopwords("english"))
 #' 
-#' itText <- "Ecco alcuni di testo contenente le parole che vogliamo rimuovere."
-#' removeFeatures(itText, stopwords("italian"))
+#' itText <- tokenize("Ecco alcuni di testo contenente le parole che vogliamo rimuovere.", 
+#'                    removePunct = TRUE)
+#' removeFeatures(itText, stopwords("italian"), case_insensitive = TRUE)
 #' 
 #' ## example for dfm objects
 #' mydfm <- dfm(ukimmigTexts, verbose=FALSE)
@@ -54,20 +55,28 @@ removeFeatures <- function(x, stopwords=NULL, verbose=TRUE, ...) {
 }
 
 
-#' @rdname removeFeatures
-#' @export
-removeFeatures.character <- function(x, stopwords=NULL, verbose=TRUE, ...) {
-    if (is.null(stopwords))
-        stop("Must supply a character vector of stopwords, e.g. stopwords(\"english\")")
-    # tokenize while keeping spaces, and send to removeFeatures.tokenizedTexts
-    ret <- removeFeatures(tokenize(x, removePunct = FALSE, removeNumbers = FALSE, removeSeparators = FALSE, removeTwitter = FALSE),
-                          stopwords)
-    # remove first of two whitespaces
-    ret <- lapply(ret, function(x) x[!(stringi::stri_detect_charclass(x, "[\\p{Zs}]") & stringi::stri_detect_charclass(c(x[-1], " "), "[\\p{Zs}]"))])
-    ret <- lapply(ret, function(x) if (x[1] == " ") x[-1] else x)
-    # paste back into a string and return
-    sapply(ret, paste, collapse = "")
-}
+# # @rdname removeFeatures
+# # @export
+# removeFeatures.character <- function(x, stopwords=NULL, verbose=TRUE, ...) {
+#     if (is.null(stopwords))
+#         stop("Must supply a character vector of stopwords, e.g. stopwords(\"english\")")
+#     # tokenize while keeping spaces, and send to removeFeatures.tokenizedTexts
+#     ret <- removeFeatures(tokenize(x, removePunct = FALSE, removeNumbers = FALSE, removeSeparators = FALSE, removeTwitter = FALSE),
+#                           stopwords)
+#     # remove first of two whitespaces
+#     ret <- lapply(ret, function(x) x[!(stringi::stri_detect_charclass(x, "[\\p{Zs}]") & stringi::stri_detect_charclass(c(x[-1], " "), "[\\p{Zs}]"))])
+#     print(length(ret))
+#     tmpFun <- function(y) {
+#         if (is.na(y[1])) return("")
+#         if (y[1] == " ") 
+#             return(y[-1])
+#         else 
+#             return(y)
+#     }
+#     ret <- lapply(ret, tmpFun)
+#     # paste back into a string and return
+#     sapply(ret, paste, collapse = "")
+# }
 
 #' @rdname removeFeatures
 #' @export
@@ -81,14 +90,10 @@ removeFeatures.tokenizedTexts <- function(x, stopwords=NULL, verbose=TRUE, ...) 
     
 #' @rdname removeFeatures
 #' @export
-removeFeatures.dfm <- function(x, stopwords=NULL, verbose=TRUE, ...) {
-    if (is.null(stopwords))
-        stop("Must supply a character vector of stopwords, e.g. stopwords(\"english\")")
-    removeIndex <- which(colnames(x) %in% stopwords)
-    if (verbose) cat("Removed", format(length(removeIndex), big.mark=","),  
-                     "features, from a list of", length(stopwords), "stopwords.\n")
-    x[, -removeIndex]
+removeFeatures.dfm <- function(x, stopwords = NULL, verbose = TRUE, ...) {
+    selectFeatures(x, features = stopwords, selection = "remove", verbose = verbose)
 }
+
 
 
 ### now optimized for speed using data.table
@@ -203,5 +208,82 @@ NULL
 stopwordsGet <- function(kind="english") {
     cat("stopwordsGet() is deprecated, use stopwords() instead.\n")
     stopwords(kind)
+}
+
+
+#' select features from an object
+#' 
+#' This function selects or discards features from a dfm.variety of objects, 
+#' such as tokenized texts, a dfm, or a list of collocations.  The most common usage for 
+#' \code{removeFeatures} will be to eliminate stop words from a text or 
+#' text-based object, or to select only features from a list of regular 
+#' expression.
+#' @param x object whose features will be selected
+#' @param features character vector of \link{regex}{regular expressions} 
+#'   definding the features to be selected, or a dictionary class object whose 
+#'   values will provide the features to be selected.  If a dictionary class 
+#'   object, the values will be interpreted as regular expressions.  (We may add
+#'   the option for other formats in the next revision.)
+#' @param selection whether to keep or remove the features
+#' @param valuetype how to interpret feature vector: \code{fixed} for words as 
+#'   is; \code{"regex"} for regular expressions; or \code{"glob"} for 
+#'   "glob"-style wildcard
+#' @param case_insensitive ignore the case of dictionary values if \code{TRUE}
+#' @param verbose if \code{TRUE} print message about how many features were 
+#'   removed
+#' @param ... supplementary arguments passed to the underlying functions in 
+#'   \code{\link[stringi]{stri_detect_regex}}.  (This is how 
+#'   \code{case_insensitive} is passed, but you may wish to pass others.)
+#' @note This function selects features based on their labels.  To select
+#'   features based on the values of a the document-feature matrix, use
+#'   \code{\link{trim}}.
+#' @export
+#' @seealso \code{\link{removeFeatures}}, \code{\link{trim}}
+#' @examples 
+#' myDfm <- dfm(c("My Christmas was ruined by your opposition tax plan.", 
+#'                "Does the United_States or Sweden have more progressive taxation?"),
+#'              verbose = FALSE)
+#' mydict <- dictionary(list(countries = c("United_States", "Sweden", "France"),
+#'                           wordsEndingInY = c("by", "my"),
+#'                           notintext = "blahblah"))
+#' selectFeatures(myDfm, mydict)
+#' selectFeatures(myDfm, mydict, case_insensitive = TRUE)
+#' selectFeatures(myDfm, c("s$", ".y"), "keep", valuetype = "regex")
+#' selectFeatures(myDfm, c("s$", ".y"), "remove", valuetype = "regex")
+#' selectFeatures(myDfm, stopwords("english"), "keep", valuetype = "fixed")
+#' selectFeatures(myDfm, stopwords("english"), "remove", valuetype = "fixed")
+selectFeatures <- function(x, features, ...) {
+    UseMethod("selectFeatures")
+}
+
+#' @rdname selectFeatures
+#' @export
+selectFeatures.dfm <- function(x, features = NULL, selection = c("keep", "remove"), 
+                               valuetype = c("glob", "regex", "fixed"),
+                               case_insensitive = TRUE,
+                               verbose = TRUE, ...) {
+    selection <- match.arg(selection)
+    valuetype <- match.arg(valuetype)
+    if (is.null(features))
+        stop("Must supply a character vector of words to keep or remove")
+    features <- unique(unlist(features))  # to convert any dictionaries
+    if (valuetype == "glob") 
+        features <- lapply(features, utils::glob2rx)
+    if (valuetype == "regex" | valuetype == "glob") {
+        featIndex <- which(stringi::stri_detect_regex(features(x), paste0(features, collapse = "|"), 
+                                                      case_insensitive = case_insensitive, ...))
+    } else {
+        if (case_insensitive)
+            featIndex <- which(toLower(features(x)) %in% toLower(features))
+        else featIndex <- which(features(x) %in% features)
+    }
+
+    if (verbose) cat(ifelse(selection=="keep", "kept", "removed"), 
+                     format(length(featIndex), big.mark=","),
+                     "features, from", length(features), "supplied feature types\n")
+    if (selection == "keep")
+        return(x[, featIndex])
+    else
+        return(x[, -featIndex])
 }
 
