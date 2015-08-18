@@ -1,4 +1,6 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+**Development branch** [![Build Status](https://travis-ci.org/kbenoit/quanteda.svg?branch=dev)][![codecov.io](https://codecov.io/github/kbenoit/quanteda/coverage.svg?branch=dev)](<https://codecov.io/github/kbenoit/quanteda/coverage.svg?branch=dev>) **Master branch** [![Build Status](https://travis-ci.org/kbenoit/quanteda.svg?branch=master)][![codecov.io](https://codecov.io/github/kbenoit/quanteda/coverage.svg?branch=master)](<https://codecov.io/github/kbenoit/quanteda/coverage.svg?branch=master>)
+
 See the [Getting Started Vignette](http://htmlpreview.github.com/?https://github.com/kbenoit/quanteda/blob/master/vignettes/quickstart.html).
 
 quanteda: Quantitative Analysis of Textual Data
@@ -101,8 +103,8 @@ summary(uk2010immigCorpus, showmeta=TRUE)
 #>           SNP    81    124         4          SNP
 #>          UKIP   311    633        38         UKIP
 #> 
-#> Source:  /Users/kbenoit/Dropbox/QUANTESS/quanteda_kenlocal_gh/* on x86_64 by kbenoit.
-#> Created: Wed Jul 29 21:13:10 2015.
+#> Source:  /home/paul/Dropbox/quanteda/* on x86_64 by paul.
+#> Created: Fri Jul 31 17:19:06 2015.
 #> Notes:   Immigration-related sections of 2010 UK party manifestos.
 
 # key words in context for "deport", 3 words of context
@@ -145,21 +147,119 @@ mydfm <- dfm(uk2010immigCorpus, ignoredFeatures=c("will", stopwords("english")))
 #>    ... tokenizing
 #>    ... indexing 9 documents
 #>    ... indexing 1,586 feature types
-#>   ... removed 1,347 features, from a list of 175 supplied feature types.
-#>    ... created a 9 x 239 sparse dfm
+#>    ... removed 97 features, from 175 supplied feature types
+#>    ... created a 9 x 1489 sparse dfm
 #>    ... complete. 
-#> Elapsed time: 0.063 seconds.
+#> Elapsed time: 0.067 seconds.
 dim(mydfm)              # basic dimensions of the dfm
-#> [1]   9 239
+#> [1]    9 1489
 topfeatures(mydfm, 20)  # 20 top words
-#>   people       uk   system  country      new   ensure      bnp  percent 
-#>       35       27       27       20       19       17       13       12 
-#>     must  seekers      end       eu   future refugees  schools     jobs 
-#>       12       10       10       10        9        8        7        7 
-#> students   levels  current  culture 
-#>        7        6        5        5
+#> immigration     british      people      asylum     britain          uk 
+#>          66          37          35          29          28          27 
+#>      system  population     country         new  immigrants      ensure 
+#>          27          21          20          19          17          17 
+#>       shall citizenship      social    national         bnp     illegal 
+#>          17          16          14          14          13          13 
+#>        work     percent 
+#>          13          12
 if (Sys.info()['sysname']=="Darwin") quartz() # open nicer window, Mac only
 plot(mydfm)             # word cloud     
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): immigration
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): control
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): england
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): percent
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): communities
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): generations
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): social could
+#> not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): matter could
+#> not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): people could
+#> not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): measures
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): homeland
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...):
+#> responsibility could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): created
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): long-term
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): workers
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...):
+#> multicultural could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): muslim could
+#> not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): work could
+#> not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): support
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): leave could
+#> not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): engaged
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): voluntary
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): political
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): detention
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): resettlement
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): numbers
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): thousands
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): attract
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): criminal
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): new could
+#> not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): review could
+#> not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): example
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): population
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): made could
+#> not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): office could
+#> not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): services
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): third could
+#> not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): islands
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): policies
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): protection
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): firm could
+#> not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): border could
+#> not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): money could
+#> not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): secure could
+#> not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): integration
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): refused
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): existing
+#> could not be fit on page. It will not be plotted.
+#> Warning in wordcloud::wordcloud(features(x), colSums(x), ...): majority
+#> could not be fit on page. It will not be plotted.
 ```
 
 ![](README-quanteda_example-1.png)

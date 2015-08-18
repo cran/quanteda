@@ -617,85 +617,81 @@ ndoc.corpus <- function(x) {
 
 
 
-# # Corpus sampling
-# #
-# # Takes a random sample of the specified size from a corpus, with or without replacement
-# # 
-# # @param corpus An existing corpus to be sampled
-# # @param size A positive number, the number of texts to return
-# # @param replace Should sampling be with replacement?
-# # @param prob Not implemented
-# # @export
-# # @examples
-# # data(inaugCorpus)
-# # inaugSamp <- sample(inaugCorpus, 200, replace=TRUE)
-# sample.corpus <- function(corpus, size=n, replace=FALSE, prob=NULL){
-#   if(!is.null(prob)) stop("prob argument is not implemented for corpus")
-#   atts <- corpus$docvars
-#   sampleInds <- sample(nrow(atts), size=size, replace=replace)
-#   newAtts <- atts[sampleInds,]
-#   newTexts <- newAtts[[1]]
-#   newAtts <- newAtts[2:length(newAtts)]
-#   newCorp <- corpusCreate(newTexts, newAtts)
-#   newCorp$metadata["created"] <- paste(newCorp$metadata["created"], "sampled from",
-#                                        corpus$metadata["source"], collapse= " ")
-#   return(newCorp)
-# }
+#' @export
+#' @return A corpus object with number of documents equal to \code{size}, drawn 
+#'   from the corpus \code{x}.  The returned corpus object will contain all of 
+#'   the meta-data of the original corpus, and the same document variables for 
+#'   the documents selected.
+#' @seealso \code{\link{sample}}
+#' @rdname sample
+#' @examples
+#' # sampling from a corpus
+#' summary(sample(inaugCorpus, 5)) 
+#' summary(sample(inaugCorpus, 10, replace=TRUE))
+sample.corpus <- function(x, size = ndoc(x), replace = FALSE, prob = NULL, ...) {
+    documents(x) <- documents(x)[sample(ndoc(x), size, replace, prob), ]
+    x
+}
 
+#' Randomly sample documents or features
+#' 
+#' Takes a random sample or documents or features of the specified size from a 
+#' corpus or document-feature matrix, with or without replacement
+#' 
+#' @param x a corpus or dfm object whose documents or features will be sampled
+#' @param size a positive number, the number of documents to select
+#' @param replace Should sampling be with replacement?
+#' @param prob A vector of probability weights for obtaining the elements of the
+#'   vector being sampled.
+#' @param ... required for defining methods that extend
+#'   \code{\link[base]{sample}}, which is not defined as a generic
+#'   method in the \pkg{base} package.
+#' @export
+sample <- function(x, size, replace = FALSE, prob = NULL, ...) {
+    UseMethod("sample")
+}
 
-corpus.subset.inner <- function(corpus, subsetExpr=NULL, selectExpr=NULL, drop=FALSE) {
-    # This is the "inner" function to be called by other functions
-    # to return a subset directly, use corpus.subset
-    
-    # The select argument exists only for the methods for data frames and matrices. 
-    # It works by first replacing column names in the selection expression with the 
-    # corresponding column numbers in the data frame and then using the resulting 
-    # integer vector to index the columns. This allows the use of the standard indexing 
-    # conventions so that for example ranges of columns can be specified easily, 
-    # or single columns can be dropped
-    # as in:
-    # subset(airquality, Temp > 80, select = c(Ozone, Temp))
-    # subset(airquality, Day == 1, select = -Temp)
-    # subset(airquality, select = Ozone:Wind)
-    if (is.null(subsetExpr)) 
-        rows <- TRUE
-    else {
-        rows <- eval(subsetExpr, documents(corpus), parent.frame())
-        if (!is.logical(rows)) 
-            stop("'subset' must evaluate to logical")
-        rows <- rows & !is.na(rows)
-    }
-    
-    if (is.null(selectExpr)) 
-        vars <- TRUE
-    else {
-        nl <- as.list(seq_along(documents(corpus)))
-        names(nl) <- names(documents(corpus))
-        vars <- c(1, eval(selectExpr, nl, parent.frame()))
-    }
-    # implement subset, select, and drop
-    # documents(corpus) <- documents(corpus)[rows, vars, drop=drop]
-    documents(corpus) <- corpus$documents[rows, vars, drop=drop]
-    return(corpus)
+#' @export
+#' @rdname sample
+sample.default <- function(x, size, replace = FALSE, prob = NULL, ...) {
+    base::sample(x, size, replace, prob)
 }
 
 
 #' extract a subset of a corpus
 #' 
-#' Works just like the normal subset command but for corpus objects
+#' Returns subsets of a corpus that meet certain conditions, including direct 
+#' logical operations on docvars (document-level variables).  Works just like
+#' the normal subset command but for corpus objects.
 #' 
 #' @param x corpus object to be subsetted.
-#' @param subset logical expression indicating elements or rows to keep: missing values are taken as false.
+#' @param subset logical expression indicating elements or rows to keep: missing
+#'   values are taken as false.
 #' @param select expression, indicating the attributes to select from the corpus
-#' @param ...  additional arguments affecting the summary produced
+#' @param ... not used
 #' @return corpus object
 #' @export
+#' @seealso \code{\link{select}}
 #' @examples
 #' summary(subset(inaugCorpus, Year>1980))
 #' summary(subset(inaugCorpus, Year>1930 & President=="Roosevelt", select=Year))
-subset.corpus <- function(x, subset=NULL, select=NULL, ...) {
-    tempcorp <- corpus.subset.inner(x, substitute(subset), substitute(select))
-    return(tempcorp)
+subset.corpus <- function(x, subset, select, ...) {
+    r <- if (missing(subset)) {
+        rep_len(TRUE, nrow(documents(x)))
+    } else {
+        e <- substitute(subset)
+        r <- eval(e, documents(x), parent.frame())
+        r & !is.na(r)
+    }
+    vars <- if (missing(select)) 
+        TRUE
+    else {
+        nl <- as.list(seq_along(documents(x)))
+        names(nl) <- names(documents(x))
+        c(1, eval(substitute(select), nl, parent.frame()))
+    }
+    documents(x) <- documents(x)[r, vars, drop = FALSE]
+    x
 }
 
 #' summarize a corpus or a vector of texts
