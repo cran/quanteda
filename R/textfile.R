@@ -52,13 +52,19 @@ setMethod("show",
 #'   be identified by specifying a \code{textField} value.} 
 #'   \item{\code{csv}}{comma separated value data, consisting of the texts and 
 #'   additional document-level variables and document-level meta-data.  The text
-#'   file must be identified by specifying a \code{textField} value.} \item{a 
+#'   file must be identified by specifying a \code{textField} value.} 
+#'   \item{\code{tab, tsv}}{tab-separated value data, consisting of the texts and 
+#'   additional document-level variables and document-level meta-data.  The text
+#'   file must be identified by specifying a \code{textField} value.} 
+#'   \item{a 
 #'   wildcard value}{any valid pathname with a wildcard ("glob") expression that
 #'   can be expanded by the operating system.  This may consist of multiple file
-#'   types.} \item{\code{xml}:}{Basic flat XML documents are supported -- those 
+#'   types.} \item{\code{xml}}{Basic flat XML documents are supported -- those 
 #'   of the kind supported by the function xmlToDataFrame function of the 
-#'   \strong{XML}  package.} \item{\code{doc, docx}:}{Word files coming soon.} 
-#'   \item{\code{pdf}:}{Adobe Portable Document Format files, coming soon.} }
+#'   \strong{XML}  package.} 
+#'   \item{\code{zip}}{zip archive file, containing \code{*.txt} files.  This may be 
+#'   a URL to a zip file.}
+#'   }
 #' @param textField a variable (column) name or column number indicating where 
 #'   to find the texts that form the documents for the corpus.  This must be 
 #'   specified for file types \code{.csv} and \code{.json}.
@@ -76,10 +82,10 @@ setMethod("show",
 #' @param docvarsfrom  used to specify that docvars should be taken from the 
 #'   filenames, when the \code{textfile} inputs are filenames and the elements 
 #'   of the filenames are document variables, separated by a delimiter 
-#'   (\code{sep}).  This allows easy assignment of docvars from filenames such 
-#'   as \code{1789-Washington.txt}, \code{1793-Washington}, etc. by \code{sep} 
+#'   (\code{dvsep}).  This allows easy assignment of docvars from filenames such 
+#'   as \code{1789-Washington.txt}, \code{1793-Washington}, etc. by \code{dvsep} 
 #'   or from meta-data embedded in the text file header (\code{headers}).
-#' @param sep separator used in filenames to delimit docvar elements if 
+#' @param dvsep separator used in filenames to delimit docvar elements if 
 #'   \code{docvarsfrom="filenames"} is used
 #' @param docvarnames character vector of variable names for \code{docvars}, if 
 #'   \code{docvarsfrom} is specified.  If this argument is not used, default 
@@ -108,13 +114,14 @@ setMethod("show",
 #' @author Kenneth Benoit and Paul Nulty
 #' @export
 #' @importFrom stats var
+#' @importFrom utils download.file unzip
 setGeneric("textfile",
            function(file, textField, encodingFrom = NULL, encodingTo = "UTF-8",
-                    cache = FALSE, docvarsfrom = c("filenames"), sep="_", 
+                    cache = FALSE, docvarsfrom = c("filenames"), dvsep="_", 
                     docvarnames = NULL,  ...) 
                standardGeneric("textfile"))
 #signature = c("file", "textField", "encodingFrom", "encodingTo", "docvarsfrom", 
-#              "sep", "docvarnames", "cache", "encodingFrom", "encodingTo"))
+#              "dvsep", "docvarnames", "cache", "encodingFrom", "encodingTo"))
 
 # FROM THE MATRIX PACKAGE - no need to duplicate here
 # setClassUnion("index", members =  c("numeric", "integer", "logical", "character"))
@@ -122,25 +129,18 @@ setGeneric("textfile",
 #' @rdname textfile
 #' @export
 #' @examples 
-#' \donttest{# Twitter json
-#' mytf1 <- textfile("~/Dropbox/QUANTESS/social media/zombies/tweets.json")
+#' \dontrun{# Twitter json
+#' mytf1 <- textfile("http://www.kenbenoit.net/files/tweets.json")
 #' summary(corpus(mytf1), 5)
 #' # generic json - needs a textField specifier
-#' mytf2 <- textfile("~/Dropbox/QUANTESS/Manuscripts/Collocations/Corpora/sotu/sotu.json",
+#' mytf2 <- textfile(http://www.kenbenoit.net/files/sotu.json",
 #'                   textField = "text")
 #' summary(corpus(mytf2))
 #' # text file
-#' mytf3 <- textfile("~/Dropbox/QUANTESS/corpora/project_gutenberg/pg2701.txt", cache = FALSE)
+#' mytf3 <- textfile("https://www.gutenberg.org/cache/epub/2701/pg2701.txt", cache = FALSE)
 #' summary(corpus(mytf3))
-#' # multiple text files
-#' mytf4 <- textfile("~/Dropbox/QUANTESS/corpora/inaugural/*.txt", cache = FALSE)
-#' summary(corpus(mytf4))
-#' # multiple text files with docvars from filenames
-#' mytf5 <- textfile("~/Dropbox/QUANTESS/corpora/inaugural/*.txt", 
-#'                   docvarsfrom="filenames", sep="-", docvarnames=c("Year", "President"))
-#' summary(corpus(mytf5))
 #' # XML data
-#' mytf6 <- textfile("~/Dropbox/QUANTESS/quanteda_working_files/xmlData/plant_catalog.xml", 
+#' mytf6 <- textfile("http://www.kenbenoit.net/files/plant_catalog.xml", 
 #'                   textField = "COMMON")
 #' summary(corpus(mytf6))
 #' # csv file
@@ -153,7 +153,7 @@ setMethod("textfile",
           signature(file = "character", textField = "index", 
                     encodingFrom="missing", encodingTo="missing",
                     cache = "ANY", 
-                    docvarsfrom="missing", sep="missing", docvarnames="missing"),
+                    docvarsfrom="missing", dvsep="missing", docvarnames="missing"),
           definition = function(file, textField, cache = FALSE, ...) {
               if (length(textField) != 1)
                   stop("textField must be a single field name or column number identifying the texts.")
@@ -173,7 +173,7 @@ setMethod("textfile",
 setMethod("textfile", 
           signature(file = "character", textField = "missing",
                     encodingFrom="ANY", encodingTo="ANY", cache = "ANY",
-                    docvarsfrom="missing", sep="missing", docvarnames="missing"),
+                    docvarsfrom="missing", dvsep="missing", docvarnames="missing"),
           definition = function(file, encodingFrom = NULL, encodingTo = "UTF-8", cache = FALSE, ...) {
               fileType <- getFileType(file)
               if (fileType=="filemask") {
@@ -190,9 +190,9 @@ setMethod("textfile",
           signature(file = "character", textField = "missing", 
                     encodingFrom="missing", encodingTo="missing", 
                     cache = "ANY",
-                    docvarsfrom="character", sep="ANY", docvarnames="ANY"),
+                    docvarsfrom="character", dvsep="ANY", docvarnames="ANY"),
           definition = function(file, textField=NULL, cache = FALSE, 
-                                docvarsfrom=c("headers"), sep="_", docvarnames=NULL, ...) {
+                                docvarsfrom=c("headers"), dvsep="_", docvarnames=NULL, ...) {
               fileType <- getFileType(file)
               if (fileType=="filemask") {
                   sources <- get_docs(file, encodingFrom, encodingTo)
@@ -200,7 +200,7 @@ setMethod("textfile",
                   stop("File type ", fileType, " not supported with these arguments.")
               }
               if (docvarsfrom == "filenames") {
-                  sources$docv <- getdocvarsFromHeaders(names(sources$txts), sep=sep, docvarnames=docvarnames)
+                  sources$docv <- getdocvarsFromHeaders(names(sources$txts), dvsep=dvsep, docvarnames=docvarnames)
               } else {
                   warning("docvarsfrom=", docvarsfrom, " not supported.")
               }
@@ -225,6 +225,7 @@ returnCorpusSource <- function(sources, cache) {
 get_doc <- function(f, encodingFrom = NULL, encodingTo = "UTF-8") {
     txts <- c()
     fileType <- getFileType(f)
+    # cat("fileType = ", fileType, "\n")
     switch(fileType,
            txt =  { 
                if (is.null(encodingFrom)) encodingFrom <- getOption("encoding")
@@ -237,6 +238,7 @@ get_doc <- function(f, encodingFrom = NULL, encodingTo = "UTF-8") {
            },
            doc =  { return(list(txts = get_word(f), docv=data.frame())) },
            json = { return(get_json_tweets(f)) },
+           zip = { return(get_zipfile(f)) },
            pdf =  { return(list(txts = get_pdf(f), docv=data.frame())) }
     )
     stop("unrecognized fileType:", fileType)
@@ -265,16 +267,27 @@ get_docs <- function(filemask, encodingFrom = NULL, encodingTo = "UTF-8") {
     # name the vector with the filename by default
     names(textsvec) <- getRootFileNames(filenames)
     
-    list(txts=textsvec, docv=data.frame())    
+    list(txts = textsvec, docv = data.frame())    
+}
+
+get_zipfile <- function(f, ...) {
+    td <- tempdir()
+    if (substr(f, 1, 4) == "http")
+        utils::download.file(f, destfile = (flocal <- paste0(td, "/temp.zip", quiet = TRUE)))
+    utils::unzip(flocal, exdir = td)
+    # cat("file:", paste0(td, "*.txt"), "\n")
+    get_docs(paste0(td, "/*.txt"))
 }
 
 # read a document from a structured file containing text and data
-get_data <- function(f, textField='index', sep=',', ...){
+get_data <- function(f, textField, sep = ",", ...){
     src <- list()
     # print('fileType')
     fileType <- getFileType(f)
     switch(fileType,
            csv = {src <- get_csv(f, textField, ...)},
+           tab = {src <- get_csv(f, textField, sep = "\t", ...)},
+           tsv = {src <- get_csv(f, textField, sep = "\t", ...)},
            json = {src <- get_json(f, textField, ...)},
            xml = {src <- get_xml(f, textField, ...)}
     )
@@ -442,10 +455,10 @@ getRootFileNames <- function(longFilenames) {
 }
 
 
-getdocvarsFromHeaders <- function(fnames, sep="_", docvarnames=NULL) {
+getdocvarsFromHeaders <- function(fnames, dvsep="_", docvarnames=NULL) {
     snames <- fnames
     snames <- gsub(".txt", "", snames)
-    parts <- strsplit(snames, sep)
+    parts <- strsplit(snames, dvsep)
     if (stats::var(sapply(parts, length)) != 0)
         stop("Filename elements are not equal in length.")
     dvars <-  data.frame(matrix(unlist(parts), nrow=length(parts), byrow=TRUE), 

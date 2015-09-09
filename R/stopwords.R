@@ -84,16 +84,17 @@ removeFeatures.tokenizedTexts <- function(x, stopwords=NULL, verbose=TRUE, ...) 
     if (is.null(stopwords))
         stop("Must supply a character vector of stopwords, e.g. stopwords(\"english\")")
     # much faster than any regex method
-    lapply(x, function(x) x[which(!(toLower(x) %in% stopwords))])
+    result <- lapply(x, function(x) x[which(!(toLower(x) %in% stopwords))])
+    class(result) <- c("tokenizedTexts", class(result))
+    result
 }
     
     
 #' @rdname removeFeatures
 #' @export
 removeFeatures.dfm <- function(x, stopwords = NULL, verbose = TRUE, ...) {
-    selectFeatures(x, features = stopwords, selection = "remove", verbose = verbose)
+    selectFeatures(x, features = stopwords, selection = "remove", verbose = verbose, ...)
 }
-
 
 
 ### now optimized for speed using data.table
@@ -242,12 +243,12 @@ stopwordsGet <- function(kind="english") {
 #' @examples 
 #' myDfm <- dfm(c("My Christmas was ruined by your opposition tax plan.", 
 #'                "Does the United_States or Sweden have more progressive taxation?"),
-#'              verbose = FALSE)
+#'              toLower = FALSE, verbose = FALSE)
 #' mydict <- dictionary(list(countries = c("United_States", "Sweden", "France"),
 #'                           wordsEndingInY = c("by", "my"),
 #'                           notintext = "blahblah"))
 #' selectFeatures(myDfm, mydict)
-#' selectFeatures(myDfm, mydict, case_insensitive = TRUE)
+#' selectFeatures(myDfm, mydict, case_insensitive = FALSE)
 #' selectFeatures(myDfm, c("s$", ".y"), "keep", valuetype = "regex")
 #' selectFeatures(myDfm, c("s$", ".y"), "remove", valuetype = "regex")
 #' selectFeatures(myDfm, stopwords("english"), "keep", valuetype = "fixed")
@@ -278,9 +279,15 @@ selectFeatures.dfm <- function(x, features = NULL, selection = c("keep", "remove
         else featIndex <- which(features(x) %in% features)
     }
 
-    if (verbose) cat(ifelse(selection=="keep", "kept", "removed"), 
+    if (verbose) cat(ifelse(selection=="keep", "kept", "removed"), " ", 
                      format(length(featIndex), big.mark=","),
-                     "features, from", length(features), "supplied feature types\n")
+                     " feature", ifelse(length(featIndex) > 1 | length(featIndex)==0, "s", ""), 
+                     ", from ", length(features), " supplied feature type",
+                     ifelse(length(features) > 0 | length(featIndex)==0, "s", ""),
+                     "\n", sep = "")
+    # if no features were removed, return original dfm
+    if (length(featIndex) == 0)
+        return(x)
     if (selection == "keep")
         return(x[, featIndex])
     else

@@ -85,14 +85,8 @@ corpus <- function(x, ...) {
 #'
 #' corpus(texts(ie2010Corpus))
 #' 
-#' \dontrun{# automatically russian tests from windows-1251 to UTF-8
-#' myRussianCorpus <- corpus(textfile("~/Dropbox/QUANTESS/corpora/pozhdata/*.txt"))
-#' cat(texts(myRussianCorpus)[1])
-#' }
 corpus.character <- function(x, enc=NULL, encTo = "UTF-8", docnames=NULL, docvars=NULL,
                              source=NULL, notes=NULL, citation=NULL, ...) {
-    
-    x_names <- names(x)
     
     # check validity of encoding label(s)
     if (!is.null(enc)) {
@@ -102,6 +96,7 @@ corpus.character <- function(x, enc=NULL, encTo = "UTF-8", docnames=NULL, docvar
     if (!(encTo %in% stringi::stri_enc_list(simplify = TRUE))) 
         stop("encTo = ", enc, " argument not found in stri_enc_list()")
 
+    x_names <- names(x)
     
     # convert the dreaded "curly quotes" to ASCII equivalents
     x <- stringi::stri_replace_all_fixed(x, 
@@ -110,8 +105,9 @@ corpus.character <- function(x, enc=NULL, encTo = "UTF-8", docnames=NULL, docvar
                                          c("\"", "\"", "\"", 
                                            "\'", "\'", "\'"), vectorize_all = FALSE)
 
-    # detect encoding
-    detectedEncoding <- encoding(x, verbose = FALSE)$probably
+    # detect encoding based on 100 documents
+    detectSampleSize <- 100
+    detectedEncoding <- encoding(x[sample(length(x), min(detectSampleSize, length(x)))], verbose = FALSE)$probably
     # cat("Detected encoding:", detectedEncoding, "\n")
 #     if (!is.null(enc))
 #         if (enc != detectedEncoding)
@@ -175,15 +171,12 @@ corpus.character <- function(x, enc=NULL, encTo = "UTF-8", docnames=NULL, docvar
 #' @rdname corpus
 #' @export
 #' @examples
-#' \donttest{# the fifth column of this csv file is the text field
+#' \dontrun{# the fifth column of this csv file is the text field
 #' mytexts <- textfile("http://www.kenbenoit.net/files/text_example.csv", textField = 5)
 #' mycorp <- corpus(mytexts)
 #' mycorp2 <- corpus(textfile("http://www.kenbenoit.net/files/text_example.csv", textField = "Title"))
 #' identical(texts(mycorp), texts(mycorp2))
 #' identical(docvars(mycorp), docvars(mycorp2))
-#' # some Cyrillic texts in WINDOWS-1251 - auto-detected and converted
-#' mycorp <- corpus(textfile("~/Dropbox/QUANTESS/corpora/pozhdata/*.txt"))
-#' cat(texts(mycorp)[1])
 #' }
 corpus.corpusSource <- function(x, ...) {
     sources <- NULL
@@ -993,9 +986,12 @@ ntoken.dfm <- function(x, ...) {
 ntype.dfm <- function(x, ...) {
     if (length(list(...)) > 0)
         warning("additional arguments not used for ntoken.dfm()")
-    apply(x, 1, function(dfmrow) sum(dfmrow > 0))
+    # apply(x, 1, function(dfmrow) sum(dfmrow > 0))
+    tmp <- sparseMatrix(i = x@i, p = x@p, x = x@x > 0, index1 = FALSE, dims = x@Dim)
+    tmp <- rowSums(tmp)
+    names(tmp) <- docnames(x)
+    tmp
 }
-
 
 
 #' count the number of sentences
