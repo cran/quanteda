@@ -2,6 +2,7 @@
 % Please edit documentation in R/tokenize.R
 \name{tokenize}
 \alias{clean}
+\alias{is.tokenizedTexts}
 \alias{tokenise}
 \alias{tokenize}
 \alias{tokenize.character}
@@ -12,11 +13,13 @@ tokenize(x, ...)
 
 \method{tokenize}{character}(x, what = c("word", "sentence", "character",
   "fastestword", "fasterword"), removeNumbers = FALSE, removePunct = FALSE,
-  removeSeparators = TRUE, removeTwitter = FALSE, ngrams = 1,
-  window = 1, concatenator = "_", simplify = FALSE, verbose = FALSE,
+  removeSeparators = TRUE, removeTwitter = FALSE, ngrams = 1L,
+  window = 1L, concatenator = "_", simplify = FALSE, verbose = FALSE,
   ...)
 
 \method{tokenize}{corpus}(x, ...)
+
+is.tokenizedTexts(x)
 }
 \arguments{
 \item{x}{The text(s) or corpus to be tokenized}
@@ -73,6 +76,8 @@ a \strong{tokenizedText} (S3) object, essentially a list of character
 }
 \description{
 Tokenize the texts from a character vector or from a corpus.
+
+\code{is.tokenizedTexts} returns \code{TRUE} if the object is of class tokenizedTexts, \code{FALSE} otherwise.
 }
 \details{
 The tokenizer is designed to be fast and flexible as well as to

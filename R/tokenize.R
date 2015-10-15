@@ -9,7 +9,11 @@
 # str(segmentSentence(ukimmigTexts[1]))   # a 132-element char vector
 # str(segmentSentence(ukimmigTexts[1:2])) # a 144-element char vector (143+ 12)
 # 
-segmentSentence <- function(x, delimiter="[.!?:;]", perl=FALSE) {
+segmentSentence <- function(x, delimiter = NULL, perl = FALSE) {
+    result <- unlist(tokenize(x, what = "sentence"), use.names = FALSE)
+}
+
+segmentSentenceOld <- function(x, delimiter="[.!?:;]", perl=FALSE) {
     # strip out CRs and LFs, tabs
     text <- gsub("\\n+|\\t+", " ", x)
     # remove trailing and leading spaces
@@ -104,7 +108,7 @@ segmentParagraph <- function(x, delimiter="\\n{2}", perl=FALSE) {
 #'   with a newline character.)
 #' @export
 segment <- function(x, ...) {
-    warning("segment() is deprecated, use tokenize() instead.")
+    # warning("segment() is deprecated, use tokenize() instead.")
     UseMethod("segment")
 }
 
@@ -140,7 +144,7 @@ segment.character <- function(x, what=c("tokens", "sentences", "paragraphs", "ta
     if (what=="tokens") {
         return(tokenize(x, sep=delimiter, ...)) 
     } else if (what=="sentences") {
-        warning("tokenize(x, what = \"sentence\") is *much* better.")
+        # warning("consider using tokenize(x, what = \"sentence\") instead.")
         return(lapply(x, segmentSentence, delimiter, perl=perl)) 
     } else if (what=="paragraphs") {
         return(lapply(x, segmentParagraph, delimiter, perl=perl)) 
@@ -333,8 +337,8 @@ tokenize.character <- function(x, what=c("word", "sentence", "character", "faste
                                removeSeparators = TRUE,
                                removeTwitter = FALSE,
                                # removeURL = TRUE,
-                               ngrams = 1,
-                               window = 1,
+                               ngrams = 1L,
+                               window = 1L,
                                concatenator = "_",
                                simplify = FALSE,
                                verbose = FALSE,  ## FOR TESTING
@@ -342,6 +346,8 @@ tokenize.character <- function(x, what=c("word", "sentence", "character", "faste
     
     what <- match.arg(what)
 
+    if (!is.integer(ngrams)) ngrams <- as.integer(ngrams)
+    
     if (verbose) cat("Starting tokenization...\n")
     result <- x
     
@@ -438,11 +444,11 @@ tokenize.character <- function(x, what=c("word", "sentence", "character", "faste
     }
     
     # make this an S3 class item, if a list
-    if (simplify == FALSE) {
+    #if (simplify == FALSE) {
         class(result) <- c("tokenizedTexts", class(result))
-    }
+    #}
 
-    if (!identical(ngrams, 1)) {
+    if (!identical(ngrams, 1L)) {
         if (verbose) {
             cat("  ...creating ngrams")
             startTimeClean <- proc.time()
@@ -479,10 +485,14 @@ tokenize.character <- function(x, what=c("word", "sentence", "character", "faste
     #, with a total of", format(length(unlist(result)), big.mark=","), "tokens.\n")
 
     # make this an S3 class item, if a list
-    if (simplify == FALSE) {
+    if (simplify == FALSE & !is.tokenizedTexts(result)) {
         class(result) <- c("tokenizedTexts", class(result))
     }
     
+    # add settings for ngrams and concatenator
+    attr(result, "ngrams") <- ngrams
+    attr(result, "concatenator") <- ifelse(all.equal(ngrams, 1L)==TRUE, "", concatenator)
+
     result
 }
 
@@ -496,35 +506,29 @@ tokenize.corpus <- function(x, ...) {
 }
 
 
-ngram <- function(tokens, n = 2, concatenator = "_", include.all = FALSE) {
-
-    if (length(tokens) < n) 
-        return(NULL)
-    
-    # start with lower ngrams, or just the specified size if include.all = FALSE
-    start <- ifelse(include.all, 
-                    1, 
-                    ifelse(length(tokens) < n, 1, n))
-
-    # set max size of ngram at max length of tokens
-    end <- ifelse(length(tokens) < n, length(tokens), n)
-    
-    all_ngrams <- c()
-    # outer loop for all ngrams down to 1
-    for (width in start:end) {
-        new_ngrams <- tokens[1:(length(tokens) - width + 1)]
-        # inner loop for ngrams of width > 1
-        if (width > 1) {
-            for (i in 1:(width - 1)) 
-                new_ngrams <- paste(new_ngrams, 
-                                    tokens[(i + 1):(length(tokens) - width + 1 + i)], 
-                                    sep = concatenator)
-        }
-        # paste onto previous results and continue
-        all_ngrams <- c(all_ngrams, new_ngrams)
-    }
-    
-    all_ngrams
+#' @export
+#' @description \code{is.tokenizedTexts} returns \code{TRUE} if the object is of class tokenizedTexts, \code{FALSE} otherwise.
+#' @rdname tokenize
+is.tokenizedTexts <- function(x) {
+    ifelse("tokenizedTexts" %in% class(x), TRUE, FALSE)
 }
 
-
+#' print a tokenizedTexts objects
+#' 
+#' print method for a \link{tokenize}dText object
+#' @param x a tokenizedText object created by \link{tokenize}
+#' @param ... further arguments passed to base print method
+#' @export
+#' @method print tokenizedTexts
+print.tokenizedTexts <- function(x, ...) {
+    ndocuments <- ifelse(is.list(x), length(x), 1)
+    cat("tokenizedText object from ", ndocuments, " document", 
+        ifelse(ndocuments > 1, "s", ""), ".\n", sep = "")
+    if (is.list(x)) { 
+        class(x) <- "listof"
+        print(x, ...)
+    } else {
+        x <- as.character(x)
+        print(x, ...)
+    }
+}
