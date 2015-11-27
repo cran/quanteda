@@ -236,6 +236,8 @@ texts
 </code></pre></li>
 <li><p><strong>Text manipulation.</strong>  These operate on character vectors, and return character vectors.</p>
 
+<p><strong>NOTE: This is a bit out of date now &ndash; we are working on a table by function of input and output objects.</strong></p>
+
 <ol>
 <li><p>Operations on character vectors or the character vector of texts from a corpus.</p>
 
@@ -274,9 +276,8 @@ wordstem
 </code></pre></li>
 <li><p>Operations that <em>previously</em> worked (currently work) on character vectors of any size, but that will now be folded into Workflow Step 2 functions (see below) as part of tokenize:</p>
 
-<pre><code class="r">bigrams
-ngrams
-clean
+<pre><code class="r">ngrams
+skipgrams
 </code></pre></li>
 </ol></li>
 <li><p><strong><code>dfm</code> construction and manipulation.</strong></p>
@@ -550,21 +551,21 @@ for instance, use <code>tokenize(mytexts, what = &quot;sentence&quot;)</code> in
 <li>  <strong>DONE</strong> added readability statistics through <code>readability()</code></li>
 <li>  <strong>DONE</strong> added <code>nsentence()</code></li>
 <li>  <strong>DONE</strong> <code>ngrams</code> added as an option to <code>tokenize()</code></li>
+<li>  <strong>DONE</strong> <code>dfm</code> objects need a subset method for selection rows, not just columns</li>
+<li>  <strong>DONE</strong> rewrite <code>segment()</code> to make use of new tokenizer that segments on sentences</li>
+<li>  <strong>DONE</strong> make sure <code>corpus.VCorpus()</code> is fully working</li>
+<li>  <strong>DONE</strong> rewrite <code>kwic</code> to use new tokenizer, and to allow searches for multi-word regular expressions</li>
 </ul>
 
 <h2>To Do Remaining</h2>
 
 <ul>
-<li>  fix <code>collocations()</code> behaviour, changed since new <code>tokenize()</code></li>
-<li>  <code>weight()</code> breaks for dfm objects with all zero counts, for instance those that have been <code>trim()</code>med</li>
-<li>  <code>dfm</code> objects need a subset method for selection rows, not just columns</li>
+<li>  fix <code>collocations()</code> behaviour, changed since new <code>tokenize()</code> (<strong>IN PROGRESS</strong>)</li>
+<li>  <code>weight()</code> breaks for dfms with all zero count documents, for instance those that have been <code>trim()</code>med</li>
 <li>  rewrite <code>lexdiv()</code> to make the API similar to <code>readability()</code> and to use data.table</li>
-<li>  rewrite <code>segment()</code> to make use of new tokenizer that segments on sentences</li>
 <li>  integrate <code>collocations</code> code for bigrams and trigrams and reduce the internal memory usage</li>
-<li>  make sure <code>corpus.VCorpus()</code> is fully working</li>
 <li>  <code>dfm</code> documentation needs to group arguments into sections and describe how these correspond to the logical workflow</li>
 <li>  need to figure out how to exclude specific signatures (especially S4 signatures) from the man (.Rd) pages.  For instance ?&ldquo;dfm-class&rdquo; has far more details on methods signatures than any user will find useful.</li>
-<li>  rewrite <code>kwic</code> to use new tokenizer, and to allow searches for multi-word regular expressions</li>
 <li>  Devise a scheme for <code>settings()</code> and figure out how to add additional objects to a corpus, namely one or more:
 
 <ul>
@@ -580,9 +581,10 @@ for instance, use <code>tokenize(mytexts, what = &quot;sentence&quot;)</code> in
 <li>  Vignettes:
 
 <ul>
-<li>  Vastly revise the Workflow vignette</li>
 <li>  Add a Performance analysis and comparison vignette</li>
+<li>  Replication vignette for Jockers, <em>Text Analysis with R for Students of Literature</em></li>
 </ul></li>
+<li>  stripplot for keywords occurrence across documents, serially</li>
 <li>  Define full set of operators for dfmSparse and dfmDense.  Right now, only <code>+</code> is defined.</li>
 <li>  <code>resample</code> functionality to enable resampling from different text units</li>
 <li>  <code>index</code> (?) for pre-tokenizing and indexing a corpus</li>
@@ -592,6 +594,8 @@ for instance, use <code>tokenize(mytexts, what = &quot;sentence&quot;)</code> in
 <li>  Improve wordfish and round out methods</li>
 <li>  Add CA scaling</li>
 </ul></li>
+<li>  incorporate a word2vec-type model (see <a href="https://github.com/bmschmidt/wordVectors">wordvectors</a>)</li>
+<li>  add POS tagging, through an interface to the Stanford NLP library, or through an existing R package that provides this functionality</li>
 </ul>
 
 </body>

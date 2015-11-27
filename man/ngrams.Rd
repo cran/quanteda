@@ -7,43 +7,41 @@
 \alias{skipgrams}
 \alias{skipgrams.character}
 \alias{skipgrams.tokenizedTexts}
-\title{Create ngrams}
+\title{Create ngrams and skipgrams}
 \usage{
 ngrams(x, ...)
 
-\method{ngrams}{character}(x, n = 2, window = 1, concatenator = "_", ...)
+\method{ngrams}{character}(x, n = 2L, skip = 0L, concatenator = "_", ...)
 
-\method{ngrams}{tokenizedTexts}(x, n = 2, window = 1, concatenator = "_",
+\method{ngrams}{tokenizedTexts}(x, n = 2L, skip = 0L, concatenator = "_",
   ...)
 
 skipgrams(x, ...)
 
-\method{skipgrams}{character}(x, n = 2, k = 1, concatenator = "_", ...)
+\method{skipgrams}{character}(x, n, skip, concatenator = "_", ...)
 
-\method{skipgrams}{tokenizedTexts}(x, n = 2, k = 1, concatenator = "_",
-  ...)
+\method{skipgrams}{tokenizedTexts}(x, n, skip, concatenator = "_", ...)
 }
 \arguments{
 \item{x}{a tokenizedText object or a character vector of tokens}
 
-\item{...}{additional arguments passed to \code{\link[parallel]{mclapply}}
-which applies \code{ngram.character()} to the \code{tokenizedTexts} list object}
+\item{...}{not used}
 
 \item{n}{integer vector specifying the number of elements to be concatenated
 in each ngram}
 
-\item{window}{integer vector specifying the adjacency width for tokens
-forming the ngrams, default is 1 for only immediately neighbouring words}
+\item{skip}{integer vector specifying the adjacency skip size for tokens
+forming the ngrams, default is 0 for only immediately neighbouring words.
+For \code{skipgrams}, \code{skip} can be a vector of integers, as the
+"classic" approach to forming skip-grams is to set skip = \eqn{k} where
+\eqn{k} is the distance for which $k$ or fewer skips are used to construct
+the \eqn{n}-gram.  Thus a "4-skip-n-gram" defined as \code{skip = 0:4}
+produces results that include 4 skips, 3 skips, 2 skips, 1 skip, and 0
+skips (where 0 skips are typical n-grams formed from adjacent words).  See
+Guthrie et al (2006).}
 
 \item{concatenator}{character for combining words, default is \code{_}
 (underscore) character}
-
-\item{k}{for skip-grams only, \code{k} is the number of skips used to
-construct the $n$-gram. Skip-grams for a given skip distance $k$ allow a
-total of $k$ or less skips to construct the $n$-gram.  Thus a
-"4-skip-n-gram" produces results that include 4 skips, 3 skips, 2 skips, 1
-skip, and 0 skips (where 0 skips are typical n-grams formed from adjacent
-words).  See Guthrie et al (2006).}
 }
 \value{
 a tokenizedTexts object consisting a list of character vectors of
@@ -51,41 +49,51 @@ a tokenizedTexts object consisting a list of character vectors of
   simple character vector
 }
 \description{
-Create a set of ngrams (words in sequence) from tokenized text(s)
+Create a set of ngrams (tokens in sequence) from character vectors or
+tokenized text objects, with an optional skip argument to form skipgrams.
+Both the ngram length and the skip lengths take vectors of arguments to form
+multiple lengths or skips in one pass.  \code{ngrams()} is implemented in C++
+for efficiency.
 }
 \details{
 Normally, \code{\link{ngrams}} will be called through
   \code{\link{tokenize}}, but these functions are also exported in case a
   user wants to perform lower-level ngram construction on tokenized texts.
 
-  \code{\link{skipgrams}} is a wrapper to \code{\link{ngrams}} that simply
-  passes through a \code{window} value of \code{1:(k+1)}, conforming to the
-  definition of skip-grams found in Guthrie et al (2006): A $k$ skip-gram is
-  an ngram which is a superset of all ngrams and each $(k-i)$ skipgram until
-  $(k-i)==0$ (which includes 0 skip-grams).
+  \code{\link{skipgrams}} is a wrapper to \code{\link{ngrams}} that requires
+  arguments to be supplied for both \code{n} and \code{skip}.  For \eqn{k}-skip
+  skipgrams, set \code{skip} to \code{0:}\eqn{k}, in order to conform to the
+  definition of skip-grams found in Guthrie et al (2006): A \eqn{k} skip-gram is
+  an ngram which is a superset of all ngrams and each \eqn{(k-i)} skipgram until
+  \eqn{(k-i)==0} (which includes 0 skip-grams).
 }
 \examples{
-ngrams(LETTERS, n = 2, window = 2)
-ngrams(LETTERS, n = 3, window = 2)
-ngrams(LETTERS, n = 3, window = 3)
+# ngrams
+ngrams(LETTERS, n = 2)
+ngrams(LETTERS, n = 2, skip = 1)
+ngrams(LETTERS, n = 2, skip = 0:1)
+ngrams(LETTERS, n = 1:2)
+ngrams(LETTERS, n = c(2,3), skip = 0:1)
 
 tokens <- tokenize("the quick brown fox jumped over the lazy dog.",
                    removePunct = TRUE, simplify = TRUE)
 ngrams(tokens, n = 1:3)
-ngrams(tokens, n = c(2,4), window = 1:2, concatenator = " ")
+ngrams(tokens, n = c(2,4), concatenator = " ")
+ngrams(tokens, n = c(2,4), skip = 1, concatenator = " ")
 
 # skipgrams
 tokens <- tokenize(toLower("Insurgents killed in ongoing fighting."),
                    removePunct = TRUE, simplify = TRUE)
-skipgrams(tokens, n = 2, k = 2, concatenator = " ")
-skipgrams(tokens, n = 3, k = 2, concatenator = " ")
+skipgrams(tokens, n = 2, skip = 0:1, concatenator = " ")
+skipgrams(tokens, n = 2, skip = 0:2, concatenator = " ")
+skipgrams(tokens, n = 3, skip = 0:2, concatenator = " ")
 }
 \author{
-Ken Benoit
+Kohei Watanabe and Ken Benoit
 }
 \references{
 \href{http://homepages.inf.ed.ac.uk/ballison/pdf/lrec_skipgrams.pdf}{Guthrie,
-  D., B. Allison, W. Liu, and L. Guthrie. 2006. "A Closer Look at Skip-Gram
-  Modelling."}
+D., B. Allison, W. Liu, and L. Guthrie. 2006. "A Closer Look at Skip-Gram
+Modelling."}
 }
 

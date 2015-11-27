@@ -34,13 +34,11 @@ dfm <- function(x, ...) {
 #' @param removeNumbers remove numbers, see \link{tokenize}
 #' @param removePunct remove numbers, see \link{tokenize}
 #' @param removeTwitter if \code{FALSE}, preserve \code{#} and \code{@@} 
-#'   characters, see \link{tokenize} #' @param removeSeparators remove 
-#'   separators (whitespace), see \link{tokenize}
+#'   characters, see \link{tokenize} 
+#' @param removeSeparators remove separators (whitespace), see \link{tokenize}
 #' @param stem if \code{TRUE}, stem words
 #' @param ignoredFeatures a character vector of user-supplied features to 
-#'   ignore, such as "stop words".  Formerly, this was a Boolean option for 
-#'   \code{stopwords = TRUE}, but requiring the user to supply the list 
-#'   highlights the choice involved in using any stopword list.  To access one 
+#'   ignore, such as "stop words".  To access one 
 #'   possible list (from any list you wish), use \code{\link{stopwords}()}.  The
 #'   pattern matching type will be set by \code{valuetype}.  For behaviour of 
 #'   \code{ingoredFeatures} with \code{ngrams > 1}, see Details.
@@ -68,16 +66,11 @@ dfm <- function(x, ...) {
 #'   regular expression format, otherwise it will be converted from the "glob" 
 #'   format.  This is a legacy argument that will soon be phased out in favour 
 #'   of \code{valuetype}.
-#' @param language Language for stemming and stopwords.  Choices are 
+#' @param language Language for stemming.  Choices are 
 #'   \code{danish}, \code{dutch}, \code{english}, \code{finnish}, \code{french},
 #'   \code{german}, \code{hungarian}, \code{italian}, \code{norwegian}, 
 #'   \code{porter}, \code{portuguese}, \code{romanian}, \code{russian}, 
-#'   \code{spanish}, \code{swedish}, \code{turkish} for stemming, and 
-#'   \code{SMART}, \code{danish}, \code{english}, \code{french}, 
-#'   \code{hungarian}, \code{norwegian}, \code{russian}, \code{swedish}, 
-#'   \code{catalan}, \code{dutch}, \code{finnish}, \code{german}, 
-#'   \code{italian}, \code{portuguese}, \code{spanish}, \code{arabic} for 
-#'   stopwords.
+#'   \code{spanish}, \code{swedish}, \code{turkish}.
 #' @param matrixType deprecated, used to produce a dense matrix if \code{dense},
 #'   but this was removed in 0.8.2.  All dfm objects are now created as a sparse
 #'   matrix of class \code{dgCMatrix} from the \pkg{\link{Matrix}} package.
@@ -110,6 +103,8 @@ dfm <- function(x, ...) {
 #' # with English stopwords and stemming
 #' dfmsInaug2 <- dfm(subset(inaugCorpus, Year>1980), 
 #'                   ignoredFeatures=stopwords("english"), stem=TRUE)
+#' # works for both words in ngrams too
+#' dfm("Banking industry", stem = TRUE, ngrams = 2, verbose = FALSE)
 #' 
 #' # with dictionaries
 #' mycorpus <- subset(inaugCorpus, Year>1900)
@@ -239,6 +234,9 @@ dfm.tokenizedTexts <- function(x,
     
     valuetype <- match.arg(valuetype)
     dots <- list(...)
+    if (length(dots) && any(!(names(dots)) %in% c("startTime", "codeType")))
+        warning("Argument", ifelse(length(dots)>1, "s ", " "), names(dots), " not used.", sep = "", noBreaks. = TRUE)
+    
     startTime <- proc.time()
     if ("startTime" %in% names(dots)) startTime <- dots$startTime
     
@@ -311,17 +309,18 @@ dfm.tokenizedTexts <- function(x,
         dfmresult <- applyDictionary(dfmresult, dictionary,
                                      exclusive = ifelse(!is.null(thesaurus), FALSE, TRUE),
                                      valuetype = valuetype,
-                                     verbose = verbose,
-                                     ...)
+                                     verbose = verbose)
     }
     
     if (stem) {
         if (verbose) cat("   ... stemming features (", stri_trans_totitle(language), ")", sep="")
         oldNfeature <- nfeature(dfmresult)
         dfmresult <- wordstem(dfmresult, language)
-        if (verbose & (oldNfeature - nfeature(dfmresult)) > 0) 
-            cat(", trimmed", oldNfeature - nfeature(dfmresult), "feature variants\n")
-        else cat("\n")
+        if (verbose) 
+            if (oldNfeature - nfeature(dfmresult) > 0) 
+                cat(", trimmed", oldNfeature - nfeature(dfmresult), "feature variants\n")
+            else
+                cat("\n")
     }
     
     if (!is.null(ignoredFeatures)) {
@@ -524,9 +523,10 @@ dfm.corpus <- function(x, verbose = TRUE, groups = NULL, ...) {
     if (verbose) cat("Creating a dfm from a corpus ...")
     
     if (!is.null(groups)) {
+        groupsLab <- ifelse(is.factor(groups), deparse(substitute(groups)), groups)
         if (verbose) cat("\n   ... grouping texts by variable", 
-                         ifelse(length(groups)==1, "", "s"), ": ", 
-                         paste(groups, collapse=", "), sep="")
+                         ifelse(length(groupsLab)==1, "", "s"), ": ", 
+                         paste(groupsLab, collapse=", "), sep="")
         texts <- texts(x, groups = groups)
     } else {
         texts <- texts(x)

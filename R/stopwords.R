@@ -50,7 +50,7 @@
 #' ## example for collocations
 #' (myCollocs <- collocations(inaugTexts[1:3], top=20))
 #' removeFeatures(myCollocs, stopwords("english", verbose=FALSE))
-removeFeatures <- function(x, stopwords=NULL, verbose=TRUE, ...) {
+removeFeatures <- function(x, stopwords = NULL, verbose = TRUE, ...) {
     UseMethod("removeFeatures")
 }
 
@@ -103,6 +103,7 @@ removeFeatures.dfm <- function(x, stopwords = NULL, verbose = TRUE, ...) {
 #' @export
 removeFeatures.collocations <- function(x, stopwords=NULL, verbose=TRUE, pos=c(1,2,3), ...) {
     word <- word1 <- word2 <- word3 <- NULL
+    origclass <- class(x)
     if (is.null(stopwords))
         stop("Must supply a character vector of stopwords, e.g. stopwords(\"english\")")
     if (!all(pos %in% 1:3))
@@ -142,7 +143,7 @@ removeFeatures.collocations <- function(x, stopwords=NULL, verbose=TRUE, pos=c(1
                      "%) of ", format(nstart, big.mark=","), 
                      " collocations containing one of ", 
                      length(stopwords), " stopwords.\n", sep="")
-    x
+    class(x) <- origclass
 }
 
 
@@ -259,6 +260,7 @@ stopwordsGet <- function(kind="english") {
 #'                           notintext = "blahblah"))
 #' selectFeatures(myDfm, mydict)
 #' selectFeatures(myDfm, mydict, case_insensitive = FALSE)
+#' selectFeatures(myDfm, c("s$", ".y"), "keep")
 #' selectFeatures(myDfm, c("s$", ".y"), "keep", valuetype = "regex")
 #' selectFeatures(myDfm, c("s$", ".y"), "remove", valuetype = "regex")
 #' selectFeatures(myDfm, stopwords("english"), "keep", valuetype = "fixed")
@@ -274,87 +276,6 @@ stopwordsGet <- function(kind="english") {
 selectFeatures <- function(x, features, ...) {
     UseMethod("selectFeatures")
 }
-
-# @rdname selectFeatures
-# @export
-NULLselectFeatures.dfm <- function(x, features = NULL, selection = c("keep", "remove"), 
-                               valuetype = c("glob", "regex", "fixed"),
-                               case_insensitive = TRUE,
-                               verbose = TRUE, ...) {
-    selection <- match.arg(selection)
-    valuetype <- match.arg(valuetype)
-    features_from_dfm <- FALSE
-    if (is.null(features))
-        stop("Must supply a character vector of words to keep or remove")
-    if (!(is.character(features) | is.dfm(features) | is(features, "dictionary")))
-        stop("features must be of type character, dictionary, or dfm")
-    if (is.dfm(features)) {
-        features_dfm <- features <- features(features)
-        features_from_dfm <- TRUE
-    }
-    features <- unique(unlist(features))  # to convert any dictionaries
-    
-    # convert glob to fixed if no actual glob characters (since fixed is much faster)
-    if (valuetype == "glob") {
-        # treat as fixed if no glob characters detected
-        if (!sum(stringi::stri_detect_charclass(features, c("[*?]"))))
-            valuetype <- "fixed"
-        else {
-            features <- lapply(features, utils::glob2rx)
-            valuetype <- "regex"
-        }
-    }
-    
-    if (valuetype == "regex") {
-        featIndex <- which(stringi::stri_detect_regex(features(x), paste0(features, collapse = "|"), 
-                                                      case_insensitive = case_insensitive, ...))
-    } else {
-        if (case_insensitive)
-            featIndex <- which(toLower(features(x)) %in% toLower(features))
-        else featIndex <- which(features(x) %in% features)
-    }
-
-    if (verbose & !features_from_dfm) 
-        cat(ifelse(selection=="keep", "kept", "removed"), " ", 
-            format(length(featIndex), big.mark=","),
-            " feature", ifelse(length(featIndex) > 1 | length(featIndex)==0, "s", ""), 
-            ", from ", length(features), " supplied feature type",
-            ifelse(length(features) > 0 | length(featIndex)==0, "s", ""),
-            "\n", sep = "")
-    if (verbose & features_from_dfm)
-        cat(ifelse(selection=="keep", "found", "zeroed"), " ", 
-            format(length(featIndex), big.mark=","),
-            " feature", ifelse(length(featIndex) > 1 | length(featIndex)==0, "s", ""), 
-            " from ", length(features), " supplied type",
-            ifelse(length(features) > 0 | length(featIndex)==0, "s", ""),
-            " in a dfm,", sep = "")
-    
-    # if no features were removed, return original dfm
-    if (length(featIndex) == 0)
-        return(x)
-    
-    # pad the zeros if features was a dfm, return in same feature order as original dfm
-    if (features_from_dfm) {
-        # remove features in x that are not in features (from supplied dfm)
-        x2 <- x[, featIndex]
-        # now add zero-valued features to x that are not in x but are in features
-        origDfmFeatureIndex <- which(!(toLower(features) %in% toLower(features(x2))))
-        xOriginalFeatureLength <- nfeature(x2)
-        xOriginalFeatures <- features(x2)
-        ### NEED a cbind() operation for dfm that preserves settings! ###
-        if (verbose) cat(" padding 0s for another", length(origDfmFeatureIndex), "\n")
-        x2 <- new("dfmSparse", cbind(x2, matrix(0, nrow = ndoc(x2), ncol = length(origDfmFeatureIndex))))
-        colnames(x2)[(xOriginalFeatureLength + 1) : nfeature(x2)] <- features[origDfmFeatureIndex]
-        return(x2[, features_dfm])
-    }
-
-    # otherwise select to keep or remove features and return
-    if (selection == "keep") 
-        return(x[, featIndex])
-    else 
-        return(x[, -featIndex])
-}
-
 
 
 #' @rdname selectFeatures
@@ -377,6 +298,7 @@ selectFeatures.dfm <- function(x, features = NULL, selection = c("keep", "remove
 
     features <- unique(unlist(features))  # to convert any dictionaries
     
+    originalvaluetype <- valuetype
     # convert glob to fixed if no actual glob characters (since fixed is much faster)
     if (valuetype == "glob") {
         # treat as fixed if no glob characters detected
@@ -420,7 +342,7 @@ selectFeatures.dfm <- function(x, features = NULL, selection = c("keep", "remove
         cat(ifelse(selection=="keep", "kept", "removed"), " ", 
             format(length(featIndex), big.mark=","),
             " feature", ifelse(length(featIndex) > 1 | length(featIndex)==0, "s", ""), 
-            ", from ", length(features), " supplied (", valuetype, ") feature type",
+            ", from ", length(features), " supplied (", originalvaluetype, ") feature type",
             ifelse(length(features) > 0 | length(featIndex)==0, "s", ""),
             "\n", sep = "")
     if (verbose & features_from_dfm)
@@ -487,4 +409,91 @@ selectFeatures.dfm <- function(x, features = NULL, selection = c("keep", "remove
 # removeFeatures(dfm(inaugTexts[1:2], ngrams = 2), stopwords("english"))
 
 
-    
+# require(data.table)
+# removeFeatures2 <- function(x, features = NULL, verbose = TRUE, pos=c(1,2,3), 
+#                             valuetype = c("glob", "fixed", "regex"), 
+#                             case_insensitive = TRUE, ...) 
+# {
+#     word <- word1 <- word2 <- word3 <- NULL
+#     origclass <- class(x)
+#     if (is.null(features))
+#         stop("Must supply a character vector of features to be removed, e.g. stopwords(\"english\")")
+#     if (!all(pos %in% 1:3))
+#         stop("pos for collocation position can only be 1, 2, and/or 3")
+# 
+#     originalvaluetype <- valuetype
+#     # convert glob to fixed if no actual glob characters (since fixed is much faster)
+#     if (valuetype == "glob") {
+#         # treat as fixed if no glob characters detected
+#         if (!sum(stringi::stri_detect_charclass(features, c("[*?]"))))
+#             valuetype <- "fixed"
+#         else {
+#             features <- sapply(features, utils::glob2rx, USE.NAMES = FALSE)
+#             valuetype <- "regex"
+#         }
+#     }
+#     
+#     features_x <- features(x)
+#     if (case_insensitive & valuetype == "fixed") {
+#         features_x <- toLower(features_x)
+#         features <- toLower(features)
+#     }
+# 
+#     if (valuetype == "regex") {
+#         if (all.equal(x@ngrams, 1L)==TRUE) {
+#             featIndex <- which(stringi::stri_detect_regex(features_x, paste0(features, collapse = "|"), 
+#                                                           case_insensitive = case_insensitive, ...))
+#         } else {
+#             ####
+#             ####
+#             matchPattern <- paste0(features, collapse = "|")
+#             featIndex <- which(sapply(features_x, 
+#                                       function(x) any(stringi::stri_detect_regex(x, matchPattern, 
+#                                                                                  case_insensitive = case_insensitive, ...))))
+#         }
+#     } else {
+#         if (all.equal(x@ngrams, 1L)==TRUE)
+#             featIndex <- which(features(x) %in% features)  # unigrams
+#         else
+#             featIndex <- which(sapply(features_x, function(f) any(f %in% features), USE.NAMES = FALSE)) # ngrams
+#     }
+#     
+#     removeIndex <- stri::stri_detect_fixed()
+#     
+#         nstart <- nrow(x)
+#     stopwordTable <- data.table(word=stopwords, remove=1)
+#     setkey(stopwordTable, word)
+#     x$order <- 1:nrow(x)
+#     
+#     if (3 %in% pos) {
+#         setnames(stopwordTable, 1, "word3")
+#         setkey(x, word3)
+#         x <- stopwordTable[x]
+#         x <- x[is.na(remove)]
+#         x[, remove:=NULL]
+#     }
+#     if (2 %in% pos) {
+#         setnames(stopwordTable, 1, "word2")
+#         setkey(x, word2)
+#         x <- stopwordTable[x]
+#         x <- x[is.na(remove)]
+#         x[, remove:=NULL]
+#     }
+#     if (1 %in% pos) {
+#         setnames(stopwordTable, 1, "word1")
+#         setkey(x, word1)
+#         x <- stopwordTable[x]
+#         x <- x[is.na(remove)]
+#         x[, remove:=NULL]
+#     }
+#     setorder(x, order)
+#     setcolorder(x, c("word1", "word2", "word3", names(x)[4:ncol(x)]))
+#     x[, order:=NULL]
+#     nend <- nrow(x)
+#     if (verbose) cat("Removed ", format(nstart - nend, big.mark=","),  
+#                      " (", format((nstart - nend)/nstart*100, digits=3),
+#                      "%) of ", format(nstart, big.mark=","), 
+#                      " collocations containing one of ", 
+#                      length(stopwords), " stopwords.\n", sep="")
+#     class(x) <- origclass
+# }

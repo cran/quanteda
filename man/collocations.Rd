@@ -4,15 +4,19 @@
 \alias{collocations}
 \alias{collocations.character}
 \alias{collocations.corpus}
+\alias{collocations.tokenizedTexts}
 \title{Detect collocations from text}
 \usage{
 collocations(x, ...)
 
-\method{collocations}{character}(x, method = c("lr", "chi2", "pmi", "dice",
-  "all"), size = 2, n = NULL, ...)
-
 \method{collocations}{corpus}(x, method = c("lr", "chi2", "pmi", "dice",
-  "all"), size = 2, n = NULL, ...)
+  "all"), size = 2, n = NULL, spanPunct = FALSE, ...)
+
+\method{collocations}{character}(x, method = c("lr", "chi2", "pmi", "dice",
+  "all"), size = 2, n = NULL, spanPunct = FALSE, ...)
+
+\method{collocations}{tokenizedTexts}(x, method = c("lr", "chi2", "pmi",
+  "dice", "all"), size = 2, n = NULL, spanPunct = FALSE, ...)
 }
 \arguments{
 \item{x}{a text, a character vector of texts, or a corpus}
@@ -40,6 +44,10 @@ coefficient, computed as \eqn{n_{11}/n_{1.} + n_{.1}}}
 
 \item{n}{the number of collocations to return, sorted in descending order of
 the requested statistic, or \eqn{G^2} if none is specified.}
+
+\item{spanPunct}{if \code{FALSE}, then collocations will not span punctuation
+marks, so that for instance \emph{marks, so} is not a collocation of
+\code{marks so}.  If \code{TRUE}, do not handle punctuation specially.}
 }
 \value{
 A data.table of collocations, their frequencies, and the computed
@@ -51,12 +59,6 @@ corpus, returning a data.frame of collocations and their scores, sorted in
 descending order of the association measure.  Words separated by punctuation
 delimiters are not counted as adjacent and hence are not eligible to be
 collocations.
-}
-\details{
-Because of incompatibilities with the join operations in
-  \link{data.table} when input files have slightly different encoding
-  settings, \code{collocations} currently converts all text to ASCII prior to
-  processing.  We hope to improve on this in the future.
 }
 \examples{
 txt <- c("This is software testing: looking for (word) pairs!
