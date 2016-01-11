@@ -237,17 +237,30 @@ ldaformat2dtm <- function (documents, vocab, omit_empty = TRUE)
 # mydfmStm <- dfm2stmformat(mydfm)
 # str(mydfmStm)
 # @export
-dfm2stmformat <- function(data) {
+dfm2stmformatOLD <- function(data) {
     sortedData <- data[, order(features(data))]
     vocab <- features(sortedData)
     stmdocs <- list()
     length(stmdocs) <- ndoc(data)
     names(stmdocs) <- docnames(data)
     for (d in docnames(data)) {
-        temp <- as.matrix(rbind(1:length(vocab), as.integer(as.matrix(data[d, ]))))
+        temp <- as.matrix(rbind(1:length(vocab), as.integer(as.matrix(sortedData[d, ]))))
         stmdocs[[d]] <- temp[, which(temp[2, ] > 0), drop=FALSE]
     }
-    list(documents=stmdocs, vocab=vocab, meta=NULL)
+    list(documents=stmdocs, vocab = vocab, meta = NULL)
+}
+
+dfm2stmformat <- function(data) {
+    sortedData <- data[, order(features(data))]
+    sortedData <- as(sortedData, "dgTMatrix")
+    stmdocs <- list()
+    length(stmdocs) <- ndoc(data)
+    names(stmdocs) <- docnames(data)
+    for (d in seq_len(nrow(sortedData))-1) {
+        temp <- rbind(sortedData@j[sortedData@i==d] + 1, sortedData@x[sortedData@i==d])
+        stmdocs[[d+1]] <- temp
+    }
+    list(documents = stmdocs, vocab = colnames(sortedData), meta = NULL)
 }
 
 

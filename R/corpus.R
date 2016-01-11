@@ -48,8 +48,6 @@
 #' @author Kenneth Benoit and Paul Nulty
 #' @export
 corpus <- function(x, ...) {
-    if (length(addedArgs <- list(...)))
-        warning("Argument", ifelse(length(addedArgs)>1, "s ", " "), names(addedArgs), " not used.", sep = "")
     UseMethod("corpus")
 }
 
@@ -93,6 +91,8 @@ corpus <- function(x, ...) {
 #' 
 corpus.character <- function(x, enc=NULL, encTo = "UTF-8", docnames=NULL, docvars=NULL,
                              source=NULL, notes=NULL, citation=NULL, ...) {
+    if (length(addedArgs <- list(...)))
+        warning("Argument", ifelse(length(addedArgs)>1, "s ", " "), names(addedArgs), " not used.", sep = "")
     
     # check validity of encoding label(s)
     if (!is.null(enc)) {
@@ -128,7 +128,7 @@ corpus.character <- function(x, enc=NULL, encTo = "UTF-8", docnames=NULL, docvar
     # convert to "enc" if not already UTF-8 **unless** ISO-8859-1 detected, in which case do not do automatically
     if (enc != encTo) {
         if (enc != "ISO-8859-1" & encTo == "UTF-8") {
-            cat("Non-", encTo, " encoding ", ifelse(detected, "(possibly) detected ", "specified"), " :", 
+            cat("Non-", encTo, " encoding ", ifelse(detected, "(possibly) detected", "specified"), ": ", 
                 enc, ".\n", sep="")
             # suppressWarnings(x <- stringi::stri_encode(x, from = enc, to = encTo))
         }
@@ -218,7 +218,10 @@ corpus.VCorpus <- function(x, ...) {
     # extract the content (texts)
     #texts <- sapply(x, function(x) x$content)
     texts <- sapply(x, as.character)
-    
+    # paste together texts if they appear to be vectors
+    if (any(lengths(texts) > 1))
+        texts <- sapply(texts, paste, collapse = " ")
+        
     # special handling for VCorpus meta-data
     metad <- as.data.frame(t(as.data.frame(sapply(x, function(x) x$meta))))
     makechar <- function(x) gsub("character\\(0\\)", NA, as.character(x))
@@ -373,13 +376,13 @@ texts.corpus <- function(x, groups = NULL, ...) {
     if (is.factor(groups)) {
         group.split <- groups
     } else {
-        if (length(groups) > 1) {
-            # if more than one grouping variable
-            group.split <- lapply(documents(x)[, groups], as.factor)
-        } else {
-            # if only one grouping variable
-            group.split <- as.factor(documents(x)[, groups])
-        }
+#        if (length(groups) > 1) {
+#            # if more than one grouping variable
+            group.split <- as.factor(interaction(documents(x)[, groups], drop = TRUE))
+#        } else {
+#            # if only one grouping variable
+#            group.split <- as.factor(documents(x)[, groups])
+#        }
     }
     texts(txts, groups = group.split)
 }

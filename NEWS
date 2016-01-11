@@ -1,3 +1,43 @@
+quanteda 0.9.2
+==============
+
+*  added new methods for similarity(), including sparse matrix computation for method = "correlation" and "cosine".
+   (More planned soon.)  Also allows easy conversion to a matrix using as.matrix() on similarity lists.
+
+*  more robust implementation of LIWC-formatted dictionary file imports
+
+*  better implementation of tf-idf, and relative frequency weighting, especially for very large sparse
+   matrix objects.  tf(), idf(), and tfidf() now provide relative term frequency, inverse document frequency,
+   and tf-idf directly.
+
+*  textmodel_wordfish() now accepts an integer `dispersionFloor` argument to constrain the phi parameter
+   to a minimium value (of underdispersion).
+
+*  textfile() now takes a vector of filenames, if you wish to construct these yourself.  See ?textfile
+   examples.
+   
+*  removeFeatures() and selectFeatures.collocations() now all use a consistent interface and same underlying
+   code, with removeFeatures() acting as a wrapper to selectFeatures().
+   
+*  convert(x, to = "stm") now about 3-4x faster because it uses index positions from the dgCMatrix to convert to the 
+   sparse matrix format expected by stm.
+   
+Bug fixes
+---------
+*  Fixed a bug in textfile() preventing encodingFrom and encodingTo from working properly.
+
+*  Fixed a nasty bug problem in `convert(x, to = "stm")` that mixed up the word indexes.  Thanks Felix Haass for 
+   spotting this!
+
+*  Fixed a problem where wordstem was not working on ngram=1 tokenied objects
+
+*  Fixed toLower(x, keepAcronyms = TRUE) that caused an error when x contained no acronyms.
+
+*  Creating a corpus from a tm VCorpus now works if a "document" is a vector of texts rather than a single text
+
+*  Fixed a bug in texts(x, groups = MORE THAN ONE DOCVAR) that now groups correctly on combinations of multiple groups
+
+
 quanteda 0.9.0
 ==============
 

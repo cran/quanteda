@@ -35,15 +35,9 @@ setMethod("show", "dictionary",
 #' @param enc optional encoding value for reading in imported dictionaries. 
 #'   This uses the \link{iconv} labels for encoding.  See the "Encoding" section
 #'   of the help for \link{file}.
-#' @param tolower if \code{TRUE}, convert all dictionary functions to lower
-#' @param maxcats optional maximum categories to which a word could belong in a 
-#'   LIWC dictionary file, defaults to 10 (which is more than the actual LIWC 
-#'   2007 dictionary uses).  The default value of 10 is likely to be more than 
-#'   enough.
+#' @param toLower if \code{TRUE}, convert all dictionary keys and values to lower
 #' @return A dictionary class object, essentially a specially classed named list
 #'   of characters.
-#' @note We will eventually change this to an S4 class with validators and
-#'   additional methods.
 #' @references Wordstat dictionaries page, from Provalis Research 
 #' \url{http://provalisresearch.com/products/content-analysis-software/wordstat-dictionary/}.
 #' 
@@ -67,13 +61,12 @@ setMethod("show", "dictionary",
 #'                      format="wordstat")
 #' dfm(inaugTexts, dictionary=lgdict)
 #' 
-#' # import a LIWC formatted dictionary
-#' liwcdict <- dictionary(file = "http://www.kenbenoit.net/files/LIWC2001_English.dic",
-#'                        format = "LIWC")
-#' dfm(inaugTexts, dictionary=liwcdict)
+#' # import a LIWC formatted dictionary from http://www.moralfoundations.org
+#' mfdict <- dictionary(file = "http://ow.ly/VMRkL", format = "LIWC")
+#' dfm(inaugTexts, dictionary = mfdict)
 #' }
 #' @export
-dictionary <- function(x=NULL, file=NULL, format=NULL, enc="", tolower=TRUE, maxcats=25) {
+dictionary <- function(x=NULL, file=NULL, format=NULL, enc="", toLower = TRUE) {
     if (!is.null(x) & !is.list(x))
         stop("Dictionaries must be named lists.")
     x <- flatten.dictionary(x)
@@ -85,9 +78,9 @@ dictionary <- function(x=NULL, file=NULL, format=NULL, enc="", tolower=TRUE, max
             stop("You must specify a format for file", file)
         format <- match.arg(format, c("wordstat", "LIWC"))
         if (format=="wordstat") 
-            x <- readWStatDict(file, enc = enc, lower = tolower)
+            x <- readWStatDict(file, enc = enc, toLower = toLower)
         else if (format=="LIWC") 
-            x <- readLIWCdict(file, maxcats = maxcats, enc = enc)
+            x <- readLIWCdict(file, enc = enc, toLower = toLower)
     }
     
     new("dictionary", x)
@@ -111,7 +104,7 @@ dictionary <- function(x=NULL, file=NULL, format=NULL, enc="", tolower=TRUE, max
 # path <- '~/Dropbox/QUANTESS/corpora/LaverGarry.cat'
 # lgdict <- readWStatDict(path)
 # }
-readWStatDict <- function(path, enc="", lower=TRUE) {
+readWStatDict <- function(path, enc="", toLower=TRUE) {
     d <- utils::read.delim(path, header=FALSE, fileEncoding=enc)
     d <- data.frame(lapply(d, as.character), stringsAsFactors=FALSE)
     thismajorcat <- d[1,1]
@@ -145,7 +138,7 @@ readWStatDict <- function(path, enc="", lower=TRUE) {
         categ <- unlist(paste(d[i,(1:(ncol(d)-1))], collapse="."))
         w <- d[i, ncol(d)]
         w <- unlist(strsplit(w, '\\('))[[1]]
-        if (lower) w <- tolower(w)
+        if (toLower) w <- toLower(w)
         # w <- gsub(" ", "", w)
         flatDict[[categ]] <- append(flatDict[[categ]], c(w))
     }
@@ -198,81 +191,63 @@ readWStatDictNested <- function(path) {
 #   is a list of the dictionary terms corresponding to that level.
 # @author Kenneth Benoit
 # @export
-# @examples \dontrun{ 
-# LIWCdict <- readLIWCdict("~/Dropbox/QUANTESS/corpora/LIWC/LIWC2001_English.dic") }
-readLIWCdict <- function(path, maxcats=25, enc="") {
-    # read in the dictionary as a (big, uneven) table
-    d <- utils::read.table(path, header=FALSE, fileEncoding=enc,
-                           col.names=c("category", paste("catno", 1:maxcats)),
-                           fill=TRUE, stringsAsFactors=FALSE)
+readLIWCdict <- function(path, enc="", toLower = TRUE) {
+    
+    d <- readLines(path, warn = FALSE)
+    
+    # remove any lines with <of>
+    oflines <- grep("<of>", d)
+    if (length(oflines)) {
+        cat("note: ", length(oflines), " term",
+            ifelse(length(oflines)>1, "s", ""), 
+            " ignored because contains unsupported <of> tag", sep = "")
+        d <- d[-oflines]
+    }
+    
     # get the row number that signals the end of the category guide
-    guideRowEnd <- max(which(d$category=="%"))
-    if(guideRowEnd < 1){
+    guideRowEnd <- max(which(d == "%"))
+    if (guideRowEnd < 1) {
         stop('Expected a guide (a category legend) delimited by percentage symbols at start of file, none found')
     }
     # extract the category guide
-    guide <- d[2:(guideRowEnd-1), 1:2]
+    guide <- d[2:(guideRowEnd-1)]
+    
+    guide <- data.frame(do.call(rbind, strsplit(guide, "\t")), stringsAsFactors = FALSE)
     colnames(guide) <- c('catNum', 'catName' )
-    guide$catNum <- as.numeric(guide$catNum)
+    guide$catNum <- as.integer(guide$catNum)
+    if (toLower) guide$catName <- toLower(guide$catName)
+
     # initialize the dictionary as list of NAs
     dictionary <- list()
     length(dictionary) <- nrow(guide)
     # assign category labels as list element names
-    names(dictionary) <- guide[,2]
+    names(dictionary) <- guide[["catName"]]
     
     # make a list of terms with their category numbers
-    catlist <- d[(guideRowEnd+1):nrow(d), ]
+    catlist <- d[(guideRowEnd+1):length(d)]
+    catlist <- strsplit(catlist, "\t")
+    catlist <- as.data.frame(do.call(rbind, lapply(catlist, '[', 1:max(sapply(catlist, length)))), stringsAsFactors = FALSE)
+    catlist[, 2:ncol(catlist)] <- lapply(catlist[2:ncol(catlist)], as.integer)
+    names(catlist)[1] <- "category"
+    if (toLower) catlist$category <- toLower(catlist$category)
+    # remove any blank rows
+    blankRowIndex <- which(is.na(catlist$category))
+    if (length(blankRowIndex)) 
+        catlist <- catlist[-blankRowIndex, ]
     
-    mergeNums <- function(x, y) {
-        # helper function    
-        result <- sort(unique(c(as.numeric(x), as.numeric(y))))
-        if (length(result) > length(x))
-            stop("too long: try increasing maxcats")
-        if (length(result) < length(x))
-            result <- c(result, rep(NA, length(x) - length(result)))
-        result
-    }
-    
-    consolidateCatlist <- function(catlist) {
-        dups <- which(duplicated(catlist[, 1]))
-        # cat("Found duplicates at rows:", dups, "\n\n")
-        while (length(dups)) {
-            # cat("Duplicates = ", length(dups), "\n\n")
-            i <- dups[1]
-            # cat("merging row [", i-1, "]", catlist[i-1, 1], as.numeric(catlist[i-1, 2:ncol(catlist)]), "\n")
-            # cat("   with row [", i, "]", catlist[i, 1], as.numeric(catlist[i, 2:ncol(catlist)]), "\n")
-            catlist[i-1, 2:ncol(catlist)] <- mergeNums(catlist[i-1, 2:ncol(catlist)], catlist[i, 2:ncol(catlist)])
-            catlist <- catlist[-i, ]
-            # cat("   NEW row [", i-1, "]", catlist[i-1, 1], as.numeric(catlist[i-1, 2:ncol(catlist)]), "\n\n")
-            dups <- dups[-1] - 1 
-        }
-        catlist
-    }
-    
-    # save(catlist, file = "~/Desktop/catlist.Rdata")
-    
-    catlist <- catlist[order(catlist[,1]), ]
-    # merge key categories of duplicate terms - this makes the function work with some LIWC-supplied
-    # dictionaries that repeat term entries across different lines
-    dups <- which(duplicated(catlist[, 1]))
-    if (length(dups)) {
-        cat("Found", length(dups), "duplicated entries, and merged them.\n")
-        catlist <- consolidateCatlist(catlist)
-    }
-
-    # path <- "~/Dropbox/Papers/EUP_Kansas/analysis/Dictionaries/LIWC2007_French_UTF8.dic"; maxcats=15; enc=""
-    # path <- "~/Dropbox/Papers/EUP_Kansas/analysis/Dictionaries/TESTDIC.dic"; maxcats=15; enc=""
-    
-    rownames(catlist) <- catlist[,1]
-    catlist <- catlist[, -1]
-    suppressWarnings(catlist <- apply(catlist, c(1,2), as.numeric))
-    # now put this into a (ragged) list 
+    # merge terms that appear on more than one line
+    catlist <- split(catlist[, 2:ncol(catlist)], catlist$category)
+    catlist <- lapply(catlist, function(y) sort(unique(unlist(y))))
+    catnames <- names(catlist)
+    catlist <- as.data.frame(do.call(rbind, lapply(catlist, '[', 1:max(sapply(catlist, length)))), stringsAsFactors = FALSE)
+    rownames(catlist) <- catnames
+ 
     terms <- as.list(rep(NA, nrow(catlist)))
     names(terms) <- rownames(catlist)
     for (i in 1:nrow(catlist)) {
         terms[[i]] <- as.numeric(catlist[i, !is.na(catlist[i,])])
     }
-
+    
     for(ind in 1:length(terms)){
         for(num in as.numeric(terms[[ind]])){
             thisCat <- guide$catName[which(guide$catNum==num)]
@@ -282,8 +257,6 @@ readLIWCdict <- function(path, maxcats=25, enc="") {
     }
     return(dictionary)
 }
-
-#readLIWCdict("~/Dropbox/QUANTESS/corpora/LIWC/LIWC2001_English.dic")
 
 
 flatten.dictionary <- function(elms, parent = '', dict = list()) {
@@ -378,6 +351,8 @@ applyDictionary.dfm <- function(x, dictionary, exclusive = TRUE, valuetype = c("
     # convert wildcards to regular expressions (if needed)
     if (valuetype == "glob") {
         dictionary <- lapply(dictionary, utils::glob2rx)
+        # because glob2rx doesn't get closing parens
+        dictionary <- lapply(dictionary, function(y) gsub("\\)", "\\\\\\)", y))
     } # else if (valuetype == "fixed")
     # dictionary <- lapply(dictionary, function(x) paste0("^", x, "$"))
     
