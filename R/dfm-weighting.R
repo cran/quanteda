@@ -4,17 +4,19 @@
 #' according to one of several common methods.
 #' 
 #' @param x document-feature matrix created by \link{dfm}
-#' @param type The weighting function to aapply to the dfm. One of: \itemize{ 
-#'   \item normTf - Length normalization: dividing the frequency of the feature 
-#'   by the length of the document) \item logTf - The natural log of the term
-#'   frequency \item tf-idf - Term-frequency * inverse document frequency. For a
+#' @param type The weighting function to aapply to the dfm. One of: 
+#' \describe{
+#'  \item{\code{"frequency"}}{integer feature count (default when a dfm is created)}
+#'  \item{\code{"relFreq"}}{the proportion of the feature counts of total feature counts (aka relative frequency)}
+#'  \item{\code{"relMaxFreq"}}{the proportion of the feature counts of the highest feature count in a document}
+#'  \item{\code{"logFreq"}}{natural logarithm of the feature count}
+#'  \item{\code{"tfidf"}}{Term-frequency * inverse document frequency. For a
 #'   full explanation, see, for example, 
 #'   \url{http://nlp.stanford.edu/IR-book/html/htmledition/term-frequency-and-weighting-1.html}.
 #'    This implementation will not return negative values.  For finer-grained
-#'   control, call \code{\link{tfidf}} directly. \item maxTf - The term
-#'   frequency divided by the frequency of the most frequent term in the
-#'   document \item ppmi -   Positive Pointwise Mutual Information }
-#' @param ... not currently used
+#'   control, call \code{\link{tfidf}} directly}
+#'   }
+#' @param ... not currently used.  For finer grained control, consider calling \code{\link{tf}} or \code{\link{tfidf}} directly.
 #' @return The dfm with weighted values
 #' @export
 #' @seealso \code{\link{tfidf}}
@@ -74,10 +76,11 @@ setMethod("weight", signature = "dfm",
 
 
 #' @rdname weight
-#' @param smoothing constant added to the dfm cells for smoothing
-#' @details \code{smoother(x, smoothing)} is a shortcut for \code{weight(x, "frequency", smoothing)}
+#' @param smoothing constant added to the dfm cells for smoothing, default is 1
+#' @details This converts a matrix from sparse to dense format, so may exceed memory
+#' requirements depending on the size of your input matrix.
 #' @export
-smoother <- function(x, smoothing) weight(x, "frequency", smoothing = smoothing)
+smoother <- function(x, smoothing = 1) x + smoothing
 
 
 #' @rdname weight
@@ -125,14 +128,16 @@ setMethod("weighting", signature(object="dfm"), function(object) {
 #' mydfm <- dfm(inaugTexts[1:2], verbose = FALSE)
 #' docfreq(mydfm[, 1:20])
 #' 
-#' #' # replication of worked example from
+#' # replication of worked example from
 #' # https://en.wikipedia.org/wiki/Tf-idf#Example_of_tf.E2.80.93idf
-#' (wikiDfm <- new("dfmSparse", 
-#'                 Matrix::Matrix(c(1,1,2,1,0,0, 1,1,0,0,2,3),
-#'                    byrow = TRUE, nrow = 2,  
-#'                    dimnames = list(docs = c("document1", "document2"), 
-#'                      features = c("this", "is", "a", "sample", "another",
-#'                                   "example")), sparse = TRUE)))
+#' wikiDfm <- new("dfmSparse", 
+#'                Matrix::Matrix(c(1,1,2,1,0,0, 1,1,0,0,2,3),
+#'                               byrow = TRUE, nrow = 2,  
+#'                               dimnames = list(docs = c("document1", "document2"),
+#'                                               features = c("this", "is", "a", "sample", 
+#'                                                            "another", "example")), 
+#'                               sparse = TRUE))
+#' wikiDfm
 #' docfreq(wikiDfm)
 #' df(wikiDfm)
 #' docfreq(wikiDfm, scheme = "inverse")

@@ -47,10 +47,10 @@ NULL
 
 #' @name LBGexample
 #' @docType data
-#' @title dfm containing example data from Table 1 of Laver Benoit and Garry
+#' @title dfm with example data from Table 1 of Laver Benoit and Garry
 #'   (2003)
-#' @description Example data to demonstrate the Wordscores algorithm, from Laver
-#'   Benoit and Garry (2003)
+#' @description Constructed example data to demonstrate the Wordscores algorithm, from Laver
+#'   Benoit and Garry (2003), Table 1.
 #' @details This is the example word count data from Laver, Benoit and Garry's
 #'   (2003) Table 1. Documents R1 to R5 are assumed to have known positions:
 #'   -1.5, -0.75, 0, 0.75, 1.5.  Document V1 is assumed unknown, and will have a
@@ -58,8 +58,8 @@ NULL
 #' @format A \link{dfm} object with 6 documents and 37 features
 #' @references Laver, Michael, Kenneth Benoit, and John Garry.  2003.
 #'   "\href{http://www.kenbenoit.net/pdfs/WORDSCORESAPSR.pdf}{Estimating policy
-#'   positions from political text using words as data.}" American Political
-#'   Science Review 97(2): 311-331.
+#'   positions from political text using words as data.}" \emph{American Political
+#'   Science Review} 97(2): 311-331.
 NULL
 
 #' @name ie2010Corpus
@@ -91,7 +91,7 @@ NULL
 
 #' @name exampleString
 #' @title A paragraph of text for testing various text-based functions
-#' @description This is a long paragraph (2,914 characters) of text taken from an Irish budget speech by Joe Higgins
+#' @description This is a long paragraph (2,914 characters) of text taken from an Irish budget speech by Joe Higgins.
 #' @format character vector with one element
 #' @docType data
 #' @examples
@@ -134,4 +134,5 @@ NULL
 # spache    <- makeWordList("~/Dropbox/QUANTESS/quanteda_working_files/readability/Spache.txt")
 # wordlists <- list(dalechall = dalechall, spache = spache)
 # save(wordlists, file = "data/wordlists.RData")
+
 

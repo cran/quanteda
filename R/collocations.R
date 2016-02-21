@@ -3,11 +3,11 @@ NULL
 
 #' Detect collocations from text
 #' 
-#' Detects collocations (currently, bigrams and trigrams) from texts or a 
-#' corpus, returning a data.frame of collocations and their scores, sorted in 
-#' descending order of the association measure.  Words separated by punctuation 
-#' delimiters are not counted as adjacent and hence are not eligible to be 
-#' collocations.
+#' Detects collocations from texts or a corpus, returning a data.frame of
+#' collocations and their scores, sorted in descending order of the association
+#' measure.  Words separated by punctuation delimiters are not counted by
+#' default (\code{spanPunct = FALSE})  as adjacent and hence are not eligible to
+#' be collocations.
 #' @param x a text, a character vector of texts, or a corpus
 #' @param method association measure for detecting collocations.  Let \eqn{i} 
 #'   index documents, and \eqn{j} index features, \eqn{n_{ij}} refers to 
@@ -22,12 +22,12 @@ NULL
 #'   coefficient, computed as \eqn{n_{11}/n_{1.} + n_{.1}}} 
 #'   \item{\code{"all"}}{returns all of the above} }
 #' @param size length of the collocation.  Only bigram (\code{n=2}) and trigram 
-#'   (\code{n=3}) collocations are implemented so far.  Can be \code{c(2,3)} (or
-#'   \code{2:3}) to return both bi- and tri-gram collocations.
+#'   (\code{n=3}) collocations are currently implemented.  Can be \code{c(2,3)}
+#'   (or \code{2:3}) to return both bi- and tri-gram collocations.
 #' @param n the number of collocations to return, sorted in descending order of 
 #'   the requested statistic, or \eqn{G^2} if none is specified.
 #' @param spanPunct if \code{FALSE}, then collocations will not span punctuation
-#'   marks, so that for instance \emph{marks, so} is not a collocation of
+#'   marks, so that for instance \emph{marks, so} is not a collocation of 
 #'   \code{marks so}.  If \code{TRUE}, do not handle punctuation specially.
 #' @param ... additional parameters passed to \code{\link{tokenize}}.  If wanted
 #'   to include collocations separated by punctuation, then you can use this to 
@@ -46,18 +46,22 @@ NULL
 #'          This [is] a software testing again. For.",
 #'          "Here: this is more Software Testing, looking again for word pairs.")
 #' collocations(txt)
-#' collocations(txt, removePunct = TRUE)
-#' collocations(txt, size=2:3)
-#' removeFeatures(collocations(txt, size=2:3), stopwords("english"))
+#' collocations(txt, spanPunct = FALSE, removePunct = FALSE)  # default
+#' collocations(txt, spanPunct = FALSE, removePunct = TRUE)   # includes "testing looking"
+#' collocations(txt, spanPunct = TRUE, removePunct = TRUE)    # same as previous 
+#' collocations(txt, spanPunct = TRUE, removePunct = FALSE)   # keep punctuation marks as "grams"
+#'
+#' collocations(txt, size = 2:3)
+#' removeFeatures(collocations(txt, size = 2:3), stopwords("english"))
 #' 
 #' collocations("@@textasdata We really, really love the #quanteda package - thanks!!")
 #' collocations("@@textasdata We really, really love the #quanteda package - thanks!!",
 #'               removeTwitter = TRUE)
 #' 
-#' collocations(inaugTexts[49:57], n=10)
-#' collocations(inaugTexts[49:57], method="all", n=10)
-#' collocations(inaugTexts[49:57], method="chi2", size=3, n=10)
-#' collocations(subset(inaugCorpus, Year>1980), method="pmi", size=3, n=10)
+#' collocations(inaugTexts[49:57], n = 10)
+#' collocations(inaugTexts[49:57], method = "all", n = 10)
+#' collocations(inaugTexts[49:57], method = "chi2", size = 3, n = 10)
+#' collocations(subset(inaugCorpus, Year>1980), method = "pmi", size = 3, n = 10)
 collocations <- function(x, ...) {
 #     addedArgs <- names(list(...))
 #     if (length(addedArgs) && any(!(addedArgs %in% names(formals(getS3method("tokenize", "character"))))))
@@ -336,16 +340,16 @@ collocations3 <- function(x, method=c("lr", "chi2", "pmi", "dice", "all"), size=
 #' dfm(cw, verbose=FALSE)
 #' 
 #' # when used as a dictionary for dfm creation
-#' mydfm2 <- dfm(cw, dictionary=lapply(mydict, function(x) gsub(" ", "_", x)))
+#' mydfm2 <- dfm(cw, dictionary = lapply(mydict, function(x) gsub(" ", "_", x)))
 #' mydfm2
-#' # to pick up "taxes" in the second text, set dictionary_regex=TRUE
-#' mydfm3 <- dfm(cw, dictionary=lapply(mydict, phrasetotoken, mydict),
-#'               dictionary_regex=TRUE)
+#' # to pick up "taxes" in the second text, set valuetype = "regex"
+#' mydfm3 <- dfm(cw, dictionary = lapply(mydict, phrasetotoken, mydict),
+#'               valuetype = "regex")
 #' mydfm3
 #' ## one more token counted for "tax" than before
 setGeneric("phrasetotoken", 
            function(object, phrases, concatenator="_") standardGeneric("phrasetotoken"))
-# phrasetotoken <- function(x, dictionary, concatenator="_") {
+# phrasetotoken <- function(x, dictionary, concatenator = "_") {
 #     UseMethod("phrasetotoken")
 # }
 

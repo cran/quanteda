@@ -8,20 +8,20 @@
 \title{fit a text model}
 \usage{
 textmodel(x, y = NULL, data = NULL, model = c("wordscores", "NB",
-  "wordfish", "lda", "ca"), ...)
+  "wordfish", "ca"), ...)
 
 \S4method{textmodel}{dfm,ANY,missing,character}(x, y = NULL, data = NULL,
-  model = c("wordscores", "NB", "wordfish", "lda", "ca"), ...)
+  model = c("wordscores", "NB", "wordfish", "ca"), ...)
 
 \S4method{textmodel}{formula,missing,dfm,character}(x, y = NULL,
-  data = NULL, model = c("wordscores", "NB", "wordfish", "lda", "ca"), ...)
+  data = NULL, model = c("wordscores", "NB", "wordfish", "ca"), ...)
 }
 \arguments{
 \item{x}{a quanteda \link{dfm} object containing feature counts by document}
 
 \item{y}{for supervised models, a vector of class labels or values for 
 training the model, with \code{NA} for documents to be excluded from the 
-training set; for unsupervised models, this will be left NULL}
+training set; for unsupervised models, this will be left \code{NULL}.}
 
 \item{data}{dfm or data.frame from which to take the formula}
 
@@ -31,15 +31,19 @@ Benoit, and Garry (2003). Options include the original linear scale of LBG
 or the logit scale proposed by Beauchamps (2001).  See 
 \link{textmodel_wordscores}.}
 
-\item{\code{ca}}{Correspondence analysis scaling of the dfm.}
-
 \item{\code{NB}}{Fits a Naive Bayes model to the dfm, with options for 
 smoothing, setting class priors, and a choice of multinomial or binomial 
-probabilities.}
+probabilities.  See \link{textmodel_NB}.}
 
-\item{\code{wordfish}}{Fits the "wordfish" model of Slapin and Proksch (2008).}
+\item{\code{wordfish}}{Fits the "wordfish" model of Slapin and Proksch (2008).  
+See \link{textmodel_wordfish}.}
 
-\item{\code{lda}}{Fit a topic model based on latent Dirichlet allocation.  Temporarily removed.}
+\item{\code{ca}}{Correspondence analysis scaling of the dfm.}
+
+\item{\code{lda}}{Fit a topic model based on latent Dirichlet allocation.  
+Not yet implemented -- use \code{\link{convert}}
+to convert a dfm into the applicable input format and then use your favourite 
+topic modelling package directly.}
 
 \item{\code{kNN}}{k-nearest neighbour classification, coming soon.}
 }}

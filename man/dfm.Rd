@@ -14,15 +14,13 @@ dfm(x, ...)
 \method{dfm}{character}(x, verbose = TRUE, toLower = TRUE,
   removeNumbers = TRUE, removePunct = TRUE, removeSeparators = TRUE,
   removeTwitter = FALSE, stem = FALSE, ignoredFeatures = NULL,
-  keptFeatures = NULL, matrixType = c("sparse", "dense"),
-  language = "english", thesaurus = NULL, dictionary = NULL,
-  valuetype = c("glob", "regex", "fixed"), dictionary_regex = FALSE, ...)
+  keptFeatures = NULL, language = "english", thesaurus = NULL,
+  dictionary = NULL, valuetype = c("glob", "regex", "fixed"), ...)
 
 \method{dfm}{tokenizedTexts}(x, verbose = TRUE, toLower = TRUE,
   stem = FALSE, ignoredFeatures = NULL, keptFeatures = NULL,
-  matrixType = c("sparse", "dense"), language = "english",
-  thesaurus = NULL, dictionary = NULL, valuetype = c("glob", "regex",
-  "fixed"), dictionary_regex = FALSE, ...)
+  language = "english", thesaurus = NULL, dictionary = NULL,
+  valuetype = c("glob", "regex", "fixed"), ...)
 
 \method{dfm}{corpus}(x, verbose = TRUE, groups = NULL, ...)
 
@@ -54,10 +52,10 @@ characters, see \link{tokenize}}
 \item{stem}{if \code{TRUE}, stem words}
 
 \item{ignoredFeatures}{a character vector of user-supplied features to 
-ignore, such as "stop words".  To access one 
-possible list (from any list you wish), use \code{\link{stopwords}()}.  The
-pattern matching type will be set by \code{valuetype}.  For behaviour of 
-\code{ingoredFeatures} with \code{ngrams > 1}, see Details.}
+ignore, such as "stop words".  To access one possible list (from any list
+you wish), use \code{\link{stopwords}()}.  The pattern matching type will
+be set by \code{valuetype}.  For behaviour of \code{ingoredFeatures} with
+\code{ngrams > 1}, see Details.}
 
 \item{keptFeatures}{a use supplied regular expression defining which features
 to keep, while excluding all others.  This can be used in lieu of a 
@@ -68,23 +66,21 @@ argument passed to \link{tokenize}.  Note: \code{keptFeatures =
 "^@\\\w+\\\b"} would be the regular expression version of this matching 
 pattern.  The pattern matching type will be set by \code{valuetype}.}
 
-\item{matrixType}{deprecated, used to produce a dense matrix if \code{dense},
-but this was removed in 0.8.2.  All dfm objects are now created as a sparse
-matrix of class \code{dgCMatrix} from the \pkg{\link{Matrix}} package.}
-
-\item{language}{Language for stemming.  Choices are 
-\code{danish}, \code{dutch}, \code{english}, \code{finnish}, \code{french},
-\code{german}, \code{hungarian}, \code{italian}, \code{norwegian}, 
-\code{porter}, \code{portuguese}, \code{romanian}, \code{russian}, 
-\code{spanish}, \code{swedish}, \code{turkish}.}
+\item{language}{Language for stemming.  Choices are \code{danish},
+\code{dutch}, \code{english}, \code{finnish}, \code{french}, \code{german},
+\code{hungarian}, \code{italian}, \code{norwegian}, \code{porter},
+\code{portuguese}, \code{romanian}, \code{russian}, \code{spanish},
+\code{swedish}, \code{turkish}.}
 
 \item{thesaurus}{A list of character vector "thesaurus" entries, in a 
-dictionary list format, which can also include regular expressions  if 
-\code{dictionary_regex} is \code{TRUE} (see examples).  Note that unlike 
-dictionaries, each entry in a thesaurus key must be unique, otherwise only 
-the first match in the list will be used.  Thesaurus keys are converted to 
-upper case to create a feature label in the dfm, as a reminder that this 
-was not a type found in the text, but rather the label of a thesaurus key.}
+dictionary list format, which operates as a dictionary but without
+excluding values not matched from the dictionary.  Thesaurus keys are
+converted to upper case to create a feature label in the dfm, as a reminder
+that this was not a type found in the text, but rather the label of a
+thesaurus key.  For more fine-grained control over this and other aspects
+of converting features into dictionary/thesaurus keys from pattern matches
+to values, you can use \code{\link{applyDictionary}} after creating the
+dfm.}
 
 \item{dictionary}{A list of character vector dictionary entries, including 
 regular expressions (see examples)}
@@ -92,11 +88,6 @@ regular expressions (see examples)}
 \item{valuetype}{\code{fixed} for words as is; \code{"regex"} for regular 
 expressions; or \code{"glob"} for "glob"-style wildcard.  Glob format is 
 the default.  See \code{\link{selectFeatures}}.}
-
-\item{dictionary_regex}{\code{TRUE} means the dictionary is already in 
-regular expression format, otherwise it will be converted from the "glob" 
-format.  This is a legacy argument that will soon be phased out in favour 
-of \code{valuetype}.}
 
 \item{groups}{character vector containing the names of document variables for
 aggregating documents}
@@ -114,12 +105,13 @@ both much faster and much more memory efficient than the corresponding dense
 dfm class, see \link{dfm-class}.
 }
 \details{
-The default behavior for \code{ignoredFeatures} when constructing
-  ngrams using \code{dfm(x, } \emph{ngrams > 1}\code{)} is to remove any ngram that
-  contains any item in \code{ignoredFeatures}.  If you wish to remove these before
-  constructing ngrams, you will need to first tokenize the texts with ngrams, then
-  remove the features to be ignored, and then construct the dfm using this modified
-  tokenization object.  See the code examples for an illustration.
+The default behavior for \code{ignoredFeatures} when constructing 
+  ngrams using \code{dfm(x, } \emph{ngrams > 1}\code{)} is to remove any
+  ngram that contains any item in \code{ignoredFeatures}.  If you wish to
+  remove these before constructing ngrams, you will need to first tokenize
+  the texts with ngrams, then remove the features to be ignored, and then
+  construct the dfm using this modified tokenization object.  See the code
+  examples for an illustration.
 
 \code{is.dfm} returns \code{TRUE} if and only if its argument is a \link{dfm}.
 

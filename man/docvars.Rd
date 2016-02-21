@@ -5,6 +5,7 @@
 \alias{docvars.corpus}
 \alias{docvars.corpusSource}
 \alias{docvars<-}
+\alias{docvars<-.corpus}
 \title{get or set for document-level variables}
 \usage{
 docvars(x, field = NULL)
@@ -13,7 +14,7 @@ docvars(x, field = NULL)
 
 docvars(x, field = NULL) <- value
 
-docvars(x, field = NULL) <- value
+\method{docvars}{corpus}(x, field = NULL) <- value
 
 \method{docvars}{corpusSource}(x, field = NULL)
 }
@@ -32,9 +33,20 @@ docvars(x, field = NULL) <- value
 \description{
 Get or set variables for the documents in a corpus
 }
+\note{
+Another way to access and set docvars is through indexing of the corpus \code{j} element, 
+such as \code{ie2010Corpus[, c("foren", "name"]} or for a single docvar, \code{ie2010Corpus[["name"]]}.  The latter
+also permits assignment, including the easy creation of new document varibles, e.g. \code{ie2010Corpus[["newvar"]] <- 1:ndoc(ie2010Corpus)}.
+See \code{\link{[.corpus}} for details.
+}
 \examples{
 head(docvars(inaugCorpus))
 docvars(inaugCorpus, "President") <- paste("prez", 1:ndoc(inaugCorpus), sep="")
+head(docvars(inaugCorpus))
+
+# alternative using indexing
+head(inaugCorpus[, "Year"])
+inaugCorpus[["President2"]] <- paste("prezTwo", 1:ndoc(inaugCorpus), sep="")
 head(docvars(inaugCorpus))
 }
 

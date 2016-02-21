@@ -29,22 +29,26 @@ setClass("textmodel_fitted",
 #' @param x a quanteda \link{dfm} object containing feature counts by document
 #' @param y for supervised models, a vector of class labels or values for 
 #'   training the model, with \code{NA} for documents to be excluded from the 
-#'   training set; for unsupervised models, this will be left NULL
+#'   training set; for unsupervised models, this will be left \code{NULL}.
 #' @param model the model type to be fit.  Currently implemented methods are: 
 #'   \describe{ \item{\code{wordscores}}{Fits the "wordscores" model of Laver, 
 #'   Benoit, and Garry (2003). Options include the original linear scale of LBG 
 #'   or the logit scale proposed by Beauchamps (2001).  See 
 #'   \link{textmodel_wordscores}.}
 #'   
-#'   \item{\code{ca}}{Correspondence analysis scaling of the dfm.}
-#'   
 #'   \item{\code{NB}}{Fits a Naive Bayes model to the dfm, with options for 
 #'   smoothing, setting class priors, and a choice of multinomial or binomial 
-#'   probabilities.}
+#'   probabilities.  See \link{textmodel_NB}.}
 #'   
-#'   \item{\code{wordfish}}{Fits the "wordfish" model of Slapin and Proksch (2008).}
+#'   \item{\code{wordfish}}{Fits the "wordfish" model of Slapin and Proksch (2008).  
+#'   See \link{textmodel_wordfish}.}
 #'   
-#'   \item{\code{lda}}{Fit a topic model based on latent Dirichlet allocation.  Temporarily removed.}
+#'   \item{\code{ca}}{Correspondence analysis scaling of the dfm.}
+#'   
+#'   \item{\code{lda}}{Fit a topic model based on latent Dirichlet allocation.  
+#'   Not yet implemented -- use \code{\link{convert}}
+#'   to convert a dfm into the applicable input format and then use your favourite 
+#'   topic modelling package directly.}
 #'   
 #'   \item{\code{kNN}}{k-nearest neighbour classification, coming soon.}
 #'   }
@@ -79,13 +83,13 @@ setClass("textmodel_fitted",
 #' wf}
 #' @export
 setGeneric("textmodel", 
-    function(x, y=NULL, data=NULL, model=c("wordscores", "NB", "wordfish", "lda", "ca"), ...)
+    function(x, y=NULL, data=NULL, model=c("wordscores", "NB", "wordfish", "ca"), ...)
              standardGeneric("textmodel"))
 
 #' @rdname textmodel
 setMethod("textmodel", signature(x = "dfm", y="ANY", data="missing", model = "character"),
           definition = 
-              function(x, y=NULL, model=c("wordscores", "NB", "wordfish", "lda", "ca"), ...) {
+              function(x, y=NULL, model=c("wordscores", "NB", "wordfish", "ca"), ...) {
                   #cat("x is:"); print(x)
                   #cat("y is:"); print(y)
                   #cat("model is:", model, "\n")
@@ -101,10 +105,10 @@ setMethod("textmodel", signature(x = "dfm", y="ANY", data="missing", model = "ch
                       if (!is.null(y))
                           warning("y values not used with wordfish model. ")
                       result <- textmodel_wordfish(x, ...)
-#                   } else if (model=="NB") {
-#                       if (nrow(x) != length(y))
-#                           stop("x and y contain different numbers of documents.")
-#                       result <- textmodel_NB(x, y, ...)
+                  } else if (model=="NB") {
+                      if (nrow(x) != length(y))
+                          stop("x and y contain different numbers of documents.")
+                      result <- textmodel_NB(x, y, ...)
 #                   } else if (model=="lda") {
 #                       if (!is.null(y))
 #                           warning("y values not used with wordfish model. ")

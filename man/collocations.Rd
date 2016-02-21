@@ -39,14 +39,14 @@ coefficient, computed as \eqn{n_{11}/n_{1.} + n_{.1}}}
 \item{\code{"all"}}{returns all of the above} }}
 
 \item{size}{length of the collocation.  Only bigram (\code{n=2}) and trigram 
-(\code{n=3}) collocations are implemented so far.  Can be \code{c(2,3)} (or
-\code{2:3}) to return both bi- and tri-gram collocations.}
+(\code{n=3}) collocations are currently implemented.  Can be \code{c(2,3)}
+(or \code{2:3}) to return both bi- and tri-gram collocations.}
 
 \item{n}{the number of collocations to return, sorted in descending order of 
 the requested statistic, or \eqn{G^2} if none is specified.}
 
 \item{spanPunct}{if \code{FALSE}, then collocations will not span punctuation
-marks, so that for instance \emph{marks, so} is not a collocation of
+marks, so that for instance \emph{marks, so} is not a collocation of 
 \code{marks so}.  If \code{TRUE}, do not handle punctuation specially.}
 }
 \value{
@@ -54,29 +54,33 @@ A data.table of collocations, their frequencies, and the computed
   association measure(s).
 }
 \description{
-Detects collocations (currently, bigrams and trigrams) from texts or a 
-corpus, returning a data.frame of collocations and their scores, sorted in 
-descending order of the association measure.  Words separated by punctuation 
-delimiters are not counted as adjacent and hence are not eligible to be 
-collocations.
+Detects collocations from texts or a corpus, returning a data.frame of
+collocations and their scores, sorted in descending order of the association
+measure.  Words separated by punctuation delimiters are not counted by
+default (\code{spanPunct = FALSE})  as adjacent and hence are not eligible to
+be collocations.
 }
 \examples{
 txt <- c("This is software testing: looking for (word) pairs!  
          This [is] a software testing again. For.",
          "Here: this is more Software Testing, looking again for word pairs.")
 collocations(txt)
-collocations(txt, removePunct = TRUE)
-collocations(txt, size=2:3)
-removeFeatures(collocations(txt, size=2:3), stopwords("english"))
+collocations(txt, spanPunct = FALSE, removePunct = FALSE)  # default
+collocations(txt, spanPunct = FALSE, removePunct = TRUE)   # includes "testing looking"
+collocations(txt, spanPunct = TRUE, removePunct = TRUE)    # same as previous 
+collocations(txt, spanPunct = TRUE, removePunct = FALSE)   # keep punctuation marks as "grams"
+
+collocations(txt, size = 2:3)
+removeFeatures(collocations(txt, size = 2:3), stopwords("english"))
 
 collocations("@textasdata We really, really love the #quanteda package - thanks!!")
 collocations("@textasdata We really, really love the #quanteda package - thanks!!",
               removeTwitter = TRUE)
 
-collocations(inaugTexts[49:57], n=10)
-collocations(inaugTexts[49:57], method="all", n=10)
-collocations(inaugTexts[49:57], method="chi2", size=3, n=10)
-collocations(subset(inaugCorpus, Year>1980), method="pmi", size=3, n=10)
+collocations(inaugTexts[49:57], n = 10)
+collocations(inaugTexts[49:57], method = "all", n = 10)
+collocations(inaugTexts[49:57], method = "chi2", size = 3, n = 10)
+collocations(subset(inaugCorpus, Year>1980), method = "pmi", size = 3, n = 10)
 }
 \author{
 Kenneth Benoit

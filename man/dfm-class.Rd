@@ -10,6 +10,7 @@
 \alias{[,dfmDense,index,index,missing-method}
 \alias{[,dfmDense,index,missing,logical-method}
 \alias{[,dfmDense,index,missing,missing-method}
+\alias{[,dfmDense,logical,missing,missing-method}
 \alias{[,dfmDense,missing,index,logical-method}
 \alias{[,dfmDense,missing,index,missing-method}
 \alias{[,dfmDense,missing,missing,logical-method}
@@ -18,16 +19,20 @@
 \alias{[,dfmSparse,index,index,missing-method}
 \alias{[,dfmSparse,index,missing,logical-method}
 \alias{[,dfmSparse,index,missing,missing-method}
+\alias{[,dfmSparse,logical,missing,missing-method}
 \alias{[,dfmSparse,missing,index,logical-method}
 \alias{[,dfmSparse,missing,index,missing-method}
 \alias{[,dfmSparse,missing,missing,logical-method}
 \alias{[,dfmSparse,missing,missing,missing-method}
 \alias{as.data.frame,dfm-method}
 \alias{as.matrix,dfm-method}
+\alias{cbind.dfm}
+\alias{colMeans,dfmSparse-method}
 \alias{colSums,dfmSparse-method}
 \alias{dfm-class}
 \alias{dfmDense-class}
 \alias{dfmSparse-class}
+\alias{rowMeans,dfmSparse-method}
 \alias{rowSums,dfmSparse-method}
 \alias{t,dfmDense-method}
 \alias{t,dfmSparse-method}
@@ -41,6 +46,10 @@
 
 \S4method{rowSums}{dfmSparse}(x, na.rm = FALSE, dims = 1L, ...)
 
+\S4method{colMeans}{dfmSparse}(x, na.rm = FALSE, dims = 1L, ...)
+
+\S4method{rowMeans}{dfmSparse}(x, na.rm = FALSE, dims = 1L, ...)
+
 \S4method{[}{dfmDense,index,index,missing}(x, i = NULL, j = NULL, ...,
   drop = FALSE)
 
@@ -48,6 +57,8 @@
   drop = FALSE)
 
 \S4method{[}{dfmDense,index,missing,missing}(x, i, j, ..., drop = FALSE)
+
+\S4method{[}{dfmDense,logical,missing,missing}(x, i, j, ..., drop = FALSE)
 
 \S4method{[}{dfmDense,index,missing,logical}(x, i, j, ..., drop = FALSE)
 
@@ -64,6 +75,8 @@
 
 \S4method{[}{dfmSparse,index,index,logical}(x, i = NULL, j = NULL, ...,
   drop = FALSE)
+
+\S4method{[}{dfmSparse,logical,missing,missing}(x, i, j, ..., drop = FALSE)
 
 \S4method{[}{dfmSparse,index,missing,missing}(x, i, j, ..., drop = FALSE)
 
@@ -88,6 +101,8 @@
 \S4method{as.matrix}{dfm}(x)
 
 \S4method{as.data.frame}{dfm}(x)
+
+cbind.dfm(x, y, ...)
 }
 \arguments{
 \item{x}{the dfm object}
@@ -108,6 +123,8 @@ the calculations}
 \item{e1}{first quantity in "+" operation for dfm}
 
 \item{e2}{second quantity in "+" operation for dfm}
+
+\item{y}{a second \link{dfm} object to be joined column-wise to the first}
 }
 \description{
 The dfm class of object is a type of \link[Matrix]{Matrix-class}
@@ -139,6 +156,12 @@ are converted through weighting or other transformations into cells without zero
 be automatically converted to the dfmDense class.  This will necessarily be a much larger sized
 object than one of \code{dfmSparse} class, because each cell is recorded as a numeric (double) type
 requiring 8 bytes of storage.
+
+\code{cbind(x, y, ...)} combines dfm objects by columns, returning a
+  dfm object with combined features from input dfm objects.  Calls 
+  \code{\link{cbind2}} defined for object classes in the \pkg{Matrix}
+  package. The attributes and settings of this new dfm are not currently
+  preserved.
 }
 \section{Slots}{
 
@@ -159,24 +182,18 @@ either the \code{\link{smooth}} or the \code{\link{weight}} methods.}
 named \code{docs} and \code{features} respectively.}
 }}
 \examples{
-\dontrun{
-dfmSparse <- dfm(inaugTexts, verbose=FALSE)
+# coercion to matrix
+dfmSparse <- dfm(inaugTexts, verbose = FALSE)
 str(as.matrix(dfmSparse))
-class(as.matrix(dfmSparse))
-dfmDense <- dfm(inaugTexts, verbose=FALSE, matrixType="dense")
-str(as.matrix(dfmDense))
-class(as.matrix(dfmDense))
-identical(as.matrix(dfmSparse), as.matrix(dfmDense))
-}
-\dontrun{
-dfmSparse <- dfm(inaugTexts, verbose=FALSE)
+
+# coercion to data.frame
+dfmSparse <- dfm(inaugTexts, verbose = FALSE)
 str(as.data.frame(dfmSparse))
-class(as.data.frame(dfmSparse))
-dfmDense <- dfm(inaugTexts, verbose=FALSE, matrixType="dense")
-str(as.data.frame(dfmDense))
-class(as.data.frame(dfmDense))
-identical(as.data.frame(dfmSparse), as.data.frame(dfmDense))
-}
+
+# cbind() for dfm objects
+dfm1 <- dfm("This is a sample text.", verbose = FALSE)
+dfm2 <- dfm("one two three", verbose = FALSE)
+cbind(dfm1, dfm2)
 }
 \seealso{
 \link{dfm}

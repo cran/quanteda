@@ -7,11 +7,12 @@
 \title{summarize a corpus or a vector of texts}
 \usage{
 \method{summary}{corpus}(object, n = 100, verbose = TRUE,
-  showmeta = FALSE, ...)
+  showmeta = FALSE, toLower = FALSE, ...)
 
-\method{summary}{character}(object, verbose = TRUE, ...)
+\method{summary}{character}(object, n = 100, verbose = TRUE,
+  toLower = FALSE, ...)
 
-describeTexts(object, verbose = TRUE, ...)
+describeTexts(object, n = 100, verbose = TRUE, ...)
 }
 \arguments{
 \item{object}{corpus or texts to be summarized}
@@ -24,7 +25,9 @@ if you simply want to assign the output to a \code{data.frame}}
 \item{showmeta}{for a corpus, set to \code{TRUE} to include document-level
 meta-data}
 
-\item{...}{unused here}
+\item{toLower}{convert texts to lower case before counting types}
+
+\item{...}{additional arguments passed through to \code{\link{tokenize}}}
 }
 \description{
 Displays information about a corpus or vector of texts.  For a corpus, this 
@@ -40,10 +43,11 @@ mycorpus <- corpus(ukimmigTexts, docvars=data.frame(party=names(ukimmigTexts)), 
 summary(mycorpus, showmeta=TRUE)  # show the meta-data
 mysummary <- summary(mycorpus, verbose=FALSE)  # (quietly) assign the results
 mysummary$Types / mysummary$Tokens             # crude type-token ratio
-# 
+
 # summarize texts
-summary(c("testing this text", "and this one"))
+summary(c("Testing this text.  Second sentence.", "And this one."))
 summary(ukimmigTexts)
-myTextSummaryDF <- summary(ukimmigTexts, verbose=FALSE)
+myTextSummaryDF <- summary(ukimmigTexts, verbose = FALSE)
+head(myTextSummaryDF)
 }
 

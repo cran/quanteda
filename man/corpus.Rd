@@ -3,6 +3,9 @@
 \name{corpus}
 \alias{+.corpus}
 \alias{[.corpus}
+\alias{[[.corpus}
+\alias{[[<-.corpus}
+\alias{c.corpus}
 \alias{corpus}
 \alias{corpus.VCorpus}
 \alias{corpus.character}
@@ -12,9 +15,8 @@
 \usage{
 corpus(x, ...)
 
-\method{corpus}{character}(x, enc = NULL, encTo = "UTF-8",
-  docnames = NULL, docvars = NULL, source = NULL, notes = NULL,
-  citation = NULL, ...)
+\method{corpus}{character}(x, docnames = NULL, docvars = NULL,
+  source = NULL, notes = NULL, citation = NULL, ...)
 
 \method{corpus}{corpusSource}(x, ...)
 
@@ -24,7 +26,13 @@ is.corpus(x)
 
 \method{+}{corpus}(c1, c2)
 
+\method{c}{corpus}(..., recursive = FALSE)
+
 \method{[}{corpus}(x, i, j = NULL, ..., drop = TRUE)
+
+\method{[[}{corpus}(x, i, ...)
+
+\method{[[}{corpus}(x, i) <- value
 }
 \arguments{
 \item{x}{a source of texts to form the documents in the corpus, a character 
@@ -32,24 +40,6 @@ vector or a \link{corpusSource-class} object created using
 \code{\link{textfile}}.}
 
 \item{...}{additional arguments}
-
-\item{enc}{a string specifying the input encoding for texts in the corpus. 
-Must be a valid entry in \code{\link[stringi]{stri_enc_list}()}, since 
-the code in \code{corpus.character} will convert this to \code{encTo} using
-\code{\link[stringi]{stri_encode}}.  We recommend that you do
-\strong{not} use \code{enc}, since if left \code{NULL} (the default) then
-\code{corpus()} will detect the input encoding(s) and convert
-automatically.
-
-Currently only one input encoding can be specified for a collection of 
-input texts, meaning that you should not mix input text encoding types in a
-single \code{corpus} call.  However if you suspect multiple encodings, omit
-the \code{enc} argument and \code{corpus()} will detect and convert each
-file automatically.}
-
-\item{encTo}{target encoding, default is UTF-8.  Unless you have strong reasons
-to use an alternative encoding, we strongly recommend you leave this at its 
-default.  Must be a valid entry in \code{\link[stringi]{stri_enc_list}()}}
 
 \item{docnames}{Names to be assigned to the texts, defaults to the names of 
 the character vector (if any), otherwise assigns "text1", "text2", etc.}
@@ -68,13 +58,17 @@ To Dos, etc.}
 
 \item{c2}{corpus two to be added}
 
+\item{recursive}{logical used by `c()` method, always set to `FALSE`}
+
 \item{i}{index for documents or rows of document variables}
 
 \item{j}{index for column of document variables}
 
-\item{drop}{if \code{TRUE} the result is coerced to the lowest possible
-dimension (see the examples). This only works for extracting elements, not
-for the replacement. See \code{\link{drop}} for further details.}
+\item{drop}{if \code{TRUE}, return a vector if extracting a single document
+variable; if \code{FALSE}, return it as a single-column data.frame.  See
+\code{\link{drop}} for further details.}
+
+\item{value}{a vector that will form a new docvar}
 }
 \value{
 A corpus class object containing the original texts, document-level 
@@ -130,6 +124,9 @@ The \code{+} operator for a corpus object will combine two corpus
   for \code{source} and \code{notes}, which are stamped with information 
   pertaining to the creation of the new joined corpus.
   
+  The `c()` operator is also defined for corpus class objects, and provides an easy way to 
+  combine multiple corpus objects.
+  
   There are some issues that need to be addressed in future revisions of 
   quanteda concerning the use of factors to store document variables and 
   meta-data.  Currently most or all of these are not recorded as factors, 
@@ -149,8 +146,7 @@ corpus(inaugTexts)
 
 # create a corpus from texts and assign meta-data and document variables
 ukimmigCorpus <- corpus(ukimmigTexts, 
-                        docvars = data.frame(party=names(ukimmigTexts)), 
-                        encTo = "UTF-16") 
+                        docvars = data.frame(party = names(ukimmigTexts))) 
 
 corpus(texts(ie2010Corpus))
 
@@ -174,6 +170,22 @@ if ("tm" \%in\% rownames(installed.packages())) {
     quantCorp <- corpus(tmCorp)
     summary(quantCorp)
 }
+
+# concatenate corpus objects
+corpus1 <- corpus(inaugTexts[1:2])
+corpus2 <- corpus(inaugTexts[3:4])
+corpus3 <- subset(inaugCorpus, President == "Obama")
+summary(c(corpus1, corpus2, corpus3))
+
+# ways to index corpus elements
+inaugCorpus["1793-Washington"]    # 2nd Washington inaugural speech
+inaugCorpus[2]                    # same
+ie2010Corpus[, "year"]            # access the docvars from ie2010Corpus
+ie2010Corpus[["year"]]            # same
+# create a new document variable
+ie2010Corpus[["govtopp"]] <- ifelse(ie2010Corpus[["party"]] \%in\% c("FF", "Greens"), 
+                                    "Government", "Opposition")
+docvars(ie2010Corpus)
 }
 \author{
 Kenneth Benoit and Paul Nulty
