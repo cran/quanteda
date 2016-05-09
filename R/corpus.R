@@ -16,35 +16,26 @@
 #' @param ... additional arguments
 #' @return A corpus class object containing the original texts, document-level 
 #'   variables, document-level metadata, corpus-level metadata, and default 
-#'   settings for subsequent processing of the corpus.  A corpus consists of a 
-#'   list of elements described below, although these should only be accessed 
-#'   through accessor and replacement functions, not directly (since the 
-#'   internals may be subject to change).  The structure of a corpus classed 
-#'   list object is:
-#'   
-#'   \item{$documents}{A data frame containing the document level information, 
-#'   consisting of \code{\link{texts}}, user-named \code{\link{docvars}} 
-#'   variables describing attributes of the documents, and \code{metadoc} 
-#'   document-level metadata whose names begin with an underscore character, 
-#'   such as \code{_language}.}
-#'   
-#'   \item{$metadata}{A named list set of corpus-level meta-data, including 
-#'   \code{source} and \code{created} (both generated automatically unless 
-#'   assigned), \code{notes}, and \code{citation}.}
-#'   
-#'   \item{$settings}{Settings for the corpus which record options that govern 
-#'   the subsequent processing of the corpus when it is converted into a 
-#'   document-feature matrix (\link{dfm}).  See \link{settings}.}
-#'   
-#'   \item{$tokens}{An indexed list of tokens and types tabulated by document, 
-#'   including information on positions.  Not yet fully implemented.}
+#'   settings for subsequent processing of the corpus.  A corpus currently 
+#'   consists of an S3 specially classed list of elements, but **you should not 
+#'   access these elements directly**. Use the extractor and replacement 
+#'   functions instead, or else your code is not only going to be uglier, but
+#'   also likely to break should the internal structure of a corpus object
+#'   change (as it inevitably will as we continue to develop the package,
+#'   including moving corpus objects to the S4 class system).
 #' @seealso \link{docvars}, \link{metadoc}, \link{metacorpus}, \link{settings}, 
-#'   \link{texts}
+#'   \link{texts}, \link{ndoc}, \link{docnames}
 #' @details The texts and document variables of corpus objects can also be 
 #'   accessed using index notation. Indexing a corpus object as a vector will 
-#'   return its text, equivalent to \code{texts(x)}.  Indexing a corpus using
-#'   two indexes (integers or column names) will return the document variables,
-#'   equivalent to \code{docvars(x)}.
+#'   return its text, equivalent to \code{texts(x)}.  Note that this is not the 
+#'   same as subsetting the entire corpus -- this should be done using the 
+#'   \code{\link{subset}} method for a corpus.
+#'   
+#'   Indexing a corpus using two indexes (integers or column names) will return 
+#'   the document variables, equivalent to \code{docvars(x)}.  Because a corpus 
+#'   is also a list, it is also possible to access, create, or replace docvars 
+#'   using list notation, e.g. \code{myCorpus[["newSerialDocvar"]] <- 
+#'   paste0("tag", 1:ndoc(myCorpus))}.
 #' @author Kenneth Benoit and Paul Nulty
 #' @export
 corpus <- function(x, ...) {
@@ -110,6 +101,9 @@ corpus.character <- function(x, docnames = NULL, docvars = NULL,
                                            "\u2018", "\u201B", "\u2019"),                                     
                                          c("\"", "\"", "\"", 
                                            "\'", "\'", "\'"), vectorize_all = FALSE)
+    
+    # replace all hyphens with simple hyphen
+    x <- stringi::stri_replace_all_regex(x, "\\p{Pd}", "-")
 
     # detect encoding based on 100 documents
 #     detectSampleSize <- 100
@@ -223,13 +217,16 @@ corpus.corpusSource <- function(x, ...) {
 corpus.VCorpus <- function(x, ...) {
     # extract the content (texts)
     #texts <- sapply(x, function(x) x$content)
-    texts <- sapply(x, as.character)
+    # texts <- sapply(x, as.character)
+    texts <- sapply(x$content, "[[", "content")
     # paste together texts if they appear to be vectors
     if (any(lengths(texts) > 1))
         texts <- sapply(texts, paste, collapse = " ")
         
     # special handling for VCorpus meta-data
-    metad <- as.data.frame(t(as.data.frame(sapply(x, function(x) x$meta))))
+    # metad <- as.data.frame(t(as.data.frame(sapply(x$content, "[[", "meta"))))
+    metad <- as.data.frame(do.call(rbind, (lapply(x$content, "[[", "meta"))),
+                           stringsAsFactors = FALSE, row.names = FALSE)
     makechar <- function(x) gsub("character\\(0\\)", NA, as.character(x))
     datetimestampIndex <- which(names(metad) == "datetimestamp")
     metad[, -datetimestampIndex] <- apply(metad[, -datetimestampIndex], 2, makechar)
@@ -245,6 +242,47 @@ corpus.VCorpus <- function(x, ...) {
 }
 
 
+#' @rdname corpus
+#' @param textField the character name or integer index of the source data.frame
+#'   indicating the column to be read in as text.  This must be of mode
+#'   character.
+#' @note When \code{x} is a \code{data.frame}, then there is no encoding
+#'   conversion performed on the character input.  It is highly recommended that you 
+#'   detect and convert this input to UTF-8 prior to using it as input for a corpus.
+#' @examples 
+#' 
+#' # construct a corpus from a data.frame
+#' mydf <- data.frame(letter_factor = factor(rep(letters[1:3], each = 2)),
+#'                   some_ints = 1L:6L,
+#'                   some_text = paste0("This is text number ", 1:6, "."),
+#'                   stringsAsFactors = FALSE,
+#'                   row.names = paste0("fromDf_", 1:6))
+#' mydf
+#' summary(corpus(mydf, textField = "some_text", source = "From a data.frame called mydf."))
+#' @export
+corpus.data.frame <- function(x, textField, ...) {
+
+    args <- list(...)
+    if ("docvars" %in% names(args))
+        stop("docvars are assigned automatically for data.frames", )
+
+    if (is.character(textField)) {
+        textFieldi <- which(names(x)==textField)
+        if (length(textFieldi)==0)
+            stop("column name ", textField, " not found.")
+        textField <- textFieldi
+    }
+    if (!is.character(x[, textFieldi]))
+        stop("textField must refer to a character mode column")
+    
+    corpus(x[, textFieldi], 
+           docvars = x[, -textFieldi, drop = FALSE],
+           docnames = if (!identical(row.names(x), as.character(1:nrow(x)))) row.names(x) else NULL, #paste0("text", 1:nrow(x)),
+           ...)
+}
+
+
+
 # print a corpus object
 #
 # print method for corpus objects
@@ -255,7 +293,8 @@ corpus.VCorpus <- function(x, ...) {
 #' @method print corpus
 print.corpus <- function(x, ...) {
     cat("Corpus consisting of ", ndoc(x), " document",
-        ifelse(ndoc(x)>1, "s", ""), ".\n", sep="")
+        ifelse(ndoc(x)>1, "s", ""), " and ",
+        ncol(docvars(x)), " docvar", ifelse(ncol(docvars(x)) == 1, "", "s"), ".\n", sep="")
     #         ", ",
     #         ifelse(is.null(corp$tokens), "un", ""),
     #         "indexed.\n", sep="")
@@ -403,19 +442,39 @@ texts.character <- function(x, groups = NULL, ...) {
 }
 
 
-# -- REMOVED
-# -- REMOVED - CORPUS TEXTS SHOULD NOT BE MODIFIED IN THIS WAY
-# -- REMOVED
-# replacement function for texts
-# warning about no data
-# @param value character vector of the new texts
-# @rdname texts
-# @export
-"texts<-" <- function(corp, value) { #}, rownames=FALSE) {
-    documents(corp)$texts <- value
-    # if (rownames) rownames(documents(corp)) <- names(value) 
-    return(corp)
+#' @param value character vector of the new texts
+#' @rdname texts
+#' @export
+"texts<-" <- function(x, value) {
+    UseMethod("texts<-")
 }
+
+#' @rdname texts
+#' @export
+#' @note You are strongly encouraged as a good practice of text analysis 
+#'   workflow \emph{not} to modify the substance of the texts in a corpus. 
+#'   Rather, this sort of processing is better performed through downstream 
+#'   operations.  For instance, do not lowercase the texts in a corpus, or you 
+#'   will never be able to recover the original case.  Rather, apply 
+#'   \code{\link{toLower}} to the corpus and use the result as an input, e.g. to
+#'   \code{\link{tokenize}}.
+#' @examples 
+#' 
+#' BritCorpus <- corpus(c("We must prioritise honour in our neighbourhood.", 
+#'                        "Aluminium is a valourous metal."))
+#' texts(BritCorpus) <- 
+#'     stringi::stri_replace_all_regex(texts(BritCorpus),
+#'                                    c("ise", "([nlb])our", "nium"),
+#'                                    c("ize", "$1or", "num"),
+#'                                    vectorize_all = FALSE)
+#' texts(BritCorpus)
+#' texts(BritCorpus)[2] <- "New text number 2."
+#' texts(BritCorpus)
+"texts<-.corpus" <- function(x, value) { 
+    documents(x)$texts <- value
+    x
+}
+
 
 #' get or set document-level meta-data
 #' 
@@ -707,7 +766,7 @@ sample.default <- function(x, size, replace = FALSE, prob = NULL, ...) {
 #' summary(sample(inaugCorpus, 5)) 
 #' summary(sample(inaugCorpus, 10, replace=TRUE))
 sample.corpus <- function(x, size = ndoc(x), replace = FALSE, prob = NULL, ...) {
-    documents(x) <- documents(x)[sample(ndoc(x), size, replace, prob), ]
+    documents(x) <- documents(x)[sample(ndoc(x), size, replace, prob), , drop = FALSE]
     x
 }
 
@@ -1154,6 +1213,7 @@ nsentence.corpus <- function(x, ...) {
 #' inaugCorpus[2]                    # same
 #' ie2010Corpus[, "year"]            # access the docvars from ie2010Corpus
 #' ie2010Corpus[["year"]]            # same
+#' 
 #' # create a new document variable
 #' ie2010Corpus[["govtopp"]] <- ifelse(ie2010Corpus[["party"]] %in% c("FF", "Greens"), 
 #'                                     "Government", "Opposition")
@@ -1202,3 +1262,5 @@ nsentence.corpus <- function(x, ...) {
 # #' @rdname corpus
 # setMethod("[", signature(x = "corpus", i = "index", j = "MISSING", drop = "MISSING"),
 #           function(x, i, j, ..., drop = FALSE) texts(x)[i])
+
+setOldClass("corpus")

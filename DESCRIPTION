@@ -3,18 +3,21 @@ Type: Package
 Title: Quantitative Analysis of Textual Data
 Authors@R: c( person("Kenneth", "Benoit", email = "kbenoit@lse.ac.uk", role =
     c("aut", "cre")), person("Paul", "Nulty", email = "paul.nulty@gmail.com",
-    role = "aut"), person("Pablo", "Barberá", email = "pablo.barbera@nyu.edu",
-    role = "ctb"), person("Kohei", "Watanabe", email =
+    role = "aut"), person("Kohei", "Watanabe", email =
     "watanabe.kohei@gmail.com", role = "ctb"), person("Benjamin", "Lauderdale",
-    email = "B.E.lauderdale@lse.ac.uk", role = "ctb"))
+    email = "B.E.lauderdale@lse.ac.uk", role = "ctb"),
+    person("Adam", "Obeng", email = "adam@adamobeng.com", role = "ctb"),
+    person("Pablo", "Barberá", email = "pablo.barbera@nyu.edu",
+    role = "ctb"))
 Author: Kenneth Benoit [aut, cre],
     Paul Nulty [aut],
-    Pablo Barberá [ctb],
     Kohei Watanabe [ctb],
-    Benjamin Lauderdale [ctb]
+    Benjamin Lauderdale [ctb],
+    Adam Obeng [ctb],
+    Pablo Barberá [ctb]
 Maintainer: Kenneth Benoit <kbenoit@lse.ac.uk>
-Version: 0.9.4
-Date: 2016-02-21
+Version: 0.9.6-1
+Date: 2016-05-08
 Description: A fast, flexible toolset for for the management, processing, and
     quantitative analysis of textual data in R.
 License: GPL-3
@@ -29,18 +32,18 @@ Encoding: UTF-8
 BugReports: https://github.com/kbenoit/quanteda/issues
 LazyData: TRUE
 VignetteBuilder: knitr
-Collate: 'RcppExports.R' 'dictionaries.R' 'collocations.R'
-        'converters.R' 'corpus.R' 'dataDocs.R' 'describe-texts.R'
-        'dfm-classes.R' 'dfm-main.R' 'dfm-methods.R' 'dfm-weighting.R'
-        'encoding.R' 'kwic.R' 'lexdiv.R' 'ngrams.R' 'plots.R'
+Collate: 'RcppExports.R' 'dictionaries.R' 'corpus.R' 'collocations.R'
+        'converters.R' 'dataDocs.R' 'describe-texts.R' 'dfm-classes.R'
+        'dfm-main.R' 'dfm-methods.R' 'dfm-weighting.R' 'encoding.R'
+        'kwic.R' 'lexdiv.R' 'ngrams.R' 'phrases.R' 'plots.R'
         'quanteda-package.R' 'readability.R' 'resample.R'
         'selectFeatures.R' 'settings.R' 'similarity.R' 'stopwords.R'
         'syllables.R' 'textfile.R' 'textmodel-NB.R' 'textmodel-ca.R'
         'textmodel-generics.R' 'textmodel-wordfish.R'
         'textmodel-wordscores.R' 'toLower.R' 'tokenize.R'
-        'tokenize_outtakes.R' 'wordstem.R'
+        'tokenize_outtakes.R' 'wordstem.R' 'zzz.R'
 RoxygenNote: 5.0.1
 NeedsCompilation: yes
-Packaged: 2016-02-21 16:44:06 UTC; kbenoit
+Packaged: 2016-05-09 05:01:48 UTC; kbenoit
 Repository: CRAN
-Date/Publication: 2016-02-21 19:52:00
+Date/Publication: 2016-05-09 10:08:19

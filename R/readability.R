@@ -5,14 +5,20 @@
 #' Calculate the readability of text(s).
 #' @param x a \link{corpus} object or character vector
 #' @param measure character vector defining the readability measure to calculate
-#' @param drop  if \code{TRUE}, the result is returned as a numeric vector if only a single measure is requested;
-#'   otherwise, a data.frame is returned with each column consisting of a requested measure.
+#' @param drop  if \code{TRUE}, the result is returned as a numeric vector if 
+#'   only a single measure is requested; otherwise, a data.frame is returned 
+#'   with each column consisting of a requested measure.
+#' @param removeHyphens if \code{TRUE}, treat constituent words in hyphenated as
+#'   separate terms, for purposes of computing word lengths, e.g. 
+#'   "decision-making" as two terms of lengths 8 and 6 characters respectively,
+#'   rather than as a single word of 15 characters
+#' @param ... not used
 #' @author Kenneth Benoit, re-engineered from the function of the same name by 
 #'   Meik Michalke in the \pkg{koRpus} package.
-#' @return a data.frame object consisting of the documents as rows, and the
+#' @return a data.frame object consisting of the documents as rows, and the 
 #'   readability statistics as columns
 #' @export
-readability <- function(x, measure, drop = TRUE) {
+readability <- function(x, ...) {
     UseMethod("readability")
 }
 
@@ -20,8 +26,8 @@ readability <- function(x, measure, drop = TRUE) {
 #' @export
 #' @examples 
 #' readability(inaugCorpus, measure = "Flesch.Kincaid")
-readability.corpus <- function(x, measure, drop = TRUE) {
-    readability(texts(x), measure)
+readability.corpus <- function(x, ...) {
+    readability(texts(x), ...)
 }
     
 
@@ -33,10 +39,11 @@ readability.corpus <- function(x, measure, drop = TRUE) {
 #' readability(txt, "Flesch.Kincaid", drop = FALSE)
 #' readability(txt, c("FOG", "FOG.PSK", "FOG.NRI"))
 #' inaugReadability <- readability(inaugCorpus, "all")
-#' round(cor(inaugReadability), 3)
-readability.character <- function(x, measure = c("all", "ARI", "ARI.simple", "Bormuth", "Bormuth.GP", 
+#' round(cor(inaugReadability), 2)
+readability.character <- function(x,  
+                                  measure = c("all", "ARI", "ARI.simple", "Bormuth", "Bormuth.GP", 
                                                  "Coleman", "Coleman.C2", 
-                                                 "Coleman.Liau", "Coleman.Liau.grade", "Coleman.short",
+                                                 "Coleman.Liau", "Coleman.Liau.grade", "Coleman.Liau.short",
                                                  "Dale.Chall", "Dale.Chall.old", "Dale.Chall.PSK",
                                                  "Danielson.Bryan", "Danielson.Bryan.2",
                                                  "Dickes.Steiwer", "DRP", "ELF", "Farr.Jenkins.Paterson", 
@@ -48,29 +55,37 @@ readability.character <- function(x, measure = c("all", "ARI", "ARI.simple", "Bo
                                                  "Spache", "Spache.old", "Strain",
                                                  "Traenkle.Bailer", "Traenkle.Bailer.2",
                                                  "Wheeler.Smith", "meanSentenceLength", "meanWordSyllables"),
-                                  drop = TRUE) {
+                                  removeHyphens = TRUE,
+                                  drop = TRUE, ...) {
     
-    # check that all measures are legal values
-    checkMeasure <- measure %in% c("all", "ARI", "ARI.simple", "Bormuth", "Bormuth.GP", 
-                                   "Coleman", "Coleman.C2", 
-                                   "Coleman.Liau", "Coleman.Liau.grade", "Coleman.short",
-                                   "Dale.Chall", "Dale.Chall.old", "Dale.Chall.PSK",
-                                   "Danielson.Bryan", "Danielson.Bryan.2",
-                                   "Dickes.Steiwer", "DRP", "ELF", "Farr.Jenkins.Paterson", 
-                                   "Flesch", "Flesch.PSK", "Flesch.Kincaid", 
-                                   "FOG", "FOG.PSK", "FOG.NRI", "FORCAST", "FORCAST.RGL",
-                                   "Fucks", "Linsear.Write", "LIW",
-                                   "nWS", "nWS.2", "nWS.3", "nWS.4", "RIX",
-                                   "Scrabble",
-                                   "SMOG", "SMOG.C", "SMOG.simple", "SMOG.de", 
-                                   "Spache", "Spache.old", "Strain",
-                                   "Traenkle.Bailer", "Traenkle.Bailer.2",
-                                   "Wheeler.Smith",
-                                   "meanSentenceLength",
-                                   "meanWordSyllables")
-    if (!all(checkMeasure))
-        stop("Invalid readability measures: ", measure[!checkMeasure])
+    addedArgs <- names(list(...))
+    if (length(addedArgs))
+        warning("Argument", ifelse(length(addedArgs)>1, "s ", " "), addedArgs, " not used.", sep = "", noBreaks. = TRUE)
 
+    # check that all measures are legal values
+    validMeasures <- c("all", "ARI", "ARI.simple", "Bormuth", "Bormuth.GP",
+                       "Coleman", "Coleman.C2",
+                       "Coleman.Liau", "Coleman.Liau.grade", "Coleman.Liau.short",
+                       "Dale.Chall", "Dale.Chall.old", "Dale.Chall.PSK",
+                       "Danielson.Bryan", "Danielson.Bryan.2",
+                       "Dickes.Steiwer", "DRP", "ELF", "Farr.Jenkins.Paterson",
+                       "Flesch", "Flesch.PSK", "Flesch.Kincaid",
+                       "FOG", "FOG.PSK", "FOG.NRI", "FORCAST", "FORCAST.RGL",
+                       "Fucks", "Linsear.Write", "LIW",
+                       "nWS", "nWS.2", "nWS.3", "nWS.4", "RIX",
+                       "Scrabble",
+                       "SMOG", "SMOG.C", "SMOG.simple", "SMOG.de",
+                       "Spache", "Spache.old", "Strain",
+                       "Traenkle.Bailer", "Traenkle.Bailer.2",
+                       "Wheeler.Smith",
+                       "meanSentenceLength",
+                       "meanWordSyllables")
+    checkMeasure <- measure %in% validMeasures
+    if (!all(checkMeasure))
+        stop("Invalid measure(s): ", measure[!checkMeasure])
+    if ("all" %in% measure) 
+        measure <- validMeasures[-1]
+    
     # to avoid "no visible binding for global variable" CHECK NOTE
     textID <- W <- St <- C <- Sy <- W3Sy <- W2Sy <- W_1Sy <- W6C <- W7C <- Wlt3Sy <- W_wl.Dale.Chall <- 
         W_wl.Spache <- ARI <- ARI.NRI <- ARI.simple <- Bormuth.GP <- Coleman <- Coleman.C2 <- 
@@ -90,7 +105,7 @@ readability.character <- function(x, measure = c("all", "ARI", "ARI.simple", "Bo
     
     # get the word length and syllable info for use in computing quantities
     x <- toLower(x)
-    tokenizedWords <- tokenize(x, removePunct = TRUE)
+    tokenizedWords <- tokenize(x, removePunct = TRUE, removeHyphens = removeHyphens)
     
     # number of syllables
     tmpSyll <- syllables(tokenizedWords)
@@ -266,7 +281,6 @@ readability.character <- function(x, measure = c("all", "ARI", "ARI.simple", "Bo
         # number of words which are not in the Spache word list
         textFeatures[, W_wl.Spache := sapply(tokenizedWords, function(x) sum(!(x %in% quanteda::wordlists$spache)))]
         textFeatures[, Spache := 0.121 * W / St + 0.082 * (100 * W_wl.Spache / W) + 0.659]
-        textFeatures[, Spache.old := 0.141 * W / St + 0.086 * (100 * W_wl.Spache / W) + 0.839]
         textFeatures[, W_wl.Spache := NULL]
     }
 
@@ -309,10 +323,12 @@ readability.character <- function(x, measure = c("all", "ARI", "ARI.simple", "Bo
     tempIndex <- which(names(textFeatures) == "Wlt3Sy")
     textFeatures <- as.data.frame(textFeatures)
     ret <- textFeatures[, (tempIndex+1) : ncol(textFeatures), drop = drop]
-    if (!is.vector(ret))
+    if (!is.vector(ret) & !("all" %in% measure)) {
         row.names(ret) <- textFeatures$textID
-    else 
+        ret <- ret[, measure, drop = drop] # put in order of measures specified in call
+    } else {
         names(ret) <- textFeatures$textID
+    }
     ret
 }
 

@@ -2,11 +2,16 @@
 % Please edit documentation in R/dfm-weighting.R
 \docType{methods}
 \name{docfreq}
-\alias{df}
-\alias{df,dfm-method}
 \alias{docfreq}
 \alias{docfreq,dfm-method}
-\title{compute the (weighted) document frequency of a feature}
+\title{#' @rdname weight
+#' @return \code{weight, x} with no \code{type} argument queries the weighting applied to the dfm, returning 
+setMethod("weight", signature(c("dfm", "MISSING")), function(x) {
+    if (isS4(x)) 
+        x@weighting
+    else 
+        attr(x, "weighting")
+})}
 \usage{
 docfreq(x, scheme = c("count", "inverse", "inversemax", "inverseprob",
   "unary"), smoothing = 0, k = 0, base = 10, threshold = 0,
@@ -15,10 +20,6 @@ docfreq(x, scheme = c("count", "inverse", "inversemax", "inverseprob",
 \S4method{docfreq}{dfm}(x, scheme = c("count", "inverse", "inversemax",
   "inverseprob", "unary"), smoothing = 0, k = 0, base = 10,
   threshold = 0, USE.NAMES = TRUE)
-
-df(x, ...)
-
-\S4method{df}{dfm}(x, ...)
 }
 \arguments{
 \item{x}{a \link{dfm-class} document-feature matrix}
@@ -48,6 +49,9 @@ the resulting numeric vector}
 a numeric vector of document frequencies for each feature
 }
 \description{
+compute the (weighted) document frequency of a feature
+}
+\details{
 For a \link{dfm-class} object, returns a (weighted) document frequency for 
 each term.  The default is a simple count of the number of documents in which
 a feature occurs more than a given frequency threshold.  (The default 
@@ -69,7 +73,6 @@ wikiDfm <- new("dfmSparse",
                               sparse = TRUE))
 wikiDfm
 docfreq(wikiDfm)
-df(wikiDfm)
 docfreq(wikiDfm, scheme = "inverse")
 docfreq(wikiDfm, scheme = "inverse", k = 1, smoothing = 1)
 docfreq(wikiDfm, scheme = "unary")

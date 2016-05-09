@@ -6,31 +6,40 @@
 \alias{readability.corpus}
 \title{calculate readability}
 \usage{
-readability(x, measure, drop = TRUE)
+readability(x, ...)
 
-\method{readability}{corpus}(x, measure, drop = TRUE)
+\method{readability}{corpus}(x, ...)
 
 \method{readability}{character}(x, measure = c("all", "ARI", "ARI.simple",
   "Bormuth", "Bormuth.GP", "Coleman", "Coleman.C2", "Coleman.Liau",
-  "Coleman.Liau.grade", "Coleman.short", "Dale.Chall", "Dale.Chall.old",
+  "Coleman.Liau.grade", "Coleman.Liau.short", "Dale.Chall", "Dale.Chall.old",
   "Dale.Chall.PSK", "Danielson.Bryan", "Danielson.Bryan.2", "Dickes.Steiwer",
   "DRP", "ELF", "Farr.Jenkins.Paterson", "Flesch", "Flesch.PSK",
   "Flesch.Kincaid", "FOG", "FOG.PSK", "FOG.NRI", "FORCAST", "FORCAST.RGL",
   "Fucks", "Linsear.Write", "LIW", "nWS", "nWS.2", "nWS.3", "nWS.4", "RIX",
-  "Scrabble", "SMOG", "SMOG.C", "SMOG.simple", "SMOG.de",      "Spache",
+  "Scrabble", "SMOG", "SMOG.C", "SMOG.simple",      "SMOG.de", "Spache",
   "Spache.old", "Strain", "Traenkle.Bailer", "Traenkle.Bailer.2",
-  "Wheeler.Smith", "meanSentenceLength", "meanWordSyllables"), drop = TRUE)
+  "Wheeler.Smith", "meanSentenceLength", "meanWordSyllables"),
+  removeHyphens = TRUE, drop = TRUE, ...)
 }
 \arguments{
 \item{x}{a \link{corpus} object or character vector}
 
+\item{...}{not used}
+
 \item{measure}{character vector defining the readability measure to calculate}
 
-\item{drop}{if \code{TRUE}, the result is returned as a numeric vector if only a single measure is requested;
-otherwise, a data.frame is returned with each column consisting of a requested measure.}
+\item{removeHyphens}{if \code{TRUE}, treat constituent words in hyphenated as
+separate terms, for purposes of computing word lengths, e.g. 
+"decision-making" as two terms of lengths 8 and 6 characters respectively,
+rather than as a single word of 15 characters}
+
+\item{drop}{if \code{TRUE}, the result is returned as a numeric vector if 
+only a single measure is requested; otherwise, a data.frame is returned 
+with each column consisting of a requested measure.}
 }
 \value{
-a data.frame object consisting of the documents as rows, and the
+a data.frame object consisting of the documents as rows, and the 
   readability statistics as columns
 }
 \description{
@@ -43,7 +52,7 @@ readability(txt, "Flesch.Kincaid")
 readability(txt, "Flesch.Kincaid", drop = FALSE)
 readability(txt, c("FOG", "FOG.PSK", "FOG.NRI"))
 inaugReadability <- readability(inaugCorpus, "all")
-round(cor(inaugReadability), 3)
+round(cor(inaugReadability), 2)
 }
 \author{
 Kenneth Benoit, re-engineered from the function of the same name by 

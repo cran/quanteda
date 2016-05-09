@@ -5,6 +5,7 @@ exampleString
 ie2010Corpus
 inaugCorpus
 inaugTexts
+mobydickText
 stopwords: .stopwords
 ukimmigTexts
 wordlists

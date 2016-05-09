@@ -1,3 +1,78 @@
+quanteda 0.9.6 
+==============
+
+*  Improved Naive Bayes model and prediction, `textmodel(x, y, method = "NB")`, now works correctly on k > 2.
+
+*  Improved tag handling for segment(x, what = "tags")
+
+*  Added valuetype argument to segment() methods, which allows faster and more robust segmentation on large texts.
+
+*  corpus() now converts all hyphen-like characters to simple hyphen
+
+*  segment.corpus() now preserves all existing docvars.
+
+*  corpus documentation now removes the description of the corpus object's structure since too many users were accessing these internal elements directly, which is strongly discouraged, as we are likely to change the corpus internals (soon and often).  Repeat after me: "encapsulation".
+
+*  Improve robustness of `corpus.VCorpus()` for constructing a corpus from a tm Corpus object.
+
+*  Add UTF-8 preservation to ngrams.cpp.
+
+*  Fix encoding issues for textfile(), improve functionality.
+
+*  Added two data objects: Moby Dick is now available as `mobydickText`, without needing to access a zipped text file; `encodedTextFiles.zip` is now a zipped archive of different encodings of (mainly) the UN Declaration of Human Rights, for testing conversions from 8-bit encodings in different (non-Roman) languages.
+
+*  phrasetotoken() now has a method correctly defined for corpus class objects.
+
+*  lexdiv() now works just like readability(), and is faster (based on data.table) and the code is simpler.
+
+*  removed quanteda::df() as a synonym for docfreq(), as this conflicted with stats::df().
+
+*  added version information when package is attached.
+
+*  improved rbind() and cbind() methods for dfm.  Both now take any length sequence of dfms and perform better type checking.  
+   rbind.dfm() also knits together dfms with different features, which can be useful for information and retrieval purposes 
+   or machine learning.
+   
+*  selectFeatures(x, anyDfm) (where the second argument is a dfm) now works with a selection = "remove" option.
+
+*  tokenize.character adds a removeURL option.
+
+*  added a corpus method for data.frame objects, so that a corpus can be constructed directly from a data.frame.  Requires the addition of a `textField` argument (similar to textfile).
+
+*  added `compress.dfm()` to combine identically named columns or rows.  #123
+
+*  Much better `phrasetotoken()`, with additional methods for all combinations of corpus/character v. dictionary/character/collocations.
+
+*  Added a` weight(x, type, ...`) signature where the second argument can be a named numeric vector of weights, not just a label for a type of weight.  Thanks http://stackoverflow.com/questions/36815926/assigning-weights-to-different-features-in-r/36823475#36823475.
+
+*  `as.data.frame` for dfms now passes `...` to `as.data.frame.matrix`.
+
+*  Fixed bug in `predict.fitted_textmodel_NB()` that caused a failure with k > 2 classes (#129)
+
+*  Improved `dfm.tokenizedTexts()` performance by taking care of zero-token documents more efficiently.
+
+Bug fixes
+---------
+*  Fixed a false-alarm warning message in textmodel_wordfish()
+
+*  Argument defaults for readability.corpus() now same as readability.character().  Fixes #107.
+
+*  Fixed a bug causing LIWC format dictionary imports to fail if extra characters followed the closing % in the file header.
+
+*  Fixed a bug in applyDictionary(x, dictionary, exclusive = FALSE) when the dictionary produced no matches at all, caused by an attempt to negative index a NULL.  #115
+
+*  Fixed #117, a bug where wordstem.tokenizedTexts() removed attributes from the object, causing a failure of dfm.tokenizedTexts().
+
+*  Fixed #119, a bug in selectFeatures.tokenizedTexts(x, features, selection = "remove") that returned a NULL for a document's tokens when no matching pattern for removal was found.
+
+*  Improved the behaviour of the `removeHyphens` option to `tokenize()` when `what = "fasterword"` or `what "fastestword"`. 
+
+*  readability() now returns measures in order called, not function definition order.
+
+*  textmodel(x, model = "wordfish") now removes zero-frequency documents and words prior to calling Rcpp.
+
+*  Fixed a bug in sample.corpus() that caused an error when no docvars existed. #128
+
 quanteda 0.9.4
 ==============
 

@@ -27,8 +27,8 @@ setMethod("show",
               if (object@cachedfile != "") {
                   cat("corpusSource object with data cached in", object@cachedfile, "\n")
               } else {
-                  cat("corpusSource object containing ", length(texts(object)), 
-                      " text", ifelse(length(texts(object)) == 1, "", "s"), " and ", 
+                  cat("corpusSource object consisting of ", length(texts(object)), 
+                      " document", ifelse(length(texts(object)) == 1, "", "s"), " and ", 
                       ncol(docvars(object)), " docvar", ifelse(ncol(docvars(object)) == 1, "", "s"), ".\n", sep="")
               }
           })
@@ -87,11 +87,13 @@ setMethod("show",
 #'   settings of encoding conversion when creating a corpus from a 
 #'   \link{corpusSource-class} object, without having to load in all of the 
 #'   source data again.
-#' @param ... additional arguments passed through to low-level file reading
-#'   function, such as \code{\link{file}}, \code{\link{read.csv}}, etc.  Useful
+#' @param ... additional arguments passed through to low-level file reading 
+#'   function, such as \code{\link{file}}, \code{\link{read.csv}}, etc.  Useful 
 #'   for specifying an input encoding option, which is specified in the same was
-#'   as it would be give to \code{\link{iconv}}.  See the Encoding section of
-#'   \link{file} for details.
+#'   as it would be give to \code{\link{iconv}}.  See the Encoding section of 
+#'   \link{file} for details.  Also useful for passing arguments through to
+#'   \code{\link{read.csv}}, for instance `quote = ""`, if quotes are causing
+#'   problems within comma-delimited fields.
 #' @details The constructor does not store a copy of the texts, but rather reads
 #'   in the texts and associated data, and saves them to a temporary disk file 
 #'   whose location is specified in the \link{corpusSource-class} object.  This 
@@ -150,8 +152,8 @@ setMethod("textfile",
                     cache = "ANY", 
                     docvarsfrom="missing", dvsep="missing", docvarnames="missing"),
           definition = function(file, textField, cache = FALSE, ...) {
-#               if ((!(addedArgs <- list(...)) %in% names(formals(file))))
-#                   warning("Argument", ifelse(length(addedArgs)>1, "s ", " "), names(addedArgs), " not used.", sep = "")
+              #               if ((!(addedArgs <- list(...)) %in% names(formals(file))))
+              #                   warning("Argument", ifelse(length(addedArgs)>1, "s ", " "), names(addedArgs), " not used.", sep = "")
               if (length(textField) != 1)
                   stop("textField must be a single field name or column number identifying the texts.")
               fileType <- getFileType(file)
@@ -172,8 +174,8 @@ setMethod("textfile",
                     cache = "ANY",
                     docvarsfrom="missing", dvsep="missing", docvarnames="missing"),
           definition = function(file, cache = FALSE, ...) {
-#               if (length(addedArgs <- list(...)))
-#                   warning("Argument", ifelse(length(addedArgs)>1, "s ", " "), names(addedArgs), " not used.", sep = "")
+              #               if (length(addedArgs <- list(...)))
+              #                   warning("Argument", ifelse(length(addedArgs)>1, "s ", " "), names(addedArgs), " not used.", sep = "")
               
               fileType <- getFileType(file)
               if (fileType=="filemask" | fileType=="vector") {
@@ -192,8 +194,8 @@ setMethod("textfile",
                     docvarsfrom="character", dvsep="ANY", docvarnames="ANY"),
           definition = function(file, textField=NULL, cache = FALSE, 
                                 docvarsfrom=c("headers"), dvsep="_", docvarnames=NULL, ...) {
-#               if (length(addedArgs <- list(...)))
-#                   warning("Argument", ifelse(length(addedArgs)>1, "s ", " "), names(addedArgs), " not used.", sep = "")
+              #               if (length(addedArgs <- list(...)))
+              #                   warning("Argument", ifelse(length(addedArgs)>1, "s ", " "), names(addedArgs), " not used.", sep = "")
               fileType <- getFileType(file)
               if (fileType=="filemask") {
                   sources <- get_docs(file, ...)
@@ -212,7 +214,7 @@ setMethod("textfile",
 
 # function common to all textfile methods to return either the cached
 # textfile object link, or the textfile object itself
-returnCorpusSource <- function(sources, cache) {
+returnCorpusSource <- function(sources, cache = FALSE) {
     if (cache) {
         tempCorpusFilename <- tempfile()
         save(sources, file=tempCorpusFilename)
@@ -231,6 +233,14 @@ get_doc <- function(f, ...) {
            txt =  { 
                txt <- readLines(con <- file(f, ...), warn = FALSE)
                close(con)
+               
+               # convert to UTF-8 if an input encoding was specified and if
+               # the native.enc is not already UTF-8
+#                if ("encoding" %in% names(args <- list(...)) & !(grepl("UTF-8", Sys.getlocale("LC_CTYPE")))) {
+#                    iconv(txt, from = args$encoding, to = "UTF-8")
+#                }
+               
+               
                result <- list(txts = paste(txt, collapse="\n"), docv = data.frame())
                return(result)
            },
@@ -244,11 +254,10 @@ get_doc <- function(f, ...) {
 
 get_docs <- function(filemask, ...) {
     if (length(filemask) == 1) {
-        # get the pattern at the end
-        pattern <- getRootFileNames(filemask)
+        # get the pattern at the end, as a regex
+        pattern <- utils::glob2rx(basename(filemask))
         # get the directory name
-        path <- substr(filemask, 1, nchar(filemask) - nchar(pattern))
-        if (path == "") path <- "."
+        path <- dirname(filemask)
         # get the filenames
         filenames <- list.files(path, pattern, full.names=TRUE)
     } else {
@@ -278,7 +287,7 @@ get_docs <- function(filemask, ...) {
         textsvec[i] <- get_doc(filenames[i], encoding = encodingFrom[i])$txts
     
     # name the vector with the filename by default
-    names(textsvec) <- getRootFileNames(filenames)
+    names(textsvec) <- basename(filenames)
     
     list(txts = textsvec, docv = data.frame())    
 }
@@ -311,9 +320,9 @@ get_data <- function(f, textField, sep = ",", ...){
 # read a document from a structured file containing text and data
 get_datas <- function(filemask, textField='index', fileType, ...){
     # get the pattern at the end
-    pattern <- getRootFileNames(filemask)
+    pattern <- basename(filemask)
     # get the directory name
-    path <- substr(filemask, 1, nchar(filemask) - nchar(pattern))
+    path <- dirname(filemask)
     # get the filenames
     filenames <- list.files(path, utils::glob2rx(pattern), full.names=TRUE)
     # read texts into a character vector
@@ -321,8 +330,14 @@ get_datas <- function(filemask, textField='index', fileType, ...){
     docv <- data.frame()
     for (f in filenames) {
         src <- get_data(f,  textField, ...)
-        thisdocv <- src$docv
-        textsvec <- c(textsvec, thisdocv$txts)
+        textsvec <- c(textsvec, src$txts)
+	docv <- tryCatch({
+		rbind(docv, src$docv)
+	},
+		error = function(e) {
+			stop('Data files do not have identical columns or variables')
+	}
+	)
     }
     list(txts=textsvec, docv=docv)
     # return(src)
@@ -385,9 +400,9 @@ get_json <- function(path, textField, ...) {
     # raw <- readLines(path)
     #parsed <- lapply(path, jsonlite::fromJSON, flatten=TRUE)
     df <- jsonlite::fromJSON(path, flatten=TRUE, ...)
-#     df <- data.frame(matrix(unlist(parsed), nrow=length(parsed), ncol=length(parsed[[1]]), byrow=TRUE),
-#                      stringsAsFactors=FALSE)
-#     names(df) <- names(parsed[[1]])
+    #     df <- data.frame(matrix(unlist(parsed), nrow=length(parsed), ncol=length(parsed[[1]]), byrow=TRUE),
+    #                      stringsAsFactors=FALSE)
+    #     names(df) <- names(parsed[[1]])
     textFieldi <- which(names(df)==textField)
     if (length(textFieldi)==0)
         stop("column name", textField, "not found.")
@@ -442,33 +457,6 @@ getFileType <- function(filenameChar) {
             return("tab")
         else return("unknown") }, USE.NAMES=FALSE)
 }    
-
-
-# Truncate absolute filepaths to root filenames
-#
-# This function takes an absolute filepath and returns just the 
-# document name
-#
-# @param longFilenames Absolute filenames including a full path with directory
-# @return character vector of filenames withouth directory path
-# @export
-# @author Paul Nulty
-# @examples
-# \dontrun{
-# getRootFileNames('/home/paul/documents/libdem09.txt')
-# }
-getRootFileNames <- function(longFilenames) {
-    ## function to return just the filename, path not included
-    ## might need to detect .Platform$OS.type to change the delimiter
-    delim <- "/"
-    
-    # replace forward slashes used in Windows
-    osName <- (Sys.info()[['sysname']] )
-    if (osName=="Windows") 
-        gsub("(\\\\)", "/", longFilenames) 
-    splitFilenames <- strsplit(longFilenames, delim)
-    return(sapply(splitFilenames, tail, n=1))
-}
 
 
 getdocvarsFromHeaders <- function(fnames, dvsep="_", docvarnames=NULL) {

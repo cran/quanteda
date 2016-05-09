@@ -10,6 +10,7 @@
 \alias{corpus.VCorpus}
 \alias{corpus.character}
 \alias{corpus.corpusSource}
+\alias{corpus.data.frame}
 \alias{is.corpus}
 \title{constructor for corpus objects}
 \usage{
@@ -21,6 +22,8 @@ corpus(x, ...)
 \method{corpus}{corpusSource}(x, ...)
 
 \method{corpus}{VCorpus}(x, ...)
+
+\method{corpus}{data.frame}(x, textField, ...)
 
 is.corpus(x)
 
@@ -54,6 +57,10 @@ To Dos, etc.}
 
 \item{citation}{Information on how to cite the corpus.}
 
+\item{textField}{the character name or integer index of the source data.frame
+indicating the column to be read in as text.  This must be of mode
+character.}
+
 \item{c1}{corpus one to be added}
 
 \item{c2}{corpus two to be added}
@@ -73,28 +80,13 @@ variable; if \code{FALSE}, return it as a single-column data.frame.  See
 \value{
 A corpus class object containing the original texts, document-level 
   variables, document-level metadata, corpus-level metadata, and default 
-  settings for subsequent processing of the corpus.  A corpus consists of a 
-  list of elements described below, although these should only be accessed 
-  through accessor and replacement functions, not directly (since the 
-  internals may be subject to change).  The structure of a corpus classed 
-  list object is:
-  
-  \item{$documents}{A data frame containing the document level information, 
-  consisting of \code{\link{texts}}, user-named \code{\link{docvars}} 
-  variables describing attributes of the documents, and \code{metadoc} 
-  document-level metadata whose names begin with an underscore character, 
-  such as \code{_language}.}
-  
-  \item{$metadata}{A named list set of corpus-level meta-data, including 
-  \code{source} and \code{created} (both generated automatically unless 
-  assigned), \code{notes}, and \code{citation}.}
-  
-  \item{$settings}{Settings for the corpus which record options that govern 
-  the subsequent processing of the corpus when it is converted into a 
-  document-feature matrix (\link{dfm}).  See \link{settings}.}
-  
-  \item{$tokens}{An indexed list of tokens and types tabulated by document, 
-  including information on positions.  Not yet fully implemented.}
+  settings for subsequent processing of the corpus.  A corpus currently 
+  consists of an S3 specially classed list of elements, but **you should not 
+  access these elements directly**. Use the extractor and replacement 
+  functions instead, or else your code is not only going to be uglier, but
+  also likely to break should the internal structure of a corpus object
+  change (as it inevitably will as we continue to develop the package,
+  including moving corpus objects to the S4 class system).
 
 \code{is.corpus} returns \code{TRUE} if the object is a corpus
 }
@@ -113,9 +105,15 @@ document-level variables and document-level meta-data.
 \details{
 The texts and document variables of corpus objects can also be 
   accessed using index notation. Indexing a corpus object as a vector will 
-  return its text, equivalent to \code{texts(x)}.  Indexing a corpus using
-  two indexes (integers or column names) will return the document variables,
-  equivalent to \code{docvars(x)}.
+  return its text, equivalent to \code{texts(x)}.  Note that this is not the 
+  same as subsetting the entire corpus -- this should be done using the 
+  \code{\link{subset}} method for a corpus.
+  
+  Indexing a corpus using two indexes (integers or column names) will return 
+  the document variables, equivalent to \code{docvars(x)}.  Because a corpus 
+  is also a list, it is also possible to access, create, or replace docvars 
+  using list notation, e.g. \code{myCorpus[["newSerialDocvar"]] <- 
+  paste0("tag", 1:ndoc(myCorpus))}.
 
 The \code{+} operator for a corpus object will combine two corpus 
   objects, resolving any non-matching \code{\link{docvars}} or 
@@ -139,6 +137,10 @@ The \code{+} operator for a corpus object will combine two corpus
 When \code{x} is a \link[tm]{VCorpus} object, the fixed metadata 
   fields from that object are imported as document-level metadata. Currently
   no corpus-level metadata is imported, but we will add that soon.
+
+When \code{x} is a \code{data.frame}, then there is no encoding
+  conversion performed on the character input.  It is highly recommended that you 
+  detect and convert this input to UTF-8 prior to using it as input for a corpus.
 }
 \examples{
 # create a corpus from texts
@@ -171,6 +173,15 @@ if ("tm" \%in\% rownames(installed.packages())) {
     summary(quantCorp)
 }
 
+# construct a corpus from a data.frame
+mydf <- data.frame(letter_factor = factor(rep(letters[1:3], each = 2)),
+                  some_ints = 1L:6L,
+                  some_text = paste0("This is text number ", 1:6, "."),
+                  stringsAsFactors = FALSE,
+                  row.names = paste0("fromDf_", 1:6))
+mydf
+summary(corpus(mydf, textField = "some_text", source = "From a data.frame called mydf."))
+
 # concatenate corpus objects
 corpus1 <- corpus(inaugTexts[1:2])
 corpus2 <- corpus(inaugTexts[3:4])
@@ -182,6 +193,7 @@ inaugCorpus["1793-Washington"]    # 2nd Washington inaugural speech
 inaugCorpus[2]                    # same
 ie2010Corpus[, "year"]            # access the docvars from ie2010Corpus
 ie2010Corpus[["year"]]            # same
+
 # create a new document variable
 ie2010Corpus[["govtopp"]] <- ifelse(ie2010Corpus[["party"]] \%in\% c("FF", "Greens"), 
                                     "Government", "Opposition")
@@ -192,6 +204,6 @@ Kenneth Benoit and Paul Nulty
 }
 \seealso{
 \link{docvars}, \link{metadoc}, \link{metacorpus}, \link{settings}, 
-  \link{texts}
+  \link{texts}, \link{ndoc}, \link{docnames}
 }
 
