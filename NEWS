@@ -51,6 +51,19 @@ quanteda 0.9.6
 
 *  Improved `dfm.tokenizedTexts()` performance by taking care of zero-token documents more efficiently.
 
+*  `dictionary(file = "liwc_formatted_dict.dic", format = "LIWC")` now handles poorly formatted dictionary files better, such as the Moral Foundations Dictionary in the examples for `?dictionary`.
+
+*  added `as.tokenizedTexts` to coerce any list of characters to a tokenizedTexts object.
+
+
+Bug fixes >= 0.9.6-3
+--------------------    
+*  Fix bug in phrasetotoken, signature 'corpus,ANY' that was causing an infinite loop.
+
+*  Fixed bug introduced in commit b88287f (0.9.5-26) that caused a failure in dfm() with empty (zero-token) documents.  Also fixes Issue #168.
+
+*  Fixed bug that caused dfm() to break if no features or only one feature was found.
+
 Bug fixes
 ---------
 *  Fixed a false-alarm warning message in textmodel_wordfish()
