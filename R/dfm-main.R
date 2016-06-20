@@ -135,7 +135,7 @@ dfm <- function(x, ...) {
 #' tokensAll <- tokenize(toLower(testText), removePunct = TRUE)
 #' tokensNoStopwords <- removeFeatures(tokensAll, stopwords("english"))
 #' tokensNgramsNoStopwords <- ngrams(tokensNoStopwords, 2)
-#' features(dfm(tokensNgramsNoStopwords, ngrams = 1:2))
+#' features(dfm(tokensNgramsNoStopwords, verbose = FALSE))
 #' 
 #' # keep only certain words
 #' dfm(testCorpus, keptFeatures = "*s", verbose = FALSE)  # keep only words ending in "s"
@@ -147,7 +147,6 @@ dfm <- function(x, ...) {
 #'                 "Justin Bieber #justinbieber #belieber #fetusjustin #EMABiggestFansJustinBieber")
 #' dfm(testTweets, keptFeatures = "#*", removeTwitter = FALSE)  # keep only hashtags
 #' dfm(testTweets, keptFeatures = "^#.*$", valuetype = "regex", removeTwitter = FALSE)
-#' 
 dfm.character <- function(x, 
                           verbose=TRUE, 
                           toLower=TRUE, 
@@ -199,7 +198,7 @@ dfm.character <- function(x,
 #         valuetype <- "regex"
 #     }
     
-    dfm(tokenizedTexts, verbose=verbose, toLower=toLower, stem=stem, 
+    dfm(tokenizedTexts, verbose=verbose, toLower = FALSE, stem=stem, 
         ignoredFeatures=ignoredFeatures, keptFeatures = keptFeatures,
         language=language,
         thesaurus=thesaurus, dictionary=dictionary, valuetype = valuetype, 
@@ -211,14 +210,14 @@ dfm.character <- function(x,
 #' @importFrom utils glob2rx
 #' @export
 dfm.tokenizedTexts <- function(x, 
-                               verbose=TRUE,
-                               toLower = TRUE,
-                               stem=FALSE, 
-                               ignoredFeatures=NULL, 
-                               keptFeatures=NULL,
-                               language="english",
-                               thesaurus=NULL, 
-                               dictionary=NULL, 
+                               verbose = TRUE,
+                               toLower = FALSE,
+                               stem = FALSE, 
+                               ignoredFeatures = NULL, 
+                               keptFeatures = NULL,
+                               language = "english",
+                               thesaurus = NULL, 
+                               dictionary = NULL, 
                                valuetype = c("glob", "regex", "fixed"),
                                ...) {
     
@@ -238,6 +237,12 @@ dfm.tokenizedTexts <- function(x,
     
     if (verbose && grepl("^dfm\\.tokenizedTexts", sys.calls()[[2]])) {
         cat("Creating a dfm from a tokenizedTexts object ...")
+    }
+
+    # lowercase if necessary 
+    if (toLower) {
+        if (verbose) cat("\n   ... lowercasing", sep="")
+        x <- toLower(x)
     }
 
     # get document names

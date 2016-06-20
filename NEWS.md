@@ -1,3 +1,26 @@
+quanteda 0.9.7
+==============
+
+## New Features
+
+*  Improved the performance of `selectFeatures.tokenizedTexts()`.  
+*  Improved the performance of `rbind.dfm()`.  
+*  Added support for different docvars when importing multiple files using `textfile()`.  (#147)  
+*  Added support for comparison dispersion plots in `plot.kwic()`. (#146)  
+*  Added a corpus constructor method for kwic objects.  
+*  Substantially improved the performance of `convert(x, to = "stm")` for dfm export, including adding an argument for meta-data (docvars, in quanteda parlance). (#209)  
+*  Internal rewrite of `textfile()`, now supports more file types, more wildcard patterns, and is far more robust generally.  
+
+## Bug fixes
+
+*  Fixed bug in textfile() where source is a remote .zip set.  (#172)  
+*  Fixed bug in wordstem.dfm() that caused an error if supplied a dfm with a feature whose total frequency
+   count was zero, or with a feature whose total docfreq was zero.  Fixes #181.  
+*  Fix #214 "mysterious stemmed token" bug in `wordstem.dfm()`, introduced in fixing #181.  
+*  Fixed previously non-functional `toLower = ` argument in `dfm.tokenizedTexts()`.
+*  Fixed some errors in the computation of a few readability formulas (#215).
+
+
 quanteda 0.9.6 
 ==============
 
@@ -63,6 +86,8 @@ Bug fixes >= 0.9.6-3
 *  Fixed bug introduced in commit b88287f (0.9.5-26) that caused a failure in dfm() with empty (zero-token) documents.  Also fixes Issue #168.
 
 *  Fixed bug that caused dfm() to break if no features or only one feature was found.
+
+*  Fixed bug in predict.fitted_textmodel_NB() that caused a failure with k > 2 classes (#129)
 
 Bug fixes
 ---------
