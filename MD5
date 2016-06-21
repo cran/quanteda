@@ -1,4 +1,4 @@
-1d8c0d53e0b65f25f0fbd9e21fa28fc9 *DESCRIPTION
+1dc0fc2d382e97f5964e67d200142697 *DESCRIPTION
 8b2f91a30164fa8629de9661dd893c73 *NAMESPACE
 62cfe4258a67b4803a8ad650d603bde9 *NEWS.md
 ec243952a3bee6126a3f29afe2d82f0a *R/RcppExports.R
@@ -59,13 +59,13 @@ e82f366a69e8ab1d1a95bf1bdf471309 *data/wordlists.RData
 d32239bcb673463ab874e80d47fae504 *inst/LICENSE.txt
 ca71493755ee2b49b1329097f03de865 *inst/doc/LitVignette.R
 9bce42ae9c63d35b31538044b16cbee0 *inst/doc/LitVignette.Rmd
-554552344c477c58dac98d71423835d5 *inst/doc/LitVignette.html
+6cd7b9a0eeb6c5a15a7c5b657d3ed20c *inst/doc/LitVignette.html
 f1ee5db2f4044d0ab4ff1d8721e1a8fc *inst/doc/development-plans.R
 000f1ae47581c2fb732ae45d80ef56e1 *inst/doc/development-plans.Rmd
 5e673c680cd8ccaad6661069a3e00a11 *inst/doc/development-plans.html
 c0feffbf5562902774166058e2809556 *inst/doc/quickstart.R
 c70ee67b0ef7beb64c20d10361abde9d *inst/doc/quickstart.Rmd
-285b5de546f0a82b3cdc24baee44f314 *inst/doc/quickstart.html
+dbf538870d71327cade60421839c8065 *inst/doc/quickstart.html
 c76eb4dfe13e31cb3daae8c73e102999 *inst/extdata/encodedTextFiles.zip
 fe367913a4805afc1922c597c943726a *man/LBGexample.Rd
 b11f67296ac5e82982546a5085857036 *man/applyDictionary.Rd
@@ -149,7 +149,7 @@ e3857e1c7696b2ab714ca659ce5017e8 *man/weight.Rd
 751b7f1066de1eed01cece89ca01ea82 *src/Makevars.win
 1f0d00936b63faa63f58eddf64604547 *src/RcppExports.cpp
 5118be12b8d151f8eff0da1f2e9a1b71 *src/ngrams.cpp
-01654654cbd213b02d561dc9b8bf5301 *src/sequences.cpp
+787323b02e5024cd438ab36f8ee703e0 *src/sequences.cpp
 c7249aaa6f8516ef893022467d872407 *src/tokens_join.cpp
 f69c3b02a9d39c617ed884e58d430022 *src/tokens_select.cpp
 42f782881fadd930337862be34670a4d *src/utility.cpp
