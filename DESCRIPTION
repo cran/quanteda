@@ -18,8 +18,8 @@ Author: Kenneth Benoit [aut, cre],
     Pablo Barberá [ctb],
     Will Lowe [ctb]
 Maintainer: Kenneth Benoit <kbenoit@lse.ac.uk>
-Version: 0.9.8.3
-Date: 2016-10-15
+Version: 0.9.8.5
+Date: 2016-10-28
 Description: A fast, flexible toolset for for the management, processing, and
     quantitative analysis of textual data in R.
 License: GPL-3
@@ -49,6 +49,6 @@ Collate: 'RcppExports.R' 'dictionaries.R' 'corpus.R' 'collocations.R'
 RoxygenNote: 5.0.1
 SystemRequirements: C++11
 NeedsCompilation: yes
-Packaged: 2016-10-15 17:27:25 UTC; kbenoit
+Packaged: 2016-10-31 22:06:54 UTC; kbenoit
 Repository: CRAN
-Date/Publication: 2016-10-16 09:44:32
+Date/Publication: 2016-10-31 23:44:48

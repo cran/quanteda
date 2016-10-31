@@ -1,6 +1,6 @@
-46668b239887600df024eeda959f9c63 *DESCRIPTION
+a54ba8924fb8ce0a0f0d6a944054bfa4 *DESCRIPTION
 e555eb8a6415a44aa214c0028ba1ccaf *NAMESPACE
-94171c3dacc53ff51b22e4833e32de87 *NEWS.md
+7ab6adc0367bea29df8c0299e3e4b4bd *NEWS.md
 5882fcab79963186c10a43b533239d0b *R/RcppExports.R
 4bab3c8d1628fc9230b46bc397a0d499 *R/collocations.R
 cfc002314484af825219b62a4fff0041 *R/converters.R
@@ -8,7 +8,7 @@ d31852c8fcf43f96ef25575bf69f4144 *R/corpus.R
 82a2184b9dcbc2ad0558d943395f608c *R/dataDocs.R
 9ef9fa27351b444138d0e638def0e263 *R/describe-texts.R
 e02bbb2f18caf43db520681f18a8b9da *R/dfm-classes.R
-3f80e2baf608cd3a5a4d6777bbe9e491 *R/dfm-main.R
+efb2954615943a3bd4e38861acd56585 *R/dfm-main.R
 3e07caf73c26e4c006ef4dde29a61a67 *R/dfm-methods.R
 a3ac692a8ea7044a512e7f66cfb7af1c *R/dfm-weighting.R
 8111f23c4dcecdab3d19f6747f6e9423 *R/dictionaries.R
@@ -24,7 +24,7 @@ c7b0e1958952544d7beb92d0d31e7d51 *R/plots.R
 94fd189d37454c780a50a485ae5dddb9 *R/readability.R
 34589e29fda0cee6e3e7e8927c092541 *R/resample.R
 90d08a841df580b09ff9e59e364f1809 *R/selectFeatures-old.R
-afb975273f55ec63477f9547b005bc94 *R/selectFeatures.R
+9d946d8bbc55d9f2f16cc967c346671f *R/selectFeatures.R
 9437cebd3829102a5021d9825e82192d *R/settings.R
 8fc620481967ae32bed65b436e1ee557 *R/similarity.R
 7b1bae702f2257238f4e74cdabf2345a *R/stopwords.R
@@ -41,7 +41,7 @@ b0db1243dc7f6fd3195b29ecabeb688b *R/tokenize.R
 459b4d3bb61fb11232bd7a194bb498b9 *R/util.R
 be77fccf2e57b9e592676c6ac91d730b *R/wordstem.R
 43855ab4c3983661df6f28136c93b60a *R/zzz.R
-41ae8846b84c900c2aa0bce3cfdc51dc *README.md
+de13c2b0bf7f319c7226d5f37ba51fdd *README.md
 66af7ba90ee02458fd1e3c6e2ec77139 *build/vignette.rds
 45e288dbf219b8bb62ef97ce043a1b65 *data/LBGexample.RData
 124e8e061fc3a4803507fbdb5a55b4f8 *data/datalist
@@ -57,16 +57,17 @@ e687fa791998e21bea86dec5cc0ac903 *data/mobydickText.RData
 e82f366a69e8ab1d1a95bf1bdf471309 *data/wordlists.RData
 5f4abd6df83ff95f847ad28e245143fd *demo/00Index
 9c1486566f9af3746d22c470d3519c70 *demo/quanteda.R
+cac05cce27b3c3e840ed6082bd58fb5f *inst/CITATION
 d32239bcb673463ab874e80d47fae504 *inst/LICENSE.txt
 ca71493755ee2b49b1329097f03de865 *inst/doc/LitVignette.R
 9bce42ae9c63d35b31538044b16cbee0 *inst/doc/LitVignette.Rmd
-c31b80f94013d6d533e0ca2fee070456 *inst/doc/LitVignette.html
+b665bcef51c49c9c54f8b7d8c418c7b0 *inst/doc/LitVignette.html
 f1ee5db2f4044d0ab4ff1d8721e1a8fc *inst/doc/development-plans.R
 000f1ae47581c2fb732ae45d80ef56e1 *inst/doc/development-plans.Rmd
 5e673c680cd8ccaad6661069a3e00a11 *inst/doc/development-plans.html
 ca66da80b18c4f09e057bc37059232ac *inst/doc/quickstart.R
 af7f6cb038979e68e7751ae4cc60809f *inst/doc/quickstart.Rmd
-893541660aced5f22b8be1b2cae80439 *inst/doc/quickstart.html
+81fd6db1d7abce36e1f03e4382538003 *inst/doc/quickstart.html
 c76eb4dfe13e31cb3daae8c73e102999 *inst/extdata/encodedTextFiles.zip
 fe367913a4805afc1922c597c943726a *man/LBGexample.Rd
 3c5ff418daebacd28ac90541f2efd3ea *man/applyDictionary.Rd
@@ -123,7 +124,7 @@ c498a117be107903eafcfbedf59ba088 *man/settings.Rd
 2d940ea020af4cf37661d359322d1f06 *man/show-dictionary-method.Rd
 fecd32054869c974df18793dade20e1e *man/similarity.Rd
 fd7298a8ae968c5667fcc0ac4b1722fe *man/sort.dfm.Rd
-ec7d0aacfd41dd103654a95bf269523f *man/stopwords.Rd
+a58a08a854ab4d32c5fd6dbc55cc87a9 *man/stopwords.Rd
 15643c5588d89dbe4c7eeac3c9e45ca7 *man/subset.corpus.Rd
 f05564a136f51e766a120def4047aad2 *man/summary.corpus.Rd
 ed0f8c54112f5e00485df0761f5bbeb5 *man/syllables.Rd
@@ -150,7 +151,7 @@ e3857e1c7696b2ab714ca659ce5017e8 *man/weight.Rd
 751b7f1066de1eed01cece89ca01ea82 *src/Makevars.win
 396de57facc4d2e79848248c01638357 *src/RcppExports.cpp
 5118be12b8d151f8eff0da1f2e9a1b71 *src/ngrams.cpp
-827569e82f2250b33fcb811bb3dbff87 *src/sequences.cpp
+8278cc858a50099ac024d7eb8140c34a *src/sequences.cpp
 3cc9f80c68d608451ae236de70a68158 *src/tokens_join.cpp
 f69c3b02a9d39c617ed884e58d430022 *src/tokens_select.cpp
 42f782881fadd930337862be34670a4d *src/utility.cpp
@@ -249,7 +250,7 @@ e17a31d51a3173bac18b0948a5808481 *tests/testthat/testDictionaries.R
 79f80b8190c6d7067454f1d14b744637 *tests/testthat/testNgrams.R
 102acc7e5629222ef1b6795ec7d5a32f *tests/testthat/testPlots.R
 5780c1a619095586086678fcc61f9dab *tests/testthat/testSelectFeatures.R
-f5a5da630712dbcda062291c43ec23cf *tests/testthat/testSimilarity.R
+2e9ff74b265bc319aac600b950842afa *tests/testthat/testSimilarity.R
 4ed39f35cd9956e62b0d4bc85b46167d *tests/testthat/testStem.R
 3497483eb7b2fbd84635e86f8af1893f *tests/testthat/testStopwords.R
 3891d56ad4b1982719644cf7491aa906 *tests/testthat/testTextfile.R
