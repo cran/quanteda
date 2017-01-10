@@ -1,6 +1,140 @@
+# quanteda 0.9.9
 
-quanteda 0.9.8
-==============
+This release has some major changes to the API, as described in this document (LINK).
+
+## Data objects
+
+### Renamed data objects
+
+new name | original name | notes 
+:--------|:------------- |:----- 
+`data_char_sampletext` | `exampleString` | 
+`data_char_mobydick` | `mobydickText`|
+`data_dfm_LBGexample` | `LBGexample` |
+`data_char_sampletext` | `exampleString` | 
+
+
+### Renamed internal data objects
+
+The following objects have been renamed, but will not affect user-level functionality because they are primarily internal.  Their man pages have been moved to a common ?`data-internal` man page, hidden from the index, but linked from some of the functions that use them.
+
+new name | original name | notes 
+:--------|:------------- |:----- 
+`data_int_syllables` | `englishSyllables` |  (used by `textcount_syllables()`) 
+`data_char_wordlists` | `wordlists` |  (used by `readability()`) 
+`data_char_stopwords` | `.stopwords` | (used by `stopwords()`
+
+### Deprecated data objects
+
+In v.0.9.9 the old names remain available, but are deprecated.
+
+new name | original name | notes 
+:--------|:------------- |:----- 
+`data_char_ukimmig2010` | `ukimmigTexts` | 
+`data_corpus_irishbudget2010` | `ie2010Corpus` |
+`data_char_inaugural` | `inaugTexts` |
+`data_corpus_inaugural` | `inaugCorpus` |
+
+
+
+## Deprecated functions
+
+The following functions will still work, but issue a deprecation warning:
+
+new function | deprecated function | contructs:
+:--------|:------------- |:-------
+`tokens` | `tokenize()` | `tokens` class object
+`corpus_subset` | `subset.corpus` | `corpus` class object
+`corpus_reshape` | `changeunits` | `corpus` class object
+`corpus_sample` | `sample`| `corpus` class object
+`corpus_segment` | `segment`| `corpus` class object
+`dfm_compress` | `compress` | `dfm` class object
+`dfm_lookup` | `applyDictionary` | `dfm` class object
+`dfm_remove` | `removeFeatures.dfm` | `dfm` class object
+`dfm_sample`   | `sample.dfm` | `dfm` class object
+`dfm_select` | `selectFeatures.dfm` | `dfm` class object
+`dfm_smooth` | `smoother` | `dfm` class object
+`dfm_sort`   | `sort.dfm` | `dfm` class object
+`dfm_trim`   | `trim.dfm` | `dfm` class object
+`dfm_weight` | `weight` | `dfm` class object
+`textplot_wordcloud` | `plot.dfm` | (plot)
+`textplot_xray` | `plot.kwic`  | (plot)
+`textstat_readability` | `readability` | `data.frame` 
+`textstat_lexdiv` | `lexdiv` | `data.frame`
+`textstat_simil` | `similarity` | `dist`
+`textstat_dist` | `similarity` | `dist`
+`featnames` | `features` | `character`
+`nsyllable` | `syllables` | (named) `integer`
+`nscrabble` | `scrabble` | (named) `integer`
+`tokens_ngrams` | `ngrams` | `tokens` class object
+`tokens_skipgrams` | `skipgrams` | `tokens` class object
+`tokens_toupper` | `toUpper.tokens`, `toUpper.tokenizedTexts` | `tokens`, `tokenizedTexts`
+`tokens_tolower` | `toLower.tokens`, `toLower.tokenizedTexts` | `tokens`, `tokenizedTexts`
+`char_toupper` | `toUpper.character`, `toUpper.character` | `character`
+`char_tolower` | `toLower.character`, `toLower.character` | `character`
+`tokens_compound` | `joinTokens`, `phrasetotoken` | `tokens` class object
+
+
+
+
+## New functions
+
+The following are new to v0.9.9 (and not associated with deprecated functions):
+
+new function | description | ouput class
+:--------|:------------- |:-------
+`fcm()` | constructor for a feature co-occurrence matrix | `fcm` 
+`fcm_select` | selects features from an `fcm` | `fcm`
+`fcm_remove` | removes features from an `fcm` | `fcm`
+`fcm_sort`    | sorts an `fcm` in alpahbetical order of its features| `fcm`
+`fcm_compress` | compacts an `fcm` | `fcm`
+`fcm_tolower` | lowercases the features of an `fcm` and compacts | `fcm`
+`fcm_toupper` | uppercases the features of an `fcm` and compacts | `fcm`
+`dfm_tolower` | lowercases the features of a `dfm` and compacts | `dfm`
+`dfm_toupper` | uppercases the features of a `dfm` and compacts | `dfm`
+`sequences`   | experimental collocation detection | `sequences`
+
+## Deleted functions and data objects
+
+new name | reason
+:--------|:-------------
+`encodedTextFiles.zip` | moved to the [**readtext**](https://github.com/kbenoit/readtext) package
+`describeTexts` | deprecated several versions ago for `summary.character`
+`textfile` | moved to package [**readtext**](http://github.com/kbenoit/readtext)
+`encodedTexts` | moved to package [**readtext**](http://github.com/kbenoit/readtext), as `data_char_encodedtexts`
+`findSequences` | replaced by `sequences`
+
+
+## Other new features
+
+*  `to = "lsa"` functionality added to `convert()` (#414)  
+*  Much faster pattern matching in general, through an overhaul of how `valuetype` matches work for many functions.  
+*  Added experimental `View` methods for `kwic` objects, based on Javascript Datatables.  
+*  `kwic` is completely rewritten, now uses fast hashed index matching in C++ and fully implements vectorized matches (#306) and all `valuetype`s (#307).
+*  `tokens_lookup`, `tokens_select`, and `tokens_remove` are faster and use parallelization (based on the TBB library).
+*  `textstat_dist` and `textstat_simil` add fast, sparse, and parallel computation of many new distance and similarity matrices.  
+*  Added `textmodel_wordshoal` fitting function.
+*  Add `max_docfreq` and `min_docfreq` arguments, and better verbose output, to `dfm_trim` (#383).
+*  Added support for batch hashing of tokens through `tokens()`, for more memory-efficient token hashing when dealing with very large numbers of documents.  
+*  Added support for in-memory compressed corpus objects.
+*  Consolidated corpus-level metadata arguments in `corpus()` through the `metacorpus` list argument.  
+*  Added Greek stopwords.  (See #282).  
+*  Added index handling `[`, `[[`, and `$` for (hashed) `tokens` objects.  
+*  Now using ggplot2.
+*  Added tokens methods for `collocations()` and `kwic()`.
+*  Much improved performance for `tokens_select()` (formerly `selectFeatures.tokens()`).
+*  Improved `ngrams()` and `joinTokens()` performance for hashed `tokens` class objects.
+*  Improved `dfm.character()` by using new `tokens()` constructor to create hashed tokenized texts by default when creating a dfm, resulting in performance gains when constructing a dfm.  Creating a dfm from a hashed `tokens` object is now 4-5 times faster than the older `tokenizedTexts` object.
+*  Added new (hashed) `tokens` class object.
+*  Added plot method for fitted `textmodel_wordscores objects`.  
+*  Added fast `tokens_lookup()` method (formerly `applyDictionary()`), that also works with 
+   dictionaries that have multi-word keys.  Addresses but does not entirely yet solve #188.
+*  Added `sparsity()` function to compute the sparsity of a dfm.
+*  Added feature co-occurence matrix functions (`fcm`).
+
+
+
+# quanteda 0.9.8
 
 ## New Features
 
@@ -24,6 +158,8 @@ quanteda 0.9.8
 
 ## Bug fixes
 
+*  (0.9.8.7) Solved #267 in which `fcm(x, tri = TRUE)` temporarily created a dense logical matrix.
+*  (0.9.8.7) Added feature co-occurence matrix functions (`fcm`).
 *  (0.9.8.5) Fixed an incompatibility in sequences.cpp with Solaris x86 (#257)
 *  (0.9.8.4) Fix bug in verbose output of dfm that causes misreporting of number of features (#250)
 *  (0.9.8.4) Fix a bug in `selectFeatures.dfm()` that ignored `case_insensitive = TRUE` settings (#251) 

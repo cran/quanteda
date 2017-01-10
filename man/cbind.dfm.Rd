@@ -14,7 +14,7 @@
 row-wise (\code{rbind}) to the first}
 }
 \description{
-Take a sequence of \link{dfm-class} objects and combine by columns or
+Take a sequence of \link{dfm} objects and combine by columns or
 rows, returning a dfm with the combined documents or features, respectively.
 }
 \details{
@@ -34,8 +34,8 @@ rows, returning a dfm with the combined documents or features, respectively.
 }
 \examples{
 # cbind() for dfm objects
-(dfm1 <- dfm("This is one sample text sample.", verbose = FALSE))
-(dfm2 <- dfm("More words here.", verbose = FALSE))
+(dfm1 <- dfm("This is one sample text sample"))
+(dfm2 <- dfm("More words here"))
 cbind(dfm1, dfm2)
 
 # rbind() for dfm objects
@@ -45,4 +45,6 @@ cbind(dfm1, dfm2)
 rbind(dfm1, dfm2)
 rbind(dfm1, dfm2, dfm3)
 }
+\keyword{dfm}
+\keyword{internal}
 

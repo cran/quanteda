@@ -1,10 +1,8 @@
 #' An R package for the quantitative analysis of textual data
 #'
-#' @author Ken Benoit and Paul Nulty
-#' 
-#' A set of functions for creating and managing text corpora,
-#'   extracting features from text corpora, and analyzing those features using
-#'   quantitative methods.
+#' A set of functions for creating and managing text corpora, extracting
+#' features from text corpora, and analyzing those features using quantitative
+#' methods.
 #'   
 #'   \pkg{quanteda} makes it easy to manage texts in the form of a corpus,
 #'   defined as a collection of texts that includes document-level variables
@@ -56,12 +54,16 @@
 #'   
 #'   Additional features of \pkg{quanteda} include: \itemize{ 
 #'   \item{the ability to explore texts using \link[=kwic]{key-words-in-context};}
-#'   \item{fast computation of a variety of \link[=readability]{readability indexes};}
-#'   \item{fast computation of a variety of \link[=lexdiv]{lexical diversity measures};}
+#'   \item{fast computation of a variety of \link[=textstat_readability]{readability indexes};}
+#'   \item{fast computation of a variety of \link[=textstat_lexdiv]{lexical diversity measures};}
 #'   \item{quick computation of word or document \link[=similarity]{similarities}, for clustering or to compute distances for other purposes; and}
 #'   \item{a comprehensive suite of \link[=summary.corpus]{descriptive statistics on text} such as the number of sentences, words, characters, or
 #'   syllables per document.}
 #'   }
+#'   
+#' @section Source code and additional information:
+#' 
+#' \url{http://github.com/kbenoit/quanteda}  
 "_PACKAGE"
 
 

@@ -1,9 +1,16 @@
 
 setClassUnion("charNULL", c("character", "NULL"))
 
-# @rdname dictionary
-# @export 
-# NEED TO ADD A VALIDATOR
+#' @rdname dictionary-class
+#' @export
+#' @keywords internal dictionary
+#' @slot .Data named list of mode character, where each element name is a
+#'   dictionary "key" and each element is one or more dictionary entry "values"
+#'   consisting of a pattern match
+#' @slot concatenator character object specifying space between multi-word
+#'   values
+#' @slot format dictionary format (if imported)
+#' @slot file file from which a dictionary was read (if imported)
 setClass("dictionary", contains = c("list"),
          slots = c(concatenator = "character", format = "charNULL", file = "charNULL"),
          prototype = prototype(concatenator = " ", format = NULL, file = NULL))
@@ -12,6 +19,7 @@ setClass("dictionary", contains = c("list"),
 #' 
 #' Print/show method for dictionary objects.
 #' @param object the dictionary to be printed
+#' @rdname dictionary-class
 #' @export
 setMethod("show", "dictionary", 
           function(object) {
@@ -65,25 +73,26 @@ setMethod("show", "dictionary",
 #'   
 #' @seealso \link{dfm}
 #' @examples
-#' mycorpus <- subset(inaugCorpus, Year>1900)
+#' mycorpus <- corpus_subset(data_corpus_inaugural, Year>1900)
 #' mydict <- dictionary(list(christmas = c("Christmas", "Santa", "holiday"),
 #'                           opposition = c("Opposition", "reject", "notincorpus"),
 #'                           taxing = "taxing",
 #'                           taxation = "taxation",
 #'                           taxregex = "tax*",
-#'                           country = "united states"))
+#'                           country = "america"))
 #' head(dfm(mycorpus, dictionary = mydict))
 #' 
 #' \dontrun{
 #' # import the Laver-Garry dictionary from http://bit.ly/1FH2nvf
 #' lgdict <- dictionary(file = "http://www.kenbenoit.net/courses/essex2014qta/LaverGarry.cat",
 #'                      format = "wordstat")
-#' head(dfm(inaugTexts, dictionary=lgdict))
+#' head(dfm(data_char_inaugural, dictionary=lgdict))
 #' 
 #' # import a LIWC formatted dictionary from http://www.moralfoundations.org
 #' mfdict <- dictionary(file = "http://ow.ly/VMRkL", format = "LIWC")
-#' head(dfm(inaugTexts, dictionary = mfdict))}
+#' head(dfm(data_char_inaugural, dictionary = mfdict))}
 #' @importFrom stats setNames
+#' @importFrom tools file_ext
 #' @export
 dictionary <- function(x = NULL, file = NULL, format = NULL, 
                        concatenator = " ", 
@@ -94,7 +103,7 @@ dictionary <- function(x = NULL, file = NULL, format = NULL,
     stop("missing key name for list element", 
          ifelse(length(missingLabels)>1, "s ", " "),
          missingLabels, "\n") 
-  x <- flatten.dictionary(x)
+  x <- dictionary_flatten(x)
   if (!is.null(x) & !is.list(x))
     stop("Dictionaries must be named lists or lists of named lists.")
   
@@ -334,7 +343,36 @@ readYKdict <- function(path){
     stats::setNames(lapply(cats, get_patterns_in_subtree), catnames)
 }
 
-flatten.dictionary <- function(elms, parent = '', dict = list()) {
+#  Flatten a hierarchical dictionary into a list of character vectors
+# 
+#  Converts a hierarchical dictionary (a named list of named lists, ending in character
+#  vectors at the lowest level) into a flat list of character vectors.  Works like
+#  \code{unlist(dictionary, recursive=TRUE)} except that the recursion does not go to the
+#  bottom level.  Called by \code{\link{dfm}}.
+# 
+#  @param elms list to be flattened
+#  @param parent parent list name, gets built up through recursion in the same way that \code{unlist(dictionary, recursive=TRUE)} works
+#  @param dict the bottom list of dictionary entries ("synonyms") passed up from recursive calls
+#  @return A dictionary flattened down one level further than the one passed
+#  @keywords internal
+#  @author Kohei Watanabe
+#  @export
+#  @examples
+#  dictPopulismEN <- 
+#      dictionary(list(populism=c("elit*", "consensus*", "undemocratic*", "referend*",
+#                                 "corrupt*", "propagand", "politici*", "*deceit*",
+#                                 "*deceiv*", "*betray*", "shame*", "scandal*", "truth*",
+#                                 "dishonest*", "establishm*", "ruling*")))
+#  dictionary_flatten(dictPopulismEN)
+# 
+#  hdict <- list(level1a = list(level1a1 = c("l1a11", "l1a12"),
+#                              level1a2 = c("l1a21", "l1a22")),
+#                level1b = list(level1b1 = c("l1b11", "l1b12"),
+#                               level1b2 = c("l1b21", "l1b22", "l1b23")),
+#                level1c = list(level1c1a = list(level1c1a1 = c("lowest1", "lowest2")),
+#                               level1c1b = list(level1c1b1 = c("lowestalone"))))
+#  dictionary_flatten(hdict)
+dictionary_flatten <- function(elms, parent = '', dict = list()) {
     if (any(names(elms) == ""))
         stop("missing name for a nested key")
     for (self in names(elms)) {
@@ -347,7 +385,7 @@ flatten.dictionary <- function(elms, parent = '', dict = list()) {
         if (is.list(elm)) {
             # print("List:")
             # print(names(elm))
-            dict <- flatten.dictionary(elm, self, dict)
+            dict <- dictionary_flatten(elm, self, dict)
         } else {
             # print("Words:")
             dict[[self]] <- elm
@@ -356,6 +394,8 @@ flatten.dictionary <- function(elms, parent = '', dict = list()) {
     }
     return(dict)
 }
+
+
 
 # Import a Lexicoder dictionary
 # 
@@ -387,119 +427,17 @@ readLexicoderDict <- function(path, toLower=TRUE) {
   return(dict)
 }
 
-
-#' apply a dictionary or thesaurus to an object
+#' check if an object is a dictionary
 #' 
-#' Convert features into equivalence classes defined by values of a dictionary 
-#' object.
-#' @note Selecting only features defined in a "dictionary" is traditionally 
-#'   known in text analysis as a \emph{dictionary method}, even though
-#'   technically this "dictionary" operates more like a thesarus.  If a thesaurus-like
-#'   application is desired, set \code{exclusive = FALSE} to convert features 
-#'   defined as values in a dictionary into their keys, while keeping all other
-#'   features.
-#' @return an object of the type passed with the value-matching features
-#'   replaced by dictionary keys
-#' @param x object to which dictionary or thesaurus will be supplied
-#' @param dictionary the \link{dictionary}-class object that will be applied to
-#'   \code{x}
+#' Return \code{TRUE} if an object is a \pkg{quanteda} \link{dictionary}.
+#' @param x any object
 #' @export
-applyDictionary <- function(x, dictionary, ...) {
-    UseMethod("applyDictionary")
+is.dictionary <- function(x) {
+    is(x, "dictionary")
 }
+    
 
-#' @rdname applyDictionary
-#' @param exclusive if \code{TRUE}, remove all features not in dictionary, 
-#'   otherwise, replace values in dictionary with keys while leaving other 
-#'   features unaffected
-#' @param valuetype how to interpret dictionary values: \code{"glob"} for 
-#'   "glob"-style wildcard expressions (the format used in Wordstat and LIWC
-#'   formatted dictionary values); \code{"regex"} for regular expressions; or
-#'   \code{"fixed"} for exact matching (entire words, for instance)
-#' @param case_insensitive ignore the case of dictionary values if \code{TRUE}
-#' @param capkeys if \code{TRUE}, convert dictionary keys to
-#'   uppercase to distinguish them from other features
-#' @param verbose print status messages if \code{TRUE}
-#' @param ... not used
-#' @export
-#' @examples
-#' myDict <- dictionary(list(christmas = c("Christmas", "Santa", "holiday"),
-#'                           opposition = c("Opposition", "reject", "notincorpus"),
-#'                           taxglob = "tax*",
-#'                           taxregex = "tax.+$",
-#'                           country = c("United_States", "Sweden")))
-#' myDfm <- dfm(c("My Christmas was ruined by your opposition tax plan.", 
-#'                "Does the United_States or Sweden have more progressive taxation?"),
-#'              ignoredFeatures = stopwords("english"), verbose = FALSE)
-#' myDfm
-#' 
-#' # glob format
-#' applyDictionary(myDfm, myDict, valuetype = "glob")
-#' applyDictionary(myDfm, myDict, valuetype = "glob", case_insensitive = FALSE)
-#'
-#' # regex v. glob format: note that "united_states" is a regex match for "tax*"
-#' applyDictionary(myDfm, myDict, valuetype = "glob")
-#' applyDictionary(myDfm, myDict, valuetype = "regex", case_insensitive = TRUE)
-#' 
-#' # fixed format: no pattern matching
-#' applyDictionary(myDfm, myDict, valuetype = "fixed")
-#' applyDictionary(myDfm, myDict, valuetype = "fixed", case_insensitive = FALSE)
-applyDictionary.dfm <- function(x, dictionary, exclusive = TRUE, valuetype = c("glob", "regex", "fixed"), 
-                                case_insensitive = TRUE,
-                                capkeys = !exclusive,
-                                verbose = TRUE, ...) {
-    valuetype <- match.arg(valuetype)
-    dictionary <- flatten.dictionary(dictionary)
-    if (length(addedArgs <- list(...)))
-        warning("Argument", ifelse(length(addedArgs)>1, "s ", " "), names(addedArgs), " not used.", sep = "")
-    
-    if (verbose) catm("applying a dictionary consisting of ", length(dictionary), " key", 
-                     ifelse(length(dictionary) > 1, "s", ""), "\n", sep="")
-    
-    # convert wildcards to regular expressions (if needed)
-    if (valuetype == "glob") {
-        dictionary <- lapply(dictionary, utils::glob2rx)
-        # because glob2rx doesn't get closing parens
-        dictionary <- lapply(dictionary, function(y) gsub("\\)", "\\\\\\)", y))
-    } # else if (valuetype == "fixed")
-    # dictionary <- lapply(dictionary, function(x) paste0("^", x, "$"))
-    
-    newDocIndex <- rep(1:nrow(x), length(dictionary))
-    newFeatures <- names(dictionary)
-    uniqueFeatures <- features(x)
-    newFeatureIndexList <- lapply(dictionary, function(x) {
-        # ind <- grep(paste(x, collapse = "|"), uniqueFeatures, ignore.case = case_insensitive)
-        if (valuetype == "fixed") {
-            if (case_insensitive)  
-                ind <- which(toLower(uniqueFeatures) %in% (toLower(x)))
-            else ind <- which(uniqueFeatures %in% x)
-        }
-        else ind <- which(stringi::stri_detect_regex(uniqueFeatures, paste(x, collapse = "|"), case_insensitive = case_insensitive))
-        if (length(ind) == 0)
-            return(NULL)
-        else 
-            return(ind)
-    })
-    if (capkeys) newFeatures <- stringi::stri_trans_toupper(newFeatures)
-    newFeatureCountsList <- lapply(newFeatureIndexList,
-                                   function(i) {
-                                       if (!is.null(i)) 
-                                           rowSums(x[, i])
-                                       else 
-                                           rep(0, nrow(x))
-                                   })
-    dfmresult2 <- new("dfmSparse", sparseMatrix(i = newDocIndex,
-                               j = rep(1:length(dictionary), each = ndoc(x)),
-                               x = unlist(newFeatureCountsList),
-                               dimnames=list(docs = docnames(x), 
-                                             features = newFeatures)))
-    if (!exclusive) {
-        if (!all(is.null(keyIndex <- unlist(newFeatureIndexList, use.names = FALSE))))
-            dfmresult2 <- cbind(x[, -keyIndex], dfmresult2)
-        else
-            dfmresult2 <- cbind(x, dfmresult2)
-    }
-    
-    dfmresult2
-}
+ 
+
+
 

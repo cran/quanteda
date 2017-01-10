@@ -21,6 +21,7 @@ DEFAULT_DELIM_PARAGRAPH <- "\n\n"
 #' 
 #' @param  x object from/to which settings are queried or applied
 #' @param  ... additional arguments
+#' @keywords internal settings
 #' @export 
 settings <- function(x, ...) {
     UseMethod("settings")
@@ -43,11 +44,11 @@ settings.default <- function(x=NULL, ...) {
 #' \code{settings(x, field) <-}  update the corpus settings for \code{field}
 #' @rdname settings
 #' @examples
-#' settings(inaugCorpus, "stopwords")
-#' (tempdfm <- dfm(subset(inaugCorpus, Year>1980), verbose=FALSE))
-#' (tempdfmSW <- dfm(subset(inaugCorpus, Year>1980),
-#'                  ignoredFeatures=stopwords("english"), verbose=FALSE))
-#' settings(inaugCorpus, "stopwords") <- TRUE
+#' settings(data_corpus_inaugural, "stopwords")
+#' (tempdfm <- dfm(corpus_subset(data_corpus_inaugural, Year>1980), verbose=FALSE))
+#' (tempdfmSW <- dfm(corpus_subset(data_corpus_inaugural, Year>1980),
+#'                  remove = stopwords("english"), verbose=FALSE))
+#' settings(data_corpus_inaugural, "stopwords") <- TRUE
 #' @export 
 settings.corpus <- function(x, field=NULL, ...) {
     if (is.null(field)) {
@@ -74,7 +75,7 @@ settings.corpus <- function(x, field=NULL, ...) {
 #' Get the settings from a which a \link{dfm} was created
 #' @rdname settings
 #' @examples
-#' tempdfm <- dfm(inaugCorpus, stem=TRUE, verbose=FALSE)
+#' tempdfm <- dfm(data_corpus_inaugural, stem=TRUE, verbose=FALSE)
 #' settings(tempdfm)
 #' @export 
 settings.dfm <- function(x, ...) {
@@ -104,7 +105,7 @@ settingsInitialize <- function() {
 }
 
 
-#' @rdname settings
+#' @noRd
 #' @method print settings
 #' @export
 print.settings <- function(x, ...) {

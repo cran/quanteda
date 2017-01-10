@@ -4,26 +4,28 @@
 ## ----eval=TRUE-----------------------------------------------------------
 require(quanteda)
 
-# read the text as a single file
-# alternative:
-# mobydickText <- texts(textfile("http://www.gutenberg.org/cache/epub/2701/pg2701.txt"))
-summary(mobydickText)
+## read the text as a single file
+summary(data_char_mobydick)
+
+## alternative method:
+# require(readtext)
+# data_char_mobydick <- texts(readtext("http://www.gutenberg.org/cache/epub/2701/pg2701.txt"))
 
 ## ------------------------------------------------------------------------
-substring(mobydickText, 1, 75)
+substring(data_char_mobydick, 1, 75)
 
 ## ------------------------------------------------------------------------
 # extract the header information
-endMetadataIndex <- regexec("CHAPTER 1. Loomings.", mobydickText)[[1]]
-metadata.v <- substring(mobydickText, 1, endMetadataIndex - 1)
+endMetadataIndex <- regexec("CHAPTER 1. Loomings.", data_char_mobydick)[[1]]
+metadata.v <- substring(data_char_mobydick, 1, endMetadataIndex - 1)
 
 ## ------------------------------------------------------------------------
 # verify that "orphan" is the end of the novel
-kwic(mobydickText, "orphan")
+kwic(data_char_mobydick, "orphan")
 
 # extract the novel -- a better way
-novel.v <- substring(mobydickText, endMetadataIndex, 
-                     regexec("End of Project Gutenberg's Moby Dick.", mobydickText)[[1]]-1)
+novel.v <- substring(data_char_mobydick, endMetadataIndex, 
+                     regexec("End of Project Gutenberg's Moby Dick.", data_char_mobydick)[[1]]-1)
 
 ## ------------------------------------------------------------------------
 # lowercase
@@ -40,10 +42,10 @@ moby.word.v[99986]
 
 moby.word.v[c(4,5,6)]
 
-head(which(moby.word.v=="whale"))
+head(which(moby.word.v == "whale"))
 
 ## ------------------------------------------------------------------------
-moby.word.v <- tokenize(novel.lower.v, simplify = TRUE)
+moby.word.v <- as.character(tokens(novel.lower.v))
 # count of the word 'whale'
 length(moby.word.v[which(moby.word.v == "whale")])
 
@@ -87,10 +89,10 @@ axis(1, 1:10, labels = names(topfeatures(mobyDfmPct)))
 
 ## ----eval=TRUE, fig.width=8, fig.height=1.5------------------------------
 # using words from tokenized corpus for dispersion
-plot(kwic(novel.v, "whale"))
+textplot_xray(kwic(novel.v, "whale"))
 
 ## ----eval=TRUE, fig.width=8, fig.height=2.5------------------------------
-plot(
+textplot_xray(
      kwic(novel.v, "whale"),
      kwic(novel.v, "Ahab"),
      kwic(novel.v, "Pequod")
@@ -102,7 +104,7 @@ plot(
 
 ## ------------------------------------------------------------------------
 head(kwic(novel.v, 'chapter'))
-chaptersVec <-unlist(segment(novel.v, what='other', delimiter="CHAPTER\\s\\d", perl=TRUE))
+chaptersVec <- unlist(char_segment(novel.v, what = 'other', delimiter = "CHAPTER\\s\\d", perl = TRUE))
 chaptersLowerVec <- toLower(chaptersVec)
 chaptersCorp <- corpus(chaptersVec)
 
@@ -112,31 +114,31 @@ barplot(as.numeric(chapDfm[, 'whale']))
 barplot(as.numeric(chapDfm[, 'ahab']))
 
 ## ----eval=TRUE-----------------------------------------------------------
-relDfm <- weight(chapDfm, type='relFreq') * 100
+relDfm <- weight(chapDfm, type = 'relFreq') * 100
 head(relDfm)
 barplot(as.numeric(relDfm[, 'whale']))
 barplot(as.numeric(relDfm[, 'ahab']))
 
 ## ------------------------------------------------------------------------
-wf <- as.numeric(relDfm[,'whale'])
-af <- as.numeric(relDfm[,'ahab'])
+wf <- as.numeric(relDfm[, 'whale'])
+af <- as.numeric(relDfm[, 'ahab'])
 cor(wf, af)
 
-waDfm <- cbind(relDfm[,'whale'], relDfm[,'ahab'])
+waDfm <- cbind(relDfm[, 'whale'], relDfm[, 'ahab'])
 cor(as.matrix(waDfm))
 
 ## ------------------------------------------------------------------------
 samples <- replicate(1000, cor(sample(af), sample(wf)))
 
-h <- hist(samples, breaks=100, col="grey",
-xlab="Correlation Coefficient",
-main="Histogram of Random Correlation Coefficients\n
+h <- hist(samples, breaks = 100, col = "grey",
+xlab = "Correlation Coefficient",
+main = "Histogram of Random Correlation Coefficients\n
 with Normal Curve",
 plot=T)
-xfit <- seq(min(samples),max(samples),length=1000)
-yfit <- dnorm(xfit,mean=mean(samples),sd=sd(samples))
-yfit <- yfit*diff(h$mids[1:2])*length(samples)
-lines(xfit, yfit, col="black", lwd=2)
+xfit <- seq(min(samples), max(samples), length=1000)
+yfit <- dnorm(xfit, mean = mean(samples), sd = sd(samples))
+yfit <- yfit * diff(h$mids[1:2]) * length(samples)
+lines(xfit, yfit, col = "black", lwd = 2)
 
 cor.test(wf, af)
 

@@ -1,12 +1,12 @@
-#' Naive Bayes classifier for texts 
+#' Naive Bayes classifier for texts
 #' 
 #' Currently working for vectors of texts -- not specially defined for a dfm.
 #' 
 #' This naive Bayes model works on word counts, with smoothing.
 #' @param x the dfm on which the model will be fit.  Does not need to contain 
 #'   only the training documents.
-#' @param y vector of training labels associated with each document identified
-#'   in \code{train}.  (These will be converted to factors if not already
+#' @param y vector of training labels associated with each document identified 
+#'   in \code{train}.  (These will be converted to factors if not already 
 #'   factors.)
 #' @param smooth smoothing parameter for feature counts by class
 #' @param prior prior distribution on texts, see details
@@ -25,6 +25,8 @@
 #' @return \item{distribution}{the distribution argument}
 #' @return \item{prior}{argument passed as a prior}
 #' @return \item{smooth}{smoothing parameter}
+#' @section Predict Methods: A \code{predict} method is also available for a 
+#'   fitted Naive Bayes object, see \code{\link{predict.textmodel_NB_fitted}}.
 #' @author Kenneth Benoit
 #' @examples
 #' ## Example from 13.1 of _An Introduction to Information Retrieval_
@@ -78,7 +80,7 @@ textmodel_NB <- function(x, y, smooth = 1, prior = c("uniform", "docfreq", "term
         temp <- x.trset
         rownames(temp) <- y.trclass
         colnames(temp) <- rep("all_same", nfeature(temp))
-        temp <- compress(temp)
+        temp <- dfm_compress(temp)
         Pc <- prop.table(as.matrix(temp))
         attributes(Pc) <- NULL
     } else stop("Prior must be either docfreq (default), wordfreq, or uniform")
@@ -87,7 +89,7 @@ textmodel_NB <- function(x, y, smooth = 1, prior = c("uniform", "docfreq", "term
     # d <- t(sapply(split(as.data.frame(x.trset), y.trclass), colSums))
     # combine all of the class counts
     rownames(x.trset) <- y.trclass
-    d <- compress(x.trset, margin = "both")
+    d <- dfm_compress(x.trset, margin = "both")
 
     PwGc <- rowNorm(d + smooth)
     names(Pc) <- rownames(d)
@@ -123,8 +125,9 @@ textmodel_NB <- function(x, y, smooth = 1, prior = c("uniform", "docfreq", "term
 #' @author Kenneth Benoit
 #' @rdname predict.textmodel
 #' @examples 
-#' (nbfit <- textmodel_NB(LBGexample, c("A", "A", "B", "C", "C", NA)))
+#' (nbfit <- textmodel_NB(data_dfm_LBGexample, c("A", "A", "B", "C", "C", NA)))
 #' (nbpred <- predict(nbfit))
+#' @keywords internal textmodel
 #' @export
 predict.textmodel_NB_fitted <- function(object, newdata = NULL, ...) {
     
