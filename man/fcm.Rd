@@ -10,13 +10,14 @@ fcm(x, context = c("document", "window"), count = c("frequency", "boolean",
   span_sentence = TRUE, tri = TRUE, ...)
 }
 \arguments{
-\item{x}{character vector, corpus, or tokens object from which to generate 
+\item{x}{character, \link{corpus}, \link{tokens}, or \link{dfm} object from which to generate 
 the feature co-occurrence matrix}
 
 \item{context}{the context in which to consider term co-occurrence: 
 \code{"document"} for co-occurrence counts within document; \code{"window"}
 for co-occurrence within a defined window of words, which requires a 
-postive integer value for \code{window}}
+postive integer value for \code{window}.  Note: if \code{x} is a dfm object, then
+\code{context} can only be \code{"windows"}.}
 
 \item{count}{how to count co-occurrences:
 \describe{
@@ -91,15 +92,12 @@ fcm(txts, context = "document", count = "frequency")
 fcm(txts, context = "document", count = "boolean")
 fcm(txts, context = "window", count = "boolean", window = 2)
 
+# from tokens
 txt <- c("The quick brown fox jumped over the lazy dog.",
          "The dog jumped and ate the fox.")
-toks <- tokenize(toLower(txt), removePunct = TRUE)
+toks <- tokens(char_tolower(txt), removePunct = TRUE)
 fcm(toks, context = "document")
-
-# with hashed tokens
-toksHashed <- tokens(toLower(txt), removePunct = TRUE)
 fcm(toks, context = "window", window = 3)
-fcm(toksHashed, context = "window", window = 3)
 }
 \author{
 Kenneth Benoit (R), Haiyan Wang (R, C++), Kohei Watanabe (C++)

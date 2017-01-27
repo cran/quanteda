@@ -102,7 +102,7 @@ setClass("textmodel_wordfish_predicted",
 #'      cex = .8, xlim = c(0, 1.0), ylim = c(0, 1.0), col = "black")
 #' if (require(austin)) {
 #'     wfmodelAustin <- austin::wordfish(quanteda::as.wfm(ie2010dfm), dir = c(6,5))
-#'     cor(wfm1@@theta, wfm1Austin$theta)
+#'     cor(wfm1@theta, wfmodelAustin$theta)
 #' }}
 #' @export
 textmodel_wordfish <- function(data, dir = c(1, 2), priors = c(Inf, Inf, 3, 1), tol = c(1e-6, 1e-8), 
@@ -116,13 +116,13 @@ textmodel_wordfish <- function(data, dir = c(1, 2), priors = c(Inf, Inf, 3, 1), 
     # check that no rows or columns are all zero
     zeroLengthDocs <- which(ntoken(data) == 0)
     if (length(zeroLengthDocs)) {
+        catm("Note: removed the following zero-token documents:", docnames(data)[zeroLengthDocs], "\n")
         data <- data[-zeroLengthDocs, ]
-        catm("Note: removed the following zero-token documents:", docnames(data[zeroLengthDocs, ]), "\n")
     }
     zeroLengthFeatures <- which(docfreq(data) == 0)
     if (length(zeroLengthFeatures)) {
-            data <- data[, -zeroLengthFeatures]
-        catm("Note: removed the following zero-count features:", featnames(data[, zeroLengthFeatures]), "\n")
+        catm("Note: removed the following zero-count features:", featnames(data)[zeroLengthFeatures], "\n")
+        data <- data[, -zeroLengthFeatures]
     }
     if (length(zeroLengthDocs) | length(zeroLengthFeatures)) catm("\n")
 

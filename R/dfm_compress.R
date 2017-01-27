@@ -15,9 +15,9 @@
 #' @param ... additional arguments passed from generic to specific methods
 #' @export
 #' @examples 
-#' mat <- rbind(dfm(c("b A A", "C C a b B"), toLower = FALSE, verbose = FALSE),
-#'              dfm("A C C C C C", toLower = FALSE, verbose = FALSE))
-#' colnames(mat) <- toLower(featnames(mat))
+#' mat <- rbind(dfm(c("b A A", "C C a b B"), tolower = FALSE, verbose = FALSE),
+#'              dfm("A C C C C C", tolower = FALSE, verbose = FALSE))
+#' colnames(mat) <- char_tolower(featnames(mat))
 #' mat
 #' dfm_compress(mat, margin = "documents")
 #' dfm_compress(mat, margin = "features")
@@ -29,8 +29,12 @@
 #' dim(dfm_compress(compactdfm))
 #' 
 dfm_compress <- function(x, margin = c("both", "documents", "features")) {
-    if (!is.dfm(x))
-        stop("compress_dfm only works on a dfm object")
+    UseMethod("dfm_compress")
+}
+    
+#' @noRd
+#' @export
+dfm_compress.dfmSparse <- function(x, margin = c("both", "documents", "features")) {
 
     margin <- match.arg(margin)
     
@@ -44,6 +48,7 @@ dfm_compress <- function(x, margin = c("both", "documents", "features")) {
     new_j <- as(x, "dgTMatrix")@j + 1
     
     allZeroFeatures <- match(names(which(colSums(x)==0)), uniquefnames)
+    allZeroDocs <- match(names(which(rowSums(x)==0)), uniquednames)
     
     # combine documents
     if (margin %in% c("both", "documents") & length(uniquednames) < nrow(x))
@@ -62,8 +67,13 @@ dfm_compress <- function(x, margin = c("both", "documents", "features")) {
         new_j <- c(new_j, allZeroFeatures)
     }
     
+    if (nd <- length(allZeroDocs)) {
+        new_i <- c(new_i, allZeroDocs)
+        new_j <- c(new_j, rep(1, nd))
+    }
+
     new("dfmSparse", sparseMatrix(i = new_i, j = new_j, 
-                                  x = c(x@x, rep(0, length(allZeroFeatures))),
+                                  x = c(x@x, rep(0, length(allZeroFeatures)), rep(0, length(allZeroDocs))),
                                   dimnames = list(docs = uniquednames, features = uniquefnames)),
         settings = x@settings,
         weightTf = x@weightTf,
@@ -72,6 +82,30 @@ dfm_compress <- function(x, margin = c("both", "documents", "features")) {
         ngrams = x@ngrams,
         concatenator = x@concatenator)
 } 
+
+#' @noRd
+#' @export
+#' @examples 
+#' # for dfmDense
+#' mat <- rbind(dfm(c("b A A", "C C a b B"), tolower = FALSE, verbose = FALSE),
+#'              dfm("A C C C C C", tolower = FALSE, verbose = FALSE))
+#' matd <- dfm_smooth(mat)
+#' colnames(matd) <- char_tolower(featnames(mat))
+#' matd
+#' dfm_compress(matd, margin = "documents")
+#' dfm_compress(matd, margin = "features")
+#' dfm_compress(matd)
+dfm_compress.dfmDense <- function(x, ...) {
+    dfm_compress(new("dfmSparse", Matrix::Matrix(as.matrix(x), sparse = TRUE),
+                     settings = x@settings,
+                     weightTf = x@weightTf,
+                     weightDf = x@weightDf,
+                     smooth = x@smooth,
+                     ngrams = x@ngrams,
+                     concatenator = x@concatenator),
+                 ...)
+}                 
+
 
 #' convert the case of the features of a dfm and combine
 #' 

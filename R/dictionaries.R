@@ -15,6 +15,51 @@ setClass("dictionary", contains = c("list"),
          slots = c(concatenator = "character", format = "charNULL", file = "charNULL"),
          prototype = prototype(concatenator = " ", format = NULL, file = NULL))
 
+setValidity("dictionary", function(object) {
+    # does every element have a name? simply needs to pass
+    validate_dictionary(object)
+})
+
+
+# Internal function to chekc if dictionary eintries are all chracters
+validate_dictionary <- function(dict){
+    
+    if (is.null(names(dict))) {
+        stop("dictionary elements must be named")
+    }
+    if (any(names(dict) == "")) {
+        unnamed <- dict[which(names(dict) == "")]
+        stop("unnamed dictionary entry: ", unnamed)
+    }
+    
+    for (i in 1:length(dict)) {
+        entry <- dict[[i]]
+        if (is.list(entry)) {
+            validate_dictionary(entry)
+        } else {
+            if (any(!is.character(entry))) {
+                nonchar <- entry[!is.character(entry)]
+                stop("non-character entries found: ", nonchar)
+            }
+        }   
+    }
+}
+
+# Internal function to print dictionary
+print_dictionary <- function(dict, level = 1){
+    
+    for (i in 1:length(dict)) {
+        entry <- dict[[i]]
+        if (is.list(entry)) {
+            cat(rep('  ', level - 1), "- ", names(dict[i]), ':\n', sep = "")
+            print_dictionary(entry, level + 1)
+        } else {
+            cat(rep('  ', level - 1), "- ", names(dict[i]) , ": ", paste(entry, collapse = ", "), "\n", sep = "")
+        }   
+    }
+}
+
+
 #' print a dictionary object
 #' 
 #' Print/show method for dictionary objects.
@@ -23,14 +68,8 @@ setClass("dictionary", contains = c("list"),
 #' @export
 setMethod("show", "dictionary", 
           function(object) {
-              cat("Dictionary object with", length(object), "key entries.\n")
-              keys <- names(object)
-              lapply(seq_along(object), 
-                     function(i, object, keys)
-                         cat(" - ", keys[i], ": ", paste(object[[i]], collapse = ", "), "\n", sep = ""),
-                     object = object, keys = names(object))
-              
-              # print(setClass("list", object))
+              cat("Dictionary object with", length(unlist(object)), "key entries.\n")
+              print_dictionary(object)
           })
 
 #' create a dictionary
@@ -41,8 +80,10 @@ setMethod("show", "dictionary",
 #' LIWC format works with 
 #' all currently available dictionary files supplied as part of the LIWC 2001, 
 #' 2007, and 2015 software (see References).
-#' @param x a list of character vector dictionary entries, including regular 
-#'   expressions (see examples)
+#' @param ... a named list of character vector dictionary entries, including \link{valuetype} pattern
+#'  matches, and including multi-word expressions separated by \code{concatenator}.  The argument 
+#'  may be an explicit list or named set of elements that can be turned into a list.  See examples.
+#'  This argument may be omitted if the dictionary is read from \code{file}.
 #' @param file file identifier for a foreign dictionary
 #' @param format character identifier for the format of the foreign dictionary. 
 #'   If not supplied, the format is guessed from the dictionary file's
@@ -51,7 +92,7 @@ setMethod("show", "dictionary",
 #'   Provalis Research's Wordstat software} \item{\code{"LIWC"}}{format used by 
 #'   the Linguistic Inquiry and Word Count software} \item{\code{"yoshikoder"}}{
 #'   format used by Yoshikoder software} \item{\code{"lexicoder"}}{format used
-#'   by Lexicoder}}
+#'   by Lexicoder} \item{\code{"YAML"}}{the standard YAML format}}
 #' @param concatenator the character in between multi-word dictionary values. 
 #'   This defaults to \code{"_"} except LIWC-formatted files, which defaults to 
 #'   a single space \code{" "}.
@@ -82,6 +123,11 @@ setMethod("show", "dictionary",
 #'                           country = "america"))
 #' head(dfm(mycorpus, dictionary = mydict))
 #' 
+#' # also works
+#' mydict2 <- dictionary(christmas = c("Christmas", "Santa", "holiday"),
+#'                       opposition = c("Opposition", "reject", "notincorpus"))
+#' dfm(mycorpus, dictionary = mydict2)
+#' 
 #' \dontrun{
 #' # import the Laver-Garry dictionary from http://bit.ly/1FH2nvf
 #' lgdict <- dictionary(file = "http://www.kenbenoit.net/courses/essex2014qta/LaverGarry.cat",
@@ -94,47 +140,52 @@ setMethod("show", "dictionary",
 #' @importFrom stats setNames
 #' @importFrom tools file_ext
 #' @export
-dictionary <- function(x = NULL, file = NULL, format = NULL, 
+dictionary <- function(..., file = NULL, format = NULL, 
                        concatenator = " ", 
                        toLower = TRUE, encoding = "") {
+  # these allow implicit list construction through ...
+  x <- list(...)
+  if (length(x)==1) 
+      x <- as.list(x[[1]])
   if (!is.null(x) & !is.list(x))
     stop("Dictionaries must be named lists or lists of named lists.")
-  if (any(missingLabels <- which(names(x) == ""))) 
-    stop("missing key name for list element", 
-         ifelse(length(missingLabels)>1, "s ", " "),
-         missingLabels, "\n") 
-  x <- dictionary_flatten(x)
-  if (!is.null(x) & !is.list(x))
-    stop("Dictionaries must be named lists or lists of named lists.")
-  
-  dict_format_mapping <- c(cat="wordstat", dic="LIWC", ykd="yoshikoder", lcd="yoshikoder", lc3="lexicoder")
+  # if (any(missingLabels <- which(names(x) == ""))) 
+  #   stop("missing key name for list element", 
+  #        ifelse(length(missingLabels)>1, "s ", " "),
+  #        missingLabels, "\n") 
+  # if (!is.null(x) & !is.list(x))
+  #   stop("Dictionaries must be named lists or lists of named lists.")
+
+  dict_format_mapping <- c(cat="wordstat", dic="LIWC", ykd="yoshikoder", lcd="yoshikoder", 
+                           lc3="lexicoder", yml="YAML")
   if (!is.null(file)) {
 
-    if (is.null(format)) {
-      ext <- file_ext(file)
-      if (ext %in% names(dict_format_mapping)) {
-        format <- dict_format_mapping[[ext]]
+      if (is.null(format)) {
+          ext <- file_ext(file)
+          if (ext %in% names(dict_format_mapping)) {
+              format <- dict_format_mapping[[ext]]
+          }
+          else {
+              stop(paste("Unknown dictionary file extension", ext))
+          }
       }
       else {
-        stop(paste("Unknown dictionary file extension", ext))
+          format <- match.arg(format, dict_format_mapping)
       }
-    }
-    else {
-      format <- match.arg(format, dict_format_mapping)
-    }
-    format <- unname(format)
-
-    if (format=="wordstat") 
-      x <- readWStatDict(file, enc = encoding, toLower = toLower)
-    else if (format=="LIWC")
-      x <- readLIWCdict(file, toLower = toLower, encoding = encoding)
-    else if (format=="yoshikoder")
-      x <- readYKdict(file)
-    else if (format=="lexicoder")
-      x <- readLexicoderDict(file)
-
+      format <- unname(format)
+      
+      if (format=="wordstat") {
+          x <- readWStatDict(file, enc = encoding, toLower = toLower)
+      } else if (format=="LIWC") {
+          x <- readLIWCdict(file, toLower = toLower, encoding = encoding)
+      } else if (format=="yoshikoder") {
+          x <- readYKdict(file)
+      } else if (format=="lexicoder") {
+          x <- readLexicoderDict(file)
+      } else if (format=="YAML") {
+          x <- yaml::yaml.load_file(file, as.named.list = TRUE)  
+      }    
   }
-  
   new("dictionary", x, format = format, file = file, concatenator = concatenator)
 }
 
@@ -156,7 +207,7 @@ dictionary <- function(x = NULL, file = NULL, format = NULL,
 # lgdict <- readWStatDict(path)
 # }
 readWStatDict <- function(path, enc="", toLower=TRUE) {
-    d <- utils::read.delim(path, header=FALSE, fileEncoding=enc)
+    d <- utils::read.delim(path, header=FALSE, fileEncoding=enc, na.string = "__________")
     d <- data.frame(lapply(d, as.character), stringsAsFactors=FALSE)
     thismajorcat <- d[1,1]
     # this loop fills in blank cells in the category|term dataframe
@@ -184,12 +235,12 @@ readWStatDict <- function(path, enc="", toLower=TRUE) {
 
     # this loop collapses the category cells together and
     # makes the list of named lists compatible with dfm
-    for (i in 1:nrow(d)){
-        if (d[i,ncol(d)]=='') next
-        categ <- unlist(paste(d[i,(1:(ncol(d)-1))], collapse="."))
+    for (i in 1:nrow(d)) {
+        if (d[i, ncol(d)] ==  "") next
+        categ <- unlist(paste(d[i,(1:(ncol(d)-1))], collapse = "."))
         w <- d[i, ncol(d)]
         w <- unlist(strsplit(w, '\\('))[[1]]
-        if (toLower) w <- toLower(w)
+        if (toLower) w <- char_tolower(w)
         # w <- gsub(" ", "", w)
         flatDict[[categ]] <- append(flatDict[[categ]], c(w))
     }
@@ -197,6 +248,7 @@ readWStatDict <- function(path, enc="", toLower=TRUE) {
     flatDict <- lapply(flatDict, function(x) gsub("\\s", "", x, perl=TRUE))
     return(flatDict)
 }
+
 
 
 # Import a LIWC-formatted dictionary
@@ -239,11 +291,8 @@ readLIWCdict <- function(path, toLower = TRUE, encoding = getOption("encoding"))
     guide <- d[2:(guideRowEnd-1)]
     
     guide <- data.frame(do.call(rbind, tokenize(guide)), stringsAsFactors = FALSE)
-    #guide
-    #guide <- data.frame(do.call(rbind, strsplit(guide, "\t")), stringsAsFactors = FALSE)
     colnames(guide) <- c('catNum', 'catName' )
     guide$catNum <- as.integer(guide$catNum)
-    # if (toLower) guide$catName <- toLower(guide$catName)
 
     # initialize the dictionary as list of NAs
     dictionary <- list()
@@ -275,11 +324,10 @@ readLIWCdict <- function(path, toLower = TRUE, encoding = getOption("encoding"))
         catlist <- catlist[-blanklines]
 
     catlist <- strsplit(catlist, "\t")
-    # catlist <- tokenize(catlist, what = "fasterword", removeNumbers = FALSE)
     catlist <- as.data.frame(do.call(rbind, lapply(catlist, '[', 1:max(sapply(catlist, length)))), stringsAsFactors = FALSE)
     catlist[, 2:ncol(catlist)] <- sapply(catlist[, 2:ncol(catlist)], as.integer)
     names(catlist)[1] <- "category"
-    if (toLower) catlist$category <- toLower(catlist$category)
+    if (toLower) catlist$category <- char_tolower(catlist$category)
     # remove any blank rows
     blankRowIndex <- which(is.na(catlist$category))
     if (length(blankRowIndex)) 
@@ -350,10 +398,12 @@ readYKdict <- function(path){
 #  \code{unlist(dictionary, recursive=TRUE)} except that the recursion does not go to the
 #  bottom level.  Called by \code{\link{dfm}}.
 # 
-#  @param elms list to be flattened
-#  @param parent parent list name, gets built up through recursion in the same way that \code{unlist(dictionary, recursive=TRUE)} works
-#  @param dict the bottom list of dictionary entries ("synonyms") passed up from recursive calls
-#  @return A dictionary flattened down one level further than the one passed
+#  @param tree list to be flattened
+#  @param levels integer vector indicating levels in the dictionary
+#  @param level internal argument to pass current levels
+#  @param key_tree internal argument to pass for parent keys
+#  @param dict internal argument to pass flattend dicitonary
+#  @return A dictionary flattened to variable levels
 #  @keywords internal
 #  @author Kohei Watanabe
 #  @export
@@ -372,27 +422,36 @@ readYKdict <- function(path){
 #                level1c = list(level1c1a = list(level1c1a1 = c("lowest1", "lowest2")),
 #                               level1c1b = list(level1c1b1 = c("lowestalone"))))
 #  dictionary_flatten(hdict)
-dictionary_flatten <- function(elms, parent = '', dict = list()) {
-    if (any(names(elms) == ""))
-        stop("missing name for a nested key")
-    for (self in names(elms)) {
-        elm <- elms[[self]]
-        if (parent != '') {
-            self <- paste(parent, self, sep='.')
-        }
-        # print("-------------------")
-        # print (paste("Name", self))
-        if (is.list(elm)) {
-            # print("List:")
-            # print(names(elm))
-            dict <- dictionary_flatten(elm, self, dict)
+#  dictionary_flatten(hdict, 2)
+#  dictionary_flatten(hdict, 1:2)
+
+dictionary_flatten <- function(dict, levels = 1:100, level = 1, key = '', dict_flat = list()) {
+    #cat("-------------------\n")
+    #cat("level:", level, "\n")
+    for (name in names(dict)) {
+        entry <- dict[[name]]
+        if (level %in% levels) {    
+            if (key != '') {
+                key_entry <- paste(key, name, sep = '.')
+            } else {
+                key_entry <- name
+            }
         } else {
-            # print("Words:")
-            dict[[self]] <- elm
-            # print(dict)
+            key_entry <- key
+        }
+        #cat("key:", key, "\n")
+        #cat("key_entry:", key_entry, "\n")
+        if (is.list(entry)) {
+            #cat("List:\n")
+            #print(entry)
+            dict_flat <- dictionary_flatten(entry, levels, level + 1, key_entry, dict_flat)
+        } else {
+            #cat("Vector:\n")
+            #print(entry)
+            dict_flat[[key_entry]] <- c(dict_flat[[key_entry]], entry)
         }
     }
-    return(dict)
+    return(dict_flat)
 }
 
 
@@ -406,25 +465,25 @@ dictionary_flatten <- function(elms, parent = '', dict = list()) {
 # @author Adam Obeng
 # @export
 readLexicoderDict <- function(path, toLower=TRUE) {
-  current_key <- NULL
-  current_terms <- c()
-  dict <- list() 
-  #  Lexicoder 3.0 files are always UTF-8
-  for (l in readLines(con <- file(path, encoding = 'utf-8'))) {
-    if (toLower) l <- tolower(l)
-    if (substr(l, 1, 1) == '+') {
-      if (length(current_terms) > 0) {
-        dict[[current_key]] <- current_terms
-      }
-      current_key <- substr(l, 2, nchar(l))
-      current_terms <- c()
+    current_key <- NULL
+    current_terms <- c()
+    dict <- list() 
+    #  Lexicoder 3.0 files are always UTF-8
+    for (l in readLines(con <- file(path, encoding = 'utf-8'))) {
+        if (toLower) l <- tolower(l)
+        if (substr(l, 1, 1) == '+') {
+            if (length(current_terms) > 0) {
+                dict[[current_key]] <- current_terms
+            }
+            current_key <- substr(l, 2, nchar(l))
+            current_terms <- c()
+        }
+        else {
+            current_terms <- c(current_terms, l)
+        }
     }
-    else {
-      current_terms <- c(current_terms, l)
-    }
-  }
-  dict[[current_key]] <- current_terms
-  return(dict)
+    dict[[current_key]] <- current_terms
+    return(dict)
 }
 
 #' check if an object is a dictionary

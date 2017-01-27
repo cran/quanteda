@@ -87,7 +87,7 @@
 #'          doc2 = "Another sentence, to demonstrate how tokens works.")
 #' tokens(txt)
 #' # removing punctuation marks and lowecasing texts
-#' tokens(toLower(txt), removePunct = TRUE)
+#' tokens(char_tolower(txt), removePunct = TRUE)
 #' # keeping versus removing hyphens
 #' tokens("quanteda data objects are auto-loading.", removePunct = TRUE)
 #' tokens("quanteda data objects are auto-loading.", removePunct = TRUE, removeHyphens = TRUE)
@@ -136,9 +136,9 @@
 #' tokens(data_char_inaugural[c(2,40)], what = "sentence")
 #' 
 #' # removing features (stopwords) from tokenized texts
-#' txt <- toLower(c(mytext1 = "This is a short test sentence.",
-#'                  mytext2 = "Short.",
-#'                  mytext3 = "Short, shorter, and shortest."))
+#' txt <- char_tolower(c(mytext1 = "This is a short test sentence.",
+#'                       mytext2 = "Short.",
+#'                       mytext3 = "Short, shorter, and shortest."))
 #' tokens(txt, removePunct = TRUE)
 #' ### removeFeatures(tokens(txt, removePunct = TRUE), stopwords("english"))
 #' 
@@ -210,7 +210,7 @@ tokens.character <- function(x, what = c("word", "sentence", "character", "faste
     result_blocks <- list()
     for (i in 1:length(x_blocks)) {
         
-        if (verbose) catm("...tokenizing", i, "of" , length(x_blocks), "blocks...\n")
+        if (verbose) catm("...tokenizing", i, "of" , length(x_blocks), "blocks\n")
         
         if (what %in% c("word", "fastestword", "fasterword")) {
             result_temp <- tokens_word(x_blocks[[i]], what, removeNumbers, removePunct, removeSymbols, 
@@ -232,13 +232,14 @@ tokens.character <- function(x, what = c("word", "sentence", "character", "faste
         
         # Hash the tokens
         if (hash == TRUE) {
-            if (verbose) catm("...hashing tokens\n")
+            if (verbose) catm("...serializing tokens ")
             if (i == 1) {
                 result_blocks[[i]] <- tokens_hash(result_temp)
-            }else{
+            } else {
                 result_blocks[[i]] <- tokens_hash(result_temp, attr(result_blocks[[i - 1]], 'types'))
             }
-        }else{
+            if (verbose) catm(length(attr(result_blocks[[i]], 'types')), 'unique types\n')
+        } else {
             result_blocks[[i]] <- result_temp
         }
     }
@@ -249,7 +250,7 @@ tokens.character <- function(x, what = c("word", "sentence", "character", "faste
     if (hash == TRUE){
         class(result) <- c("tokens", "tokenizedTexts")
         types(result) <- attr(result_blocks[[length(result_blocks)]], 'types') # last block has all the types
-    }else{
+    } else {
         class(result) <- "tokenizedTexts"
     }  
     if (!identical(ngrams, 1L)) {
@@ -351,7 +352,7 @@ is.tokens <- function(x) {
 #' @examples 
 #' txt <- c(doc1 = "The quick brown fox jumped over the lazy dog.",
 #'          doc2 = "The dog jumped and ate the fox.")
-#' toks <- tokenize(toLower(txt), removePunct = TRUE)
+#' toks <- tokenize(char_tolower(txt), removePunct = TRUE)
 #' toksHashed <- tokens_hash(toks)
 #' toksHashed
 #' # returned as a list
@@ -371,7 +372,7 @@ tokens_hash <- function(x, types_reserved, ...) {
     if (missing(types_reserved)) {
         types <- types
     } else {
-        types <- c(types, setdiff(types, types_reserved))
+        types <- c(types_reserved, setdiff(types, types_reserved))
     }
     tokens <- lapply(x, fastmatch::fmatch, types) # serialize tokens 
     
@@ -459,6 +460,11 @@ lengths.tokens <- function(x, use.names = TRUE) {
     NextMethod()
 }
 
+#' @noRd
+#' @export
+docnames.tokens <- function(x) {
+    names(x)
+}
 
 
 ##
@@ -571,7 +577,7 @@ tokens_character <- function(txt, what, removeNumbers, removePunct, removeSymbol
     if (removeSeparators) {
         if (verbose) catm("...removing separators.\n")
         tok <- lapply(tok, function(x){
-            x <- stringi::stri_subset_regex(x, "^\\p{Z}$")
+            x <- stringi::stri_subset_regex(x, "^\\p{Z}$", negate = TRUE)
             x <- x[which(x != "")]
             return(x)    
         })

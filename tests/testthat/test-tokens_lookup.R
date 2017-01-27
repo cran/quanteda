@@ -87,8 +87,8 @@ test_that("multi-word dictionary behavior is not sensitive to the order of dicti
     dict2 <- dictionary(list(team = c("Arsenal", "Manchester United"),
                              Countries = c("United States")))
     expect_equal(
-        lapply(as.list(tokens_lookup(toks, dictionary = dict1, valuetype = "fixed")), sort),
-        lapply(as.list(tokens_lookup(toks, dictionary = dict2, valuetype = "fixed")), sort)
+        as.list(tokens_lookup(toks, dictionary = dict1, valuetype = "fixed")),
+        as.list(tokens_lookup(toks, dictionary = dict2, valuetype = "fixed"))
     )
     
 })
@@ -103,7 +103,7 @@ test_that("#388 issue about overlapping key values is resolved: fixed matches", 
                                   swords = c("States")))
     
     expect_equal(as.list(tokens_lookup(toks, dict_fixed, valuetype = "fixed")),
-                 list(d1 = c("Countries", "oceans", "oceans", "swords"),
+                 list(d1 = c("Countries", "swords", "oceans", "oceans"),
                       d2 = c("Countries", "swords")))
 })
 
@@ -117,10 +117,10 @@ test_that("#388 issue about overlapping key values is resolved: glob matches", {
                                  swords = "*s"))
 
     expect_equal(as.list(tokens_lookup(toks, dict_glob, valuetype = "glob")),
-              list(d1 = c("Countries", "oceans", "oceans", "swords", "swords"),
-                   d2 = c("Countries", "Countries", "swords", "swords")))
+              list(d1 = c("Countries", "swords", "swords", "oceans", "oceans"),
+                   d2 = c("Countries", "swords", "swords", "Countries")))
     expect_equal(as.list(tokens_lookup(toks, dict_glob, valuetype = "glob", case_insensitive = FALSE)),
-                 list(d1 = c("Countries", "oceans", "oceans", "swords", "swords"),
+                 list(d1 = c("Countries", "swords", "swords", "oceans", "oceans"),
                       d2 = c("Countries", "swords", "swords")))
 })
 
@@ -134,10 +134,10 @@ test_that("#388 issue about overlapping key values is resolved: regex matches", 
                                   swords = "s$"))
 
     expect_equal(as.list(tokens_lookup(toks, dict_regex, valuetype = "regex")),
-                 list(d1 = c("Countries", "oceans", "oceans", "swords", "swords"),
-                      d2 = c("Countries", "Countries", "swords", "swords")))
+                 list(d1 = c("Countries", "swords", "swords", "oceans", "oceans"),
+                      d2 = c("Countries", "swords", "swords", "Countries")))
     expect_equal(as.list(tokens_lookup(toks, dict_regex, valuetype = "regex", case_insensitive = FALSE)),
-                 list(d1 = c("Countries", "oceans", "oceans", "swords", "swords"),
+                 list(d1 = c("Countries", "swords", "swords", "oceans", "oceans"),
                       d2 = c("Countries", "swords", "swords")))
     
 })
@@ -166,8 +166,6 @@ test_that("tokens_lookup preserves case on keys", {
                      c("Country", "HOR"))
 })
 
-
-
 test_that("multi-word dictionary behavior is not affected by padding", {
     
     toks <- tokens(c(d1 = "Mexico signed a new libertarian law with Canada.",
@@ -186,4 +184,91 @@ test_that("multi-word dictionary behavior is not affected by padding", {
     
 })
 
+
+test_that("#459 apply a hierarchical dictionary", {
+    
+    txt <- c(d1 = "The United States is bordered by the Atlantic Ocean and the Pacific Ocean.",
+             d2 = "The Supreme Court of the United States is seldom in a united state.")
+    toks <- tokens(txt)
+    dict <- dictionary(list('geo'=list(
+        Countries = c("States"),
+        oceans = c("Atlantic", "Pacific")),
+        'other'=list(
+            gameconsoles = c("Xbox", "Nintendo"),
+            swords = c("States"))))
+    
+    expect_equal(as.list(tokens_lookup(toks, dict, valuetype = "fixed", levels=1)),
+                 list(d1 = c("geo", "other", "geo", "geo"),
+                      d2 = c("geo", "other")))
+    
+    expect_equal(as.list(tokens_lookup(toks, dict, valuetype = "fixed", levels=1:2)),
+                 list(d1 = c("geo.Countries", "other.swords", "geo.oceans", "geo.oceans"),
+                      d2 = c("geo.Countries", "other.swords")))
+    
+    expect_equal(as.list(tokens_lookup(toks, dict, valuetype = "fixed", levels=2)),
+                 list(d1 = c("Countries", "swords", "oceans", "oceans"),
+                      d2 = c("Countries", "swords")))
+})
+
+test_that("#459 extract the lower levels of a dictionary using tokens_lookup", {
+    txt <- c(d1 = "The United States has the Atlantic Ocean and the Pacific Ocean.",
+             d2 = "Britain and Ireland have the Irish Sea and the English Channel.")
+    toks <- tokens(txt)
+    dict <- dictionary(list('US'=list(
+        Countries = c("States"),
+        oceans = c("Atlantic", "Pacific")),
+        'Europe'=list(
+            Countries = c("Britain", "Ireland"),
+            oceans = list(west = "Irish Sea", east = "English Channel"))))
+    tokens_lookup(toks, dict, levels = 1)
+    tokens_lookup(toks, dict, levels = 2)
+    tokens_lookup(toks, dict, levels = 1:2)
+    tokens_lookup(toks, dict, levels = 3)
+    tokens_lookup(toks, dict, levels = c(1,3))
+    tokens_lookup(toks, dict, levels = c(2,3))
+    tokens_lookup(toks, dict, levels = c(1,4))
+    tokens_lookup(toks, dict, levels = 4)
+})
+
+test_that("#480 reset padding flag", {
+    
+    toks <- tokens(data_corpus_inaugural[1:5])
+    toks <- tokens_remove(toks, stopwords('english'), padding = TRUE)
+    dict <- dictionary(list(Country = "united states",
+                            HOR = c("House of Re*")))
+    expect_false('' %in% featnames(dfm(tokens_lookup(toks, dict, exclusive = TRUE), tolower = FALSE)))
+})
+
+
+test_that("#500 tokens_lookup separates entry words by concatenator", {
+    
+    toks <- tokens(data_corpus_inaugural[1:5])
+    dict <- dictionary(list(Country = "united_states",
+                            HOR = c("House_of_Re*")), concatenator = '_')
+    expect_identical(featnames(dfm(tokens_lookup(toks, dict), tolower = FALSE)),
+                     c("Country", "HOR"))
+})
+
+
+test_that("#500 tokens_lookup do not separate words when multiword = FALSE", {
+    toks <- as.tokens(list(d1 = c('United States', 'Atlantic Ocean', 'Pacific Ocean'),
+                           d2 = c('Supreme Court', 'United States')))
+    dict <- dictionary(list(Countries = c("United States"),
+                            oceans = c("Atlantic *", "Pacific *")))
+    
+    expect_equal(as.list(tokens_lookup(toks, dict, valuetype = "glob", multiword = FALSE)),
+                 list(d1 = c("Countries", "oceans", "oceans"),
+                      d2 = c("Countries")))
+})
+
+test_that("#500 tokens_lookup substitute concatenator", {
+    toks <- as.tokens(list(d1 = c('United-States', 'Atlantic-Ocean', 'Pacific-Ocean'),
+                           d2 = c('Supreme-Court', 'United-States')))
+    dict <- dictionary(list(Countries = c("United_States"),
+                            oceans = c("Atlantic_*", "Pacific_*")), concatenator = '_')
+    
+    expect_equal(as.list(tokens_lookup(toks, dict, valuetype = "glob", concatenator = '-', multiword = FALSE)),
+                 list(d1 = c("Countries", "oceans", "oceans"),
+                      d2 = c("Countries")))
+})
 

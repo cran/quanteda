@@ -5,15 +5,16 @@
 test_that("nsyllable works as expected", {
     txt <- c(one = "super freakily yes",
              two = "merrily all go aerodynamic")
-    toks <- tokens(txt)
-    expect_equivalent(nsyllable(toks), list(c(2, 3, 1), c(3, 1, 1, 5)))
+    toksh <- tokens(txt)
+    toks <- tokenize(txt)
+    expect_equivalent(nsyllable(toks), nsyllable(toksh), list(c(2, 3, 1), c(3, 1, 1, 5)))
 })
 
 test_that("nsyllable works as expected with padding = TRUE", {
     txt <- c(one = "super freakily yes",
-             two = "merrily all go aerodynamic")
+             two = "merrily, all go aerodynamic")
     toks <- tokens_remove(tokens(txt), c("yes", "merrily"), padding = TRUE)
-    expect_equivalent(nsyllable(toks), list(c(2, 3, NA), c(NA, 1, 1, 5)))
+    expect_equivalent(nsyllable(toks), list(c(2, 3, NA), c(NA, NA, 1, 1, 5)))
 })
 
 
@@ -21,23 +22,26 @@ test_that("tokens_wordstem works as expected for tokens_hashed", {
 
     txt <- c(one = "Eating eater eaters eats ate.",
              two = "Taxing taxes taxed my tax return.")
-    toks <- tokenize(toLower(txt), removePunct = TRUE)
-    toksh <- tokens(toLower(txt), removePunct = TRUE)
+    toks <- tokenize(char_tolower(txt), removePunct = TRUE)
+    toksh <- tokens(char_tolower(txt), removePunct = TRUE)
     classic <- tokens_wordstem(toks)
     hashed <- tokens_wordstem(toksh)
     expect_equivalent(classic, as.tokenizedTexts(hashed))
 })
 
 test_that("ngrams works as expected for tokens_hashed", {
-    txt <- c(one = toLower("Insurgents killed in ongoing fighting."),
+    txt <- c(one = char_tolower("Insurgents killed in ongoing fighting."),
              two = "A B C D E")
     toks <- tokenize(txt, removePunct = TRUE)
     toksh <- tokens(txt, removePunct = TRUE)
     classic <- tokens_ngrams(toks, n = 2:3)
     hashed <- as.tokenizedTexts(tokens_ngrams(toksh, n = 2:3))
+    # testthat::expect_equivalent(as.list(classic),
+    #                             as.list(hashed))
     classic <- list(sort(unlist(classic$one)), sort(unlist(classic$two)))
     hashed <- list(sort(unlist(hashed$one)), sort(unlist(hashed$two)))
-    expect_equivalent(classic, hashed)
+    expect_equivalent(lapply(classic, sort),
+                      lapply(hashed, sort))
 })
 
 test_that("skipgrams works as expected for tokens_hashed", {
@@ -148,8 +152,8 @@ test_that("test verious functions with padded tokens, padding = FALSE", {
                      doc2 = 'a b c g'))
     toks3 <- tokens_remove(toks, c('b', 'e'), padding = FALSE)
     expect_equivalent(nfeature(toks3), 6)
-    expect_equivalent(nfeature(toLower(toks3)), 5)
-    expect_equivalent(nfeature(toUpper(toks3)), 5)
+    expect_equivalent(nfeature(tokens_tolower(toks3)), 5)
+    expect_equivalent(nfeature(tokens_toupper(toks3)), 5)
     expect_equivalent(as.character(toks3),
                       c("A", "c", "d", "f", "g", "a", "c", "g"))
 })
@@ -159,12 +163,42 @@ test_that("test verious functions with padded tokens, padding = TRUE", {
                      doc2 = 'a b c g'))
     toks3 <- tokens_remove(toks, c('b', 'e'), padding = TRUE)
     expect_equivalent(nfeature(toks3), 7)
-    expect_equivalent(nfeature(toLower(toks3)), 6)
-    expect_equivalent(nfeature(toUpper(toks3)), 6)
+    expect_equivalent(nfeature(tokens_tolower(toks3)), 6)
+    expect_equivalent(nfeature(tokens_toupper(toks3)), 6)
     expect_equivalent(as.character(toks3),
                       c("A", "", "c", "d", "", "f", "g", "a", "", "c", "g"))
 })
 
+test_that("docnames works for tokens", {
+    expect_equal(names(data_char_ukimmig2010),
+                 docnames(tokens(data_char_ukimmig2010)))
+})
+
+test_that("longer features longer than documents do not crash (#447)", {
+    toks <- tokens(c(d1 = 'a b', d2 = 'a b c d e'))
+    feat <- 'b c d e'
+    # bugs in C++ needs repeated tests
+    expect_silent(replicate(10, tokens_select(toks, feat)))
+    expect_equal(
+        as.list(tokens_select(toks, feat)),
+        list(d1 = character(0), d2 = c("b", "c", "d", "e"))
+    )
+})
+
+test_that("tokens works as expected for what = \"character\"", {
+    expect_equal(
+        as.character(tokens("one, two three.", what = "character", removeSeparators = TRUE)),
+        c("o", "n", "e", ",", "t", "w", "o", "t", "h", "r", "e", "e", ".")
+    )
+    expect_equal(
+        as.character(tokens("one, two three.", what = "character", removeSeparators = FALSE)),
+        c("o", "n", "e", ",", " ", "t", "w", "o", " ", "t", "h", "r", "e", "e", ".")
+    )
+    expect_equal(
+        as.character(tokens("one, two three.", what = "character", removePunct = TRUE)),
+        c("o", "n", "e", "t", "w", "o", "t", "h", "r", "e", "e")
+    )
+})
 
 #' # coerce an object into a tokens class
 #' as.tokens(toks)

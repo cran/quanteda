@@ -9,6 +9,8 @@
 #' found originally in the document).
 #' @param x the dfm to which the dictionary will be applied
 #' @param dictionary a \link{dictionary} class object
+#' @param levels levels of entries in a hierachical dictionary that will be 
+#'   applied
 #' @param exclusive if \code{TRUE}, remove all features not in dictionary, 
 #'   otherwise, replace values in dictionary with keys while leaving other 
 #'   features unaffected
@@ -45,7 +47,8 @@
 #' # fixed format: no pattern matching
 #' dfm_lookup(myDfm, myDict, valuetype = "fixed")
 #' dfm_lookup(myDfm, myDict, valuetype = "fixed", case_insensitive = FALSE)
-dfm_lookup <- function(x, dictionary, exclusive = TRUE, valuetype = c("glob", "regex", "fixed"), 
+dfm_lookup <- function(x, dictionary, levels = 1:5,
+                       exclusive = TRUE, valuetype = c("glob", "regex", "fixed"), 
                        case_insensitive = TRUE,
                        capkeys = !exclusive,
                        verbose = TRUE) {
@@ -59,8 +62,8 @@ dfm_lookup <- function(x, dictionary, exclusive = TRUE, valuetype = c("glob", "r
         stop("dfm_lookup not currently implemented for ngrams > 1 and multi-word dictionary values")
     }
     
+    dictionary <- dictionary_flatten(dictionary, levels)
     valuetype <- match.arg(valuetype)
-    dictionary <- dictionary_flatten(dictionary)
 
     if (verbose) catm("applying a dictionary consisting of ", length(dictionary), " key", 
                       ifelse(length(dictionary) > 1, "s", ""), "\n", sep="")
@@ -80,7 +83,7 @@ dfm_lookup <- function(x, dictionary, exclusive = TRUE, valuetype = c("glob", "r
         # ind <- grep(paste(x, collapse = "|"), uniqueFeatures, ignore.case = case_insensitive)
         if (valuetype == "fixed") {
             if (case_insensitive)  
-                ind <- which(toLower(uniqueFeatures) %in% (toLower(x)))
+                ind <- which(char_tolower(uniqueFeatures) %in% (char_tolower(x)))
             else ind <- which(uniqueFeatures %in% x)
         }
         else ind <- which(stringi::stri_detect_regex(uniqueFeatures, paste(x, collapse = "|"), case_insensitive = case_insensitive))

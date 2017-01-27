@@ -13,15 +13,21 @@ namespace quanteda{
     
     typedef std::vector<unsigned int> Text;
     typedef std::vector<Text> Texts;
-    #if RCPP_PARALLEL_USE_TBB
+#if RCPP_PARALLEL_USE_TBB
+    typedef tbb::atomic<int> IntParam;
+    typedef tbb::atomic<long> LongParam;
+    typedef tbb::atomic<double> DoubleParam;
     typedef tbb::concurrent_vector<int> IntParams;
     typedef tbb::concurrent_vector<long> LongParams;
     typedef tbb::concurrent_vector<double> DoubleParams;
-    #else
+#else
+    typedef int IntParam;
+    typedef long LongParam;
+    typedef double DoubleParam;
     typedef std::vector<int> IntParams;
     typedef std::vector<long> LongParams;
     typedef std::vector<double> DoubleParams;
-    #endif    
+#endif    
     
     inline String join(CharacterVector &tokens, String &delim){
         if (tokens.size() == 0) return "";
@@ -49,35 +55,32 @@ namespace quanteda{
         }
        return false;
     }
-    /*
+    
+    /* 
+     * This function is faster than Rcpp::wrap() but the stability need to be evaluated.
+     */
     inline List as_list(Texts &texts, bool sort = false){
         List list(texts.size());
         for (std::size_t h = 0; h < texts.size(); h++) {
-            if (texts[h].size() > 0) {
-                Text text = texts[h];
-                if(sort){
-                    std::sort(text.begin(), text.end());
-                }
-                IntegerVector temp = Rcpp::wrap(text);
-                list[h] = temp;
-            } else {
-                list[h] = R_NilValue;
-            }
+            Text text = texts[h];
+            IntegerVector temp = Rcpp::wrap(text);
+            list[h] = temp;
         }
         return list;
     }
-    */
 }
 
 namespace ngrams {
     typedef std::vector<unsigned int> Ngram;
     typedef std::vector<Ngram> Ngrams;
-
+    typedef std::string Type;
+    typedef std::vector<Type> Types;
+    
     struct hash_ngram {
             std::size_t operator() (const Ngram &vec) const {
             unsigned int seed = 0;
             for (std::size_t i = 0; i < vec.size(); i++) {
-                seed += vec[i] << (i * 8); // shift elements 8 bit
+                seed += (vec[i] << (i * 8)); // shift elements 8 bit
             }
             return std::hash<unsigned int>()(seed);
         }
@@ -89,20 +92,23 @@ namespace ngrams {
         }
     };
 
-    #if RCPP_PARALLEL_USE_TBB
+#if RCPP_PARALLEL_USE_TBB
     // TBB header is loaded automatically by the macro
+    typedef tbb::atomic<unsigned int> IdNgram;
     typedef tbb::concurrent_unordered_multimap<Ngram, unsigned int, hash_ngram, equal_ngram> MultiMapNgrams;
     typedef tbb::concurrent_unordered_map<Ngram, unsigned int, hash_ngram, equal_ngram> MapNgrams;
     typedef tbb::concurrent_unordered_set<Ngram, hash_ngram, equal_ngram> SetNgrams;
     typedef tbb::concurrent_vector<Ngram> VecNgrams;
     typedef tbb::concurrent_unordered_set<unsigned int> SetUnigrams;
-    #else
+#else
+    typedef unsigned int IdNgram;
     typedef std::unordered_multimap<Ngram, unsigned int, hash_ngram, equal_ngram> MultiMapNgrams;
     typedef std::unordered_map<Ngram, unsigned int, hash_ngram, equal_ngram> MapNgrams;
     typedef std::unordered_set<Ngram, hash_ngram, equal_ngram> SetNgrams;
     typedef std::vector<Ngram> VecNgrams;
     typedef std::unordered_set<unsigned int> SetUnigrams;
-    #endif    
+#endif    
+
 }
 
 #endif

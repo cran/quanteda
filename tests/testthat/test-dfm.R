@@ -15,8 +15,8 @@ thesDfm[1:10, (nfeature(thesDfm)-8) : nfeature(thesDfm)]
 preDictDfm <- dfm(mycorpus, removePunct = TRUE, removeNumbers = TRUE)
 dfm_lookup(preDictDfm, mydict)
 
-txt <- tokenize(toLower(c("My Christmas was ruined by your opposition tax plan.", 
-                          "The United_States has progressive taxation.")),
+txt <- tokenize(char_tolower(c("My Christmas was ruined by your opposition tax plan.", 
+                               "The United_States has progressive taxation.")),
                 removePunct = TRUE)
 
 
@@ -30,7 +30,7 @@ dfm_lookup(txtDfm, mydict, valuetype = "glob")
 dfm_lookup(txtDfm, mydict, exclusive = FALSE, valuetype = "glob", verbose = FALSE) 
 
 
-inaugTextsTokenized <- tokenize(toLower(inaugTexts[1:10]), removePunct = TRUE)
+inaugTextsTokenized <- tokenize(char_tolower(inaugTexts[1:10]), removePunct = TRUE)
 # microbenchmark::microbenchmark(
 #     dfm(inaugTextsTokenized, verbose = FALSE),
 #     dfm(inaugTextsTokenized, verbose = FALSE, codeType = "old"),
@@ -76,7 +76,7 @@ expect_equal(as.vector(tmp[, c("taxglob", "taxregex", "country")]), c(0, 0, 0, 0
 
 test_that("dfm_trim", {
 
-    mycorpus <- corpus_subset(data_corpus_inaugural, Year > 1900)
+    mycorpus <- corpus_subset(data_corpus_inaugural, Year > 1900 & Year < 2017)
     preDictDfm <- dfm(mycorpus, removePunct = TRUE, removeNumbers = TRUE)
     
     nfeature(dfm_trim(preDictDfm, min_count = 7))
@@ -92,6 +92,12 @@ test_that("dfm_trim", {
     expect_equal(nfeature(dfm_trim(preDictDfm, sparsity = 0.95)), nfeature(dfm_trim(preDictDfm, min_docfreq = 0.05)))
     expect_equal(nfeature(dfm_trim(preDictDfm, min_docfreq = 0.05)), 3077)
     
+})
+
+test_that("dfm_trim works without trimming arguments #509", {
+    mydfm <- dfm(c("This is a sentence.", "This is a second sentence.", "Third sentence."))
+    expect_equal(dim(mydfm[-2, ]), c(2, 7))
+    expect_equal(dim(dfm_trim(mydfm[-2, ], verbose = FALSE)), c(2, 6))
 })
 
 test_that("test c.corpus",
@@ -223,4 +229,115 @@ test_that("dfm_weight works", {
     mydfm <- dfm(str, remove = stopwords("english"))
     expect_equivalent(as.matrix(dfm_weight(mydfm, weights = w)),
                       matrix(c(5, 5, 1, 1, 3, 6, 0, 0.5), nrow = 2))
+    
+    expect_equivalent(round(as.matrix(dfm_weight(mydfm, type = "frequency")), 2),
+                      matrix(c(1, 1, 1, 1, 1, 2, 0, 1), nrow = 2))
+    
+    expect_equivalent(round(as.matrix(dfm_weight(mydfm, type = "relFreq")), 2),
+                      matrix(c(0.33, 0.2, 0.33, 0.2, 0.33, 0.4, 0, 0.2), nrow = 2))
+    
+    expect_equivalent(round(as.matrix(dfm_weight(mydfm, type = "relMaxFreq")), 2),
+                      matrix(c(1, 0.5, 1, 0.5, 1, 1, 0, 0.5), nrow = 2))
+    
+    expect_equivalent(round(as.matrix(dfm_weight(mydfm, type = "logFreq")), 2),
+                      matrix(c(1, 1, 1, 1, 1, 1.30, 0, 1), nrow = 2))
+    
+    # replication of worked example from
+    # https://en.wikipedia.org/wiki/Tf-idf#Example_of_tf.E2.80.93idf
+    str <- c("this is a  a sample", "this is another example another example example")
+    wikiDfm <- dfm(str)
+    expect_equivalent(round(as.matrix(tfidf(wikiDfm, normalize = TRUE)), 2),
+                      matrix(c(0, 0, 0, 0, 0.12, 0, 0.06, 0, 0, 0.09, 0, 0.13), nrow = 2))
 })
+
+test_that("dfm keeps all types with > 10,000 documents (#438) (a)", {
+    generate_testdfm <- function(n) {
+        dfm(paste('X', 1:n, sep=''))
+    }
+    expect_equal(nfeature(generate_testdfm(10000)), 10000)
+    expect_equal(nfeature(generate_testdfm(20000)), 20000)
+})
+
+test_that("dfm keeps all types with > 10,000 documents (#438) (b)", {
+    set.seed(10)
+    generate_testdfm <- function(n) {
+        dfm(paste(sample(letters, n, replace = TRUE), 1:n))
+    }
+    expect_equal(nfeature(generate_testdfm(10000)), 10026)
+    expect_equal(nfeature(generate_testdfm(10001)), 10027)
+})
+
+test_that("dfm print works as expected", {
+    testdfm <- dfm(data_corpus_irishbudget2010)
+    expect_output(print(testdfm),
+                  "^Document-feature matrix of: 14 documents, 5,058 features \\(80.9% sparse\\)")
+    expect_output(print(testdfm[1:5, 1:5]),
+                  "^Document-feature matrix of: 5 documents, 5 features \\(28% sparse\\).*")
+    expect_output(head(testdfm, 1),
+                  "Document-feature matrix of: 14 documents, 5,058 features.*showing first document and first 6 features.*")
+    expect_output(tail(testdfm, 1),
+                  "Document-feature matrix of: 14 documents, 5,058 features.*showing last document and last 6 features.*")
+})
+
+test_that("dfm.dfm works as expected", {
+    testdfm <- dfm(data_corpus_irishbudget2010, tolower = TRUE)
+    expect_identical(testdfm, dfm(testdfm, tolower = FALSE))
+    expect_identical(testdfm, dfm(testdfm, tolower = TRUE))
+    groupeddfm <- dfm(testdfm, 
+                      groups =  ifelse(docvars(data_corpus_irishbudget2010, "party") %in% c("FF", "Green"), "Govt", "Opposition"),
+                      tolower = FALSE)
+    expect_identical(colSums(groupeddfm), colSums(groupeddfm))
+    expect_identical(docnames(groupeddfm), c("Govt", "Opposition"))
+    expect_identical(testdfm, dfm(testdfm))
+
+    dict <- dictionary(articles = c("the", "a", "an"),
+                       preps = c("of", "for", "in"))
+    expect_identical(
+        dfm(data_corpus_irishbudget2010, dictionary = dict),
+            dfm(testdfm, dictionary = dict)
+    )
+    expect_identical(
+        dfm(data_corpus_irishbudget2010, stem = TRUE),
+        dfm(testdfm, stem = TRUE)
+    )
+})
+
+test_that("dfm-methods works as expected", {
+    mydfm <- dfm(c("This is a test", "This is also a test", "This is an odd test"))
+    expect_equivalent(as.matrix(topfeatures(mydfm)),
+                      matrix(c(3,3,3,2,1,1,1)))
+    
+})
+
+test_that("dfm_sample works as expected",{
+    myDfm <- dfm(data_char_inaugural[1:10], verbose = FALSE)
+    expect_error(dfm_sample(myDfm, what="documents", size = 20),
+                  "size cannot exceed the number of documents \\(10\\)")
+    expect_error(dfm_sample(myDfm, what="features", size = 3500),
+                 "size cannot exceed the number of features \\(3358\\)")
+    expect_error(dfm_sample(data_char_inaugural[1:10]),
+                 "x must be a dfm object")
+})
+
+
+test_that("cbind.dfm works as expected",{
+    dfm1 <- dfm("This is one sample text sample")
+    dfm2 <- dfm("More words here")
+    dfm12 <- cbind(dfm1, dfm2)
+
+    expect_equal(nfeature(dfm12), 8)
+    expect_equal(names(dimnames(dfm12)),
+                 c("docs", "features"))
+})
+
+test_that("rbind.dfm works as expected",{
+    dfm1 <- dfm("This is one sample text sample")
+    dfm2 <- dfm("More words here")
+    dfm12 <- rbind(dfm1, dfm2)
+    
+    expect_equal(nfeature(dfm12), 8)
+    expect_equal(ndoc(dfm12), 2)
+    expect_equal(names(dimnames(dfm12)),
+                 c("docs", "features"))
+})
+

@@ -1,6 +1,30 @@
 # quanteda 0.9.9
 
-This release has some major changes to the API, as described in this document (LINK).
+## Changes since v0.9.9-3
+
+### Bug fixes
+
+* Fixed a bug causing `dfm` and `tokens` to break on > 10,000 documents. (#438)
+* Fixed a bug in `tokens(x, what = "character", removeSeparators = TRUE)` that returned an empty string.  
+* Fixed a bug in `corpus.VCorpus` if the VCorpus contains a single document. (#445)
+* Fixed a bug in `dfm_compress` in which the function failed on documents that contained zero feature counts. (#467)
+* Fixed a bug in `textmodel_NB` that caused the class priors `Pc` to be refactored alphabetically instead of in the order of assignment (#471), also affecting predicted classes (#476).
+
+### New features
+
+* New textstat function `textstat_keyness()` discovers words that occur at differential rates between partitions of a dfm (using chi-squared, Fisher's exact test, and the G^2 likelihood ratio test to measure the strength of associations).  
+* Added 2017-Trump to the inaugural corpus datasets (`data_corpus_inaugual` and `data_char_inaugural`).  
+* Improved the `groups` argument in `texts()` (and in `dfm()` that uses this function), which will now coerce to a factor rather than requiring one.
+* Added a dfm constructor from dfm objects, with the option of collapsing by groups.
+* Added new arguments to `sequences()`: `ordered` and `max_length`, the latter to prevent memory leaks from extremely long sequences.  
+* `dictionary()` now accepts YAML as an input file format.
+* `dfm_lookup` and `tokens_lookup` now accept a `levels` argument to determine which level of a hierarchical dictionary should be applied. 
+* Added `min_nchar` and `max_nchar` arguments to `dfm_select`.  
+* `dictionary()` can now be called on the argument of a `list()` without explicitly wrapping it in `list()`.  
+* `fcm` now works directly on a dfm object when `context = "documents"`.  
+
+
+This release has some **major changes to the API**, described below.
 
 ## Data objects
 
@@ -73,8 +97,6 @@ new function | deprecated function | contructs:
 `char_toupper` | `toUpper.character`, `toUpper.character` | `character`
 `char_tolower` | `toLower.character`, `toLower.character` | `character`
 `tokens_compound` | `joinTokens`, `phrasetotoken` | `tokens` class object
-
-
 
 
 ## New functions

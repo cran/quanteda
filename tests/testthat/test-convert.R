@@ -7,6 +7,7 @@ d <- dfm(mytexts, removePunct = TRUE)
 
 test_that("test STM package converter", {
     skip_if_not_installed("stm")
+    skip_if_not_installed("tm")
     
     dSTM <- convert(d, to = "stm")
     tP <- stm::textProcessor(mytexts, removestopwords = FALSE, 
@@ -17,8 +18,9 @@ test_that("test STM package converter", {
 })
 
 test_that("test tm package converter", {
+    skip_if_not_installed("tm")
     dtmq <- convert(d[, order(featnames(d))], to = "tm")
-    dtmtm <- tm::DocumentTermMatrix(tm::VCorpus(tm::VectorSource(toLower(mytexts))),
+    dtmtm <- tm::DocumentTermMatrix(tm::VCorpus(tm::VectorSource(char_tolower(mytexts))),
                                     control = list(removePunctuation = TRUE,
                                                    wordLengths = c(1, Inf)))
     ## FAILS
@@ -29,10 +31,12 @@ test_that("test tm package converter", {
 })
 
 test_that("test lda package converter", {
+    skip_if_not_installed("tm")
     expect_identical(convert(d, to = "topicmodels"), quantedaformat2dtm(d))
 })
 
 test_that("test topicmodels package converter", {
+    skip_if_not_installed("tm")
     expect_identical(convert(d, to = "lda"), dfm2ldaformat(d))
 })
 

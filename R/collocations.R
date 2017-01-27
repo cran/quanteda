@@ -101,7 +101,7 @@ collocations.character <- function(x, method = c("lr", "chi2", "pmi", "dice", "a
                                    n = NULL, toLower = TRUE, 
                                    punctuation = c("dontspan", "ignore", "include"), ...) {
     method <- match.arg(method)
-    x <- tokens((if (toLower) toLower(x) else x), hash = FALSE, ...)
+    x <- tokens((if (toLower) char_tolower(x) else x), hash = FALSE, ...)
     collocations(x, method = method, size = size , n = n, punctuation = punctuation)
 }
 
@@ -157,7 +157,7 @@ collocations3 <- function(x, method=c("lr", "chi2", "pmi", "dice", "all"), size=
     
     # remove punctuation if called for
     if (punctuation == "ignore") {
-        t <- t[!stringi::stri_detect_regex(w1, "^\\p{P}$")]
+        t <- t[!stringi::stri_detect_regex(t, "^\\p{P}$")]
     }
 
     # create a data.table of all adjacent bigrams
