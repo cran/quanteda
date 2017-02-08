@@ -1,22 +1,15 @@
-#include <Rcpp.h>
 //#include "dev.h"
 #include "quanteda.h"
-
-// [[Rcpp::plugins(cpp11)]]
-using namespace Rcpp;
-using namespace RcppParallel;
 using namespace quanteda;
-using namespace ngrams;
 
-
-Text keep(Text tokens, 
+Text keep_token(Text tokens, 
           const std::vector<std::size_t> &spans,
           const SetNgrams &set_words,
           const bool &padding){
     
     if (tokens.size() == 0) return {}; // return empty vector for empty text
     
-    unsigned int filler = std::numeric_limits<unsigned int>::max(); // use upper limit as a filler
+    unsigned int filler = UINT_MAX; // use upper limit as a filler
     Text tokens_copy(tokens.size(), filler);
     if (padding) {
         std::fill(tokens_copy.begin(), tokens_copy.end(), 0);
@@ -35,7 +28,7 @@ Text keep(Text tokens,
     return tokens_copy;
 }
 
-Text remove(Text tokens, 
+Text remove_token(Text tokens, 
             const std::vector<std::size_t> &spans,
             const SetNgrams &set_words,
             const bool &padding){
@@ -70,7 +63,8 @@ struct select_mt : public Worker{
     const bool &padding;
     
     // Constructor
-    select_mt(Texts &input_, Texts &output_, std::vector<std::size_t> &spans_, SetNgrams &set_words_, int &mode_, bool &padding_):
+    select_mt(Texts &input_, Texts &output_, const std::vector<std::size_t> &spans_, 
+              const SetNgrams &set_words_, const int &mode_, const bool &padding_):
               input(input_), output(output_), spans(spans_), set_words(set_words_), mode(mode_), padding(padding_) {}
     
     // parallelFor calles this function with std::size_t
@@ -78,11 +72,11 @@ struct select_mt : public Worker{
         //Rcout << "Range " << begin << " " << end << "\n";
         if (mode == 1) {
             for (std::size_t h = begin; h < end; h++) {
-                output[h] = keep(input[h], spans, set_words, padding);
+                output[h] = keep_token(input[h], spans, set_words, padding);
             }
         } else if(mode == 2) {
             for (std::size_t h = begin; h < end; h++) {
-                output[h] = remove(input[h], spans, set_words, padding);
+                output[h] = remove_token(input[h], spans, set_words, padding);
             }
         } else {
             for (std::size_t h = begin; h < end; h++) {
@@ -107,13 +101,11 @@ struct select_mt : public Worker{
 // [[Rcpp::export]]
 List qatd_cpp_tokens_select(const List &texts_, 
                             const List &words_,
-                            int mode_,
-                            bool padding_){
+                            int mode,
+                            bool padding){
     
     Texts input = Rcpp::as<Texts>(texts_);
     const List words = words_;
-    int mode = mode_;
-    bool padding = padding_;
 
     SetNgrams set_words;
     std::vector<std::size_t> spans(words.size());
@@ -131,24 +123,24 @@ List qatd_cpp_tokens_select(const List &texts_,
     // dev::Timer timer;
     Texts output(input.size());
     // dev::start_timer("Token select", timer);
-    #if RCPP_PARALLEL_USE_TBB
+#if QUANTEDA_USE_TBB
     select_mt select_mt(input, output, spans, set_words, mode, padding);
     parallelFor(0, input.size(), select_mt);
-    #else
+#else
     if (mode == 1) {
         for (std::size_t h = 0; h < input.size(); h++) {
-            output[h] = keep(input[h], spans, set_words, padding);
+            output[h] = keep_token(input[h], spans, set_words, padding);
         }
     } else if(mode == 2) {
         for (std::size_t h = 0; h < input.size(); h++) {
-            output[h] = remove(input[h], span_max, set_words, padding);
+            output[h] = remove_token(input[h], spans, set_words, padding);
         }
     } else {
         for (std::size_t h = 0; h < input.size(); h++){
             output[h] = input[h];
         }
     }
-    #endif
+#endif
     // dev::stop_timer("Token select", timer);
     ListOf<IntegerVector> texts_list = Rcpp::wrap(output);
     return texts_list;

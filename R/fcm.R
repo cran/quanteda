@@ -115,7 +115,8 @@ setClass("fcm",
 #' txts <- c("a a a b b c", "a a c e", "a c e f g")
 #' fcm(txts, context = "document", count = "frequency")
 #' fcm(txts, context = "document", count = "boolean")
-#' fcm(txts, context = "window", count = "boolean", window = 2)
+#' fcm(txts, context = "window", window = 2)
+#' 
 #' 
 #' # from tokens
 #' txt <- c("The quick brown fox jumped over the lazy dog.",
@@ -135,6 +136,12 @@ fcm <- function(x, context = c("document", "window"),
 #' @noRd
 #' @export
 fcm.character <- function(x, ...) {
+    fcm(tokens(x), ...)
+}
+
+#' @noRd
+#' @export
+fcm.corpus <- function(x, ...) {
     fcm(tokens(x), ...)
 }
 
@@ -227,17 +234,10 @@ fcm.tokenizedTexts <- function(x, context = c("document", "window"),
                 weights <- 1
             }
         }
-        
-        if (is.tokens(x)) {
-            n <- sum(lengths(unlist(x))) * window * 2
-            result <- fcm_hash_cpp(x, length(unique(unlist(x))), count, window, weights, ordered, tri, n)
-            # set the dimnames of result
-            types <- types(x)
-        } else {
-            types <- unique(unlist(x, use.names = FALSE))
-            n <- sum(lengths(x)) * (window + 1)
-            result <- fcm_cpp(x, types, count, window, weights, ordered, tri, n)
-        }
+        if (!is.tokens(x)) x <- as.tokens(x)
+        types <- types(x)
+        n <- sum(lengths(x)) * window * 2
+        result <- qatd_cpp_fcm(x, nfeature(x), count, window, weights, ordered, tri, n)
         # set the dimnames of result
         dimnames(result) <- list(features = types, features = types)
     }

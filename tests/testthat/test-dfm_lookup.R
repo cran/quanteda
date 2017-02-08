@@ -9,7 +9,7 @@ test_that("test dfm_lookup, issue #389", {
                             freedom = c('free*', 'libert*')))
     expect_equal(featnames(dfm(tokens_lookup(toks, dictionary = dict), tolower = FALSE)),
                  c("Country", "HOR", "law", "freedom"))
-    expect_error(dfm(toks, dictionary = dict),
+    expect_error(dfm_lookup(dfm(toks), dictionary = dict),
                   "dfm_lookup not currently implemented for ngrams > 1 and multi-word dictionary values")
 
     dict2 <- dictionary(list(Country = "united",
@@ -73,4 +73,11 @@ test_that("#459 extract the lower levels of a dictionary using a dfm", {
     dfm_lookup(testdfm, dict, levels = 4)
 })
 
+test_that("dfm_lookup raises error when dictionary has multi-word entries", {
+    
+    toks <- tokens(data_corpus_inaugural[1:5])
+    dict <- dictionary(list(Country = "united states"), concatenator = ' ')
+    expect_error(dfm_lookup(dfm(toks), dictionary = dict), 
+                 "dfm_lookup not currently implemented for .* multi-word dictionary values")
+})
 

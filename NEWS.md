@@ -1,5 +1,24 @@
 # quanteda 0.9.9
 
+## Changes since v0.9.9-17
+
+### New features
+
+* `textstat_keyness()` now returns a data.frame with p-values as well as the test statistic, and rownames containing the feature.  This is more consistent with the other textstat functions.
+* `tokens_lookup()` implements new rules for nested and linked sequences in dictionary values.  See #502.
+* `tokens_compound()` has a new `join` argument for better handling of nested and linked sequences.  See #517.
+* Internal operations on `tokens` are now significantly faster due to a reimplementation of the hash table functions in C++. (#510)
+* `dfm()` now works with multi-word dictionaries and thesauruses, which previously worked only with `tokens_lookup()`.
+* `fcm()` is now parallelized for improved performance on multi-core systems.
+
+### Bug fixes
+
+* Fixed C++ incompatibilities on older platforms due to compiler incompatibilities with the required TBB libraries (for multi-threading) (#531, #532, #535), in addition to safeguarding against other compiler warnings across a variety of new tested undefined behaviours.  
+* Fixed a bug in `convert(x, to = "lsa")` that transposed row and column names (#526)
+* Added missing `fcm()` method for corpus objects (#538)
+* Fixed some minor issues with reading in Lexicoder format dictionaries (Improvements to Lexicoder dictionary handling 
+
+
 ## Changes since v0.9.9-3
 
 ### Bug fixes
