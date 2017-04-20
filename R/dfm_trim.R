@@ -46,7 +46,7 @@
 #' dfm_trim(myDfm, min_docfreq = 0.4, min_count = 0.005)
 #' 
 #' \dontrun{
-#' # compare to removeSpareTerms from the tm package 
+#' # compare to removeSparseTerms from the tm package 
 #' if (require(tm)) {
 #'     (tmdtm <- convert(myDfm, "tm"))
 #'     removeSparseTerms(tmdtm, 0.7)
@@ -55,14 +55,14 @@
 #' }
 #' }
 #' @export
-dfm_trim <- function(x, min_count = 1, min_docfreq = 1, max_count = NULL, max_docfreq = NULL, sparsity = NULL, verbose = TRUE) {
+dfm_trim <- function(x, min_count = 1, min_docfreq = 1, max_count = NULL, max_docfreq = NULL, sparsity = NULL, verbose = quanteda_options("verbose")) {
     UseMethod("dfm_trim")
 }
  
 #' @export
 #' @rdname dfm_trim
 #' @noRd
-dfm_trim.dfm <- function(x, min_count = 1, min_docfreq = 1, max_count = NULL, max_docfreq = NULL, sparsity = NULL, verbose = FALSE) {
+dfm_trim.dfm <- function(x, min_count = 1, min_docfreq = 1, max_count = NULL, max_docfreq = NULL, sparsity = NULL, verbose = quanteda_options("verbose")) {
 
     # if (missing(min_count) & missing(min_docfreq) & missing(max_count) & missing(max_docfreq) & missing(sparsity)) {
     #     catm("No features removed.", appendLF = TRUE)
@@ -98,6 +98,7 @@ dfm_trim.dfm <- function(x, min_count = 1, min_docfreq = 1, max_count = NULL, ma
         messageMinDoc <- paste0(format(min_docfreq, big.mark=","), " * ", format(ndoc(x), big.mark=","), " = ")
         min_docfreq <- (ndoc(x) * min_docfreq)
     }
+ 
     if (!missing(max_count) & max_count2 < 1) {
         messageMaxCount <- paste0(format(max_count2, big.mark=","), " * ", format(nfeature(x), big.mark=","), " = ")
         max_count2 <- (nfeature(x) * max_count2)

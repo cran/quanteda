@@ -4,18 +4,8 @@
 #' @format character vector with one element
 #' @keywords data
 #' @examples
-#' tokenize(data_char_sampletext, removePunct = TRUE)
+#' tokenize(data_char_sampletext, remove_punct = TRUE)
 "data_char_sampletext"
-
-#' text of Herman Melville's Moby Dick
-#' 
-#' Named character object of the ASCII text of Herman Melville's
-#'  \emph{Moby Dick}, EBook no. 2701.
-#' @source Project Gutenberg, \url{http://www.gutenberg.org}
-#' @keywords data
-#' @examples
-#' summary(data_char_mobydick)
-"data_char_mobydick"
 
 #' immigration-related sections of 2010 UK party manifestos
 #' 
@@ -26,7 +16,7 @@
 #' @examples
 #' data_corpus_ukimmig2010 <- 
 #'     corpus(data_char_ukimmig2010, 
-#'            docvars = data.frame(party = names(ukimmigTexts)))
+#'            docvars = data.frame(party = names(data_char_ukimmig2010)))
 #' metadoc(data_corpus_ukimmig2010, "language") <- "english"
 #' summary(data_corpus_ukimmig2010, showmeta = TRUE)
 "data_char_ukimmig2010"
@@ -64,7 +54,7 @@
 
 # data(data_corpus_irishbudget2010, package="quantedaData")
 # txts <- texts(data_corpus_irishbudget2010)
-# for (i in 1:length(txts)) {
+# for (i in seq_along(txts)) {
 #     temptxt <- system2("native2ascii", input = txts[i], stdout = TRUE)
 #     temptxt[temptxt==""] <- "\n"
 #     temptxt <- paste(temptxt, collapse="")
@@ -85,29 +75,21 @@ NULL
 
 #' US presidential inaugural address texts
 #' 
-#' US presidential inaugural address texts, and metadata (for the corpus), 
-#' from 1789 to present.
-#' @details \code{data_corpus_inaugural} is the \link{quanteda-package} corpus
+#' US presidential inaugural address texts, and metadata (for the corpus), from
+#' 1789 to present.
+#' @details \code{data_corpus_inaugural} is the \link{quanteda-package} corpus 
 #'   object of US presidents' inaugural addresses since 1789. Document variables
 #'   contain the year of the address and the last name of the president.
+#' @format a \link{corpus} object with docvars including year, and the last and
+#'   first names of the presidents delivering the inaugural address
 #' @examples
 #' # some operations on the inaugural corpus
 #' summary(data_corpus_inaugural)
 #' head(docvars(data_corpus_inaugural), 10)
-#' @references
-#'   \url{https://archive.org/details/Inaugural-Address-Corpus-1789-2009} and 
-#'   \url{http://www.presidency.ucsb.edu/inaugurals.php}.
+#' @references 
+#' \url{https://archive.org/details/Inaugural-Address-Corpus-1789-2009} and 
+#' \url{http://www.presidency.ucsb.edu/inaugurals.php}.
 #' @keywords data
 "data_corpus_inaugural"
 
-
-#' @rdname data_corpus_inaugural
-#' @details \code{data_char_inaugural} is the character vector of US presidential inaugaration speeches
-#' @examples
-#' # working with the character vector only
-#' str(data_char_inaugural)
-#' head(docvars(data_corpus_inaugural), 10)
-#' mycorpus <- corpus(data_char_inaugural)
-#' @keywords data
-"data_char_inaugural"
 

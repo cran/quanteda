@@ -19,7 +19,7 @@
 #' toLower(test1)
 #' toLower(test1, keep_acronyms = TRUE)
 #' 
-#' test2 <- tokenize(test1, removePunct=TRUE)
+#' test2 <- tokenize(test1, remove_punct=TRUE)
 #' toLower(test2)
 #' toLower(test2, keep_acronyms = TRUE)
 #' }
@@ -42,7 +42,7 @@ toLower.NULL <- function(x, ...) NULL
 #' @export
 toLower.tokenizedTexts <- function(x, keep_acronyms = FALSE, ...) {
     attributes_saved <- attributes(x)
-    typeTest <- all(sapply(x, is.character))
+    typeTest <- all(vapply(x, is.character, logical(1)))
     if (!typeTest) {
         stop("Each element of the list must be a character vector.")
     }
@@ -62,14 +62,14 @@ toLower.tokens <- function(x, ...) {
 #' @rdname toLower
 #' @export
 toUpper.tokens <- function(x, ...) {
-    .Deprecated("char_toupper")
+    .Deprecated("tokens_toupper")
     tokens_toupper(x, ...)
 }
 
 
 #' @rdname toLower
-toLower.corpus <- function(x, keep_acronyms=FALSE, ...) {
-    char_tolower(texts(x), keep_acronyms, ...)
+toLower.corpus <- function(x, ...) {
+    tolower(texts(x), ...)
 }
 
 #' @rdname toLower
@@ -80,7 +80,7 @@ toLower.corpus <- function(x, keep_acronyms=FALSE, ...) {
 #'            text2 = "NASA sent a rocket into space.")
 #' toUpper(test1)
 #' 
-#' test2 <- tokenize(test1, removePunct = TRUE)
+#' test2 <- tokenize(test1, remove_punct = TRUE)
 #' toUpper(test2)
 #' }
 toUpper <- function(x, ...) {
@@ -102,7 +102,7 @@ toUpper.NULL <- function(x, ...) NULL
 #' @export
 toUpper.tokenizedTexts <- function(x, ...) {
     attributes_saved <- attributes(x)
-    typeTest <- all(sapply(x, is.character))
+    typeTest <- all(vapply(x, is.character, logical(1)))
     if (!typeTest) {
         stop("Each element of the list must be a character vector.")
     }

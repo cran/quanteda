@@ -40,7 +40,7 @@ The dfm with weighted values.
 }
 \description{
 Returns a document by feature matrix with the feature frequencies weighted 
-according to one of several common methods.  Some shortcuts that offer finer-grained control are:
+according to one of several common methods.  Some shortcut functions that offer finer-grained control are:
 \itemize{
 \item{\code{\link{tf}}}{  compute term frequency weights}
 \item{\code{\link{tfidf}}}{  compute term frequency-inverse document frequency weights}
@@ -52,8 +52,7 @@ This converts a matrix from sparse to dense format, so may exceed memory
 requirements depending on the size of your input matrix.
 }
 \note{
-For finer grained control, consider calling \code{\link{tf}} or 
-  \code{\link{tfidf}} directly.
+For finer grained control, consider calling the convenience functions directly.
 }
 \examples{
 dtm <- dfm(data_corpus_inaugural)
@@ -80,7 +79,7 @@ str <- c("apple is better than banana", "banana banana apple much better")
 dfm_weight(mydfm, weights = c(apple = 5, banana = 3, much = 0.5))
 
 \dontshow{
-testdfm <- dfm(data_char_inaugural[1:5], verbose = FALSE)
+testdfm <- dfm(data_corpus_inaugural[1:5])
 for (w in c("frequency", "relFreq", "relMaxFreq", "logFreq", "tfidf")) {
     testw <- dfm_weight(testdfm, w)
     cat("\\n\\n=== weight() TEST for:", w, "; class:", class(testw), "\\n")

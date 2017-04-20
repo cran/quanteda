@@ -5,6 +5,8 @@
 #' \itemize{ 
 #' \item a \link{character} vector, consisting of one document per element; if 
 #'   the elements are named, these names will be used as document names.
+#' \item a readtext object, from the \pkg{readtext} package 
+#'   (which is a specially constructed data.frame)
 #' \item a \link{data.frame}, whose default variable containing the document is 
 #'   character vector named \code{text}, although this can be set to any other
 #'   variable name using the \code{text_field} argument.  Other variables are 
@@ -36,7 +38,7 @@
 #' This significantly reduces the size of the corpus in memory, but will slow down operations that
 #' require the texts to be extracted.
 #' @param ... not used directly
-#' @return a corpus class object containing the original texts, document-level 
+#' @return A \link{corpus-class} class object containing the original texts, document-level 
 #'   variables, document-level metadata, corpus-level metadata, and default 
 #'   settings for subsequent processing of the corpus.  
 #' @section A warning on accessing corpus elements:
@@ -47,8 +49,10 @@
 #'   also likely to break should the internal structure of a corpus object
 #'   change (as it inevitably will as we continue to develop the package,
 #'   including moving corpus objects to the S4 class system).
-#' @seealso \link{corpus-class}, \link{docvars}, \link{metadoc}, \link{metacorpus}, 
-#'   \link{settings}, \link{texts}, \link{ndoc}, \link{docnames}
+#' @seealso \link{corpus-class}, \code{\link{docvars}}, \code{\link{metadoc}}, 
+#'   \code{\link{metacorpus}}, 
+#'   \code{\link{settings}}, \code{\link{texts}}, \code{\link{ndoc}}, 
+#'   \code{\link{docnames}}
 #' @details The texts and document variables of corpus objects can also be 
 #'   accessed using index notation. Indexing a corpus object as a vector will 
 #'   return its text, equivalent to \code{texts(x)}.  Note that this is not the 
@@ -58,7 +62,9 @@
 #'   Indexing a corpus using two indexes (integers or column names) will return 
 #'   the document variables, equivalent to \code{docvars(x)}.  Because a corpus 
 #'   is also a list, it is also possible to access, create, or replace docvars 
-#'   using list notation, e.g. \code{myCorpus[["newSerialDocvar"]] <- 
+#'   using list notation, e.g. 
+#'   
+#'   \code{myCorpus[["newSerialDocvar"]] <- 
 #'   paste0("tag", 1:ndoc(myCorpus))}.
 #'   
 #'   For details, see \link{corpus-class}.
@@ -67,7 +73,7 @@
 #' @keywords corpus
 #' @examples
 #' # create a corpus from texts
-#' corpus(data_char_inaugural)
+#' corpus(data_char_ukimmig2010)
 #' 
 #' # create a corpus from texts and assign meta-data and document variables
 #' summary(corpus(data_char_ukimmig2010, 
@@ -84,7 +90,7 @@
 #'     data(acq, package = "tm")
 #'     summary(corpus(acq), 5, showmeta=TRUE)
 #'     
-#'     tmCorp <- tm::VCorpus(tm::VectorSource(data_char_inaugural[49:57]))
+#'     tmCorp <- tm::VCorpus(tm::VectorSource(data_char_ukimmig2010))
 #'     quantCorp <- corpus(tmCorp)
 #'     summary(quantCorp)
 #' }
@@ -127,17 +133,25 @@ corpus.character <- function(x, docnames = NULL, docvars = NULL, text_field = "t
     
     # replace all hyphens with simple hyphen
     x <- stringi::stri_replace_all_regex(x, "\\p{Pd}", "-")
-
+    
+    # normalize EOL
+    x <- stringi::stri_replace_all_fixed(x, "\r\n", "\n") # Windows
+    x <- stringi::stri_replace_all_fixed(x, "\r", "\n") # Old Macintosh
+    
     # name the texts vector
     if (!is.null(docnames)) {
         stopifnot(length(docnames)==length(x))
         names(x) <- docnames
     } else if (is.null(x_names)) {
-        names(x) <- paste("text", 1:length(x), sep="")
+        names(x) <- paste("text", seq_along(x), sep="")
     } else if (is.null(names(x))) {
         # if they previously existed, but got obliterated by a stringi function
         names(x) <- x_names
     }
+
+    # ensure that docnames are unique
+    if (any(duplicated(names(x))))
+        names(x) <- make.unique(names(x))
 
     # create document-meta-data
     if (is.null(metacorpus$source)) {
@@ -157,7 +171,6 @@ corpus.character <- function(x, docnames = NULL, docvars = NULL, text_field = "t
             stopifnot(nrow(docvars)==length(x))
             documents <- cbind(documents, docvars)
         } 
-    } else {
     }
     
     # initialize results corpus
@@ -231,7 +244,7 @@ corpus.data.frame <- function(x, docnames = NULL, docvars = NULL, text_field = "
     
     corpus(x[, text_fieldi], 
            docvars = x[, -text_fieldi, drop = FALSE],
-           docnames = if (!identical(row.names(x), as.character(1:nrow(x)))) row.names(x) else NULL, #paste0("text", 1:nrow(x)),
+           docnames = if (!identical(row.names(x), as.character(seq_len(nrow(x))))) row.names(x) else NULL, 
            metacorpus = metacorpus, compress = compress, ...)
 }
 
@@ -254,13 +267,13 @@ corpus.kwic <- function(x, docnames = NULL, docvars = NULL, text_field = "text",
     # convert docnames to a factor, as in original kwic
     x$docname <- factor(x$docname)
     
-    result <- corpus(x, text_field = "contextPre", ...)
-    result[["contextPost"]] <- NULL
+    result <- corpus(x, text_field = "pre", ...)
+    result[["post"]] <- NULL
     result[["context"]] <- "pre"
     docnames(result) <- paste0(docnames(result), ".pre")
 
-    tempCorp <- corpus(x, text_field = "contextPost", ...)
-    tempCorp[["contextPre"]] <- NULL
+    tempCorp <- corpus(x, text_field = "post", ...)
+    tempCorp[["pre"]] <- NULL
     tempCorp[["context"]] <- "post"
     docnames(tempCorp) <- paste0(docnames(tempCorp), ".post")
     
@@ -287,11 +300,11 @@ corpus.VCorpus <- function(x, docnames = NULL, docvars = NULL, text_field = "tex
     texts <- sapply(x$content, "[[", "content")
     # paste together texts if they appear to be vectors
     if (any(lengths(texts) > 1))
-        texts <- sapply(texts, paste, collapse = " ")
+        texts <- vapply(texts, paste, character(1), collapse = " ")
     
     # special handling for VCorpus meta-data
-    metad <- as.data.frame(do.call(rbind, (lapply(x$content, "[[", "meta"))),
-                           stringsAsFactors = FALSE, row.names = NULL)
+    metad <- data.frame(do.call(rbind, (lapply(x$content, "[[", "meta"))),
+                        stringsAsFactors = FALSE, row.names = NULL)
     makechar <- function(x) gsub("character\\(0\\)", NA, as.character(x))
     datetimestampIndex <- which(names(metad) == "datetimestamp")
     metad[, -datetimestampIndex] <- apply(metad[, -datetimestampIndex], 2, makechar)

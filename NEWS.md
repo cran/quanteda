@@ -1,5 +1,46 @@
 # quanteda 0.9.9
 
+## Changes since v0.9.9-24
+
+### New features
+
+* `corpus_reshape()` can now go from sentences and paragraph units back to documents.
+* Added a `by = ` argument to `corpus_sample()`, for use in bootstrap resampling of sub-document units.
+* Added an experimental method `bootstrap_dfm()` to generate a list of dimensionally-equivalent dfm objects based on sentence-level resampling of the original documents.
+* Added option to `tokens()` and `dfm()` for passing docvars through to to tokens and dfm objects, and added `docvars()` and `metadoc()` methods for tokens and dfm class objects.  Overall, the code for docvars and metadoc is now more robust and consistent.  
+* `docvars()` on eligible objects that contain no docvars now returns an empty 0 x 0 data.frame (in the spirit of #242).
+* Redesigned `textmodel_scale1d` now produces sorted and grouped document positions for fitted wordfish models, and produces a ggplot2 plot object.
+* `textmodel_wordfish()` now preserves sparsity while processing the dfm, and uses a fast approximation to an SVD to get starting values.  This also dramatically improves performance in computing this model.  (#482, #124)
+* The speed of `kwic()` is now dramatically improved, and also returns an indexed set of tokens that makes subsequent commands on a kwic class object much faster. (#603)
+* Package options (for verbose, threads) can now be set or queried using `quanteda_options()`.
+* Improved performance and better documentation for `corpus_segment()`. (#634)
+* Added functions `corpus_trimsentences()` and `char_trimsentences()` to remove sentences from a corpus or character object, based on token length or pattern matching.
+* Added options to `textstat_readability()`: `min_sentence_length` and `max_sentence_length`. (#632)
+* Indexing now works for dictionaries, for slicing out keys and values (`[`), or accessing values directly (`[[`).  (#651)
+* Began the consolidation of collocation detection and scoring into a new function `textstat_collocations()`, which combines the existing `collocations()` and `sequences()` functions.  (#434)  Collocations now behave as sequences for other functions (such as `tokens_compound()`) and have a greatly improved performance for such uses.
+
+### Behaviour changes 
+
+* `docvars()` now permits direct access to "metadoc" fields (starting with `_`, e.g. `_document`)
+* `metadoc()` now returns a vector instead of a data.frame for a single variable, similar to `docvars()`
+* Most `verbose` options now take the default from `getOption("verbose")` rather than fixing the value in the function signatures. (#577)
+* `textstat_dist()` and `textstat_simil()` now return a matrix if a `selection` argument is supplied, and coercion to a list produces a list of distances or similarities only for that selection.
+* All remaining camelCase arguments are gone.  For commonly used ones, such as those in `tokens()`, the old arguments (e.g. `removePunct`) still produce the same behaviour but with a deprecation warning.
+* Added `n_target` and `n_reference` columns to `textstat_keyness()` to return counts for each category being compared for keyness.
+
+### Bug fixes
+
+* Fixed an problem in tokens generation for some irregular characters (#554).
+* Fixed a problem in setting the parallel thread size on single-core machines (#556).
+* Fixed problems for `str()` on a corpus with no docvars (#571).
+* `removeURL` in `tokens()` now removes URLs where the first part of the URL is a single letter (#587).
+* `dfm_select` now works correctly for ngram features (#589).
+* Fixed a bug crashing corpus constructors for character vectors with duplicated names (the cause of #580).
+* Fixed a bug in the behaviour for `dfm_select(x, features)` when `features` was a dfm, that failed to produce the intended featnames matches for the output dfm.
+* Fixed a bug in `corpus_segment(x, what = "tags")` when a document contained a whitespace just before a tag, at the beginning of the file, or ended with a tag followed by no text (#618, #634).
+* Fixed some problems with dictionary construction and reading some dictionary formats (#454, #455, #459).
+
+
 ## Changes since v0.9.9-17
 
 ### New features

@@ -8,21 +8,20 @@ mydict <- dictionary(list(christmas=c("Christmas", "Santa", "holiday"),
                           taxregex="tax*",
                           country="united_states"))
 dictDfm <- dfm(mycorpus, dictionary = mydict, valuetype = "glob")
-dictDfm[1:10,]
+dictDfm[1:10, ]
 thesDfm <- dfm(mycorpus, thesaurus = mydict, valuetype = "glob")
 thesDfm[1:10, (nfeature(thesDfm)-8) : nfeature(thesDfm)]
 
-preDictDfm <- dfm(mycorpus, removePunct = TRUE, removeNumbers = TRUE)
+preDictDfm <- dfm(mycorpus, remove_punct = TRUE, remove_numbers = TRUE)
 dfm_lookup(preDictDfm, mydict)
 
 txt <- tokenize(char_tolower(c("My Christmas was ruined by your opposition tax plan.", 
                                "The United_States has progressive taxation.")),
-                removePunct = TRUE)
+                remove_punct = TRUE)
 
 
 dfm(txt, dictionary = mydict, verbose = TRUE)
 dfm(txt, thesaurus = mydict, verbose = TRUE)
-dfm(txt, dictionary = mydict, verbose = TRUE, codeType = "old")
 dfm(txt, thesaurus = mydict, verbose = TRUE)
 
 (txtDfm <- dfm(txt, verbose = FALSE))
@@ -30,12 +29,12 @@ dfm_lookup(txtDfm, mydict, valuetype = "glob")
 dfm_lookup(txtDfm, mydict, exclusive = FALSE, valuetype = "glob", verbose = FALSE) 
 
 
-inaugTextsTokenized <- tokenize(char_tolower(inaugTexts[1:10]), removePunct = TRUE)
+inaugTextsTokenized <- tokens(data_corpus_inaugural, remove_punct = TRUE)
+inaugTextsTokenized <- tokens_tolower(inaugTextsTokenized)
+
 # microbenchmark::microbenchmark(
 #     dfm(inaugTextsTokenized, verbose = FALSE),
-#     dfm(inaugTextsTokenized, verbose = FALSE, codeType = "old"),
 #     dfm(inaugTextsTokenized, dictionary = mydict, verbose = FALSE),
-#     dfm(inaugTextsTokenized, dictionary = mydict, verbose = FALSE, codeType = "old")
 # )
 
 ## need to be carefully inspected!
@@ -53,7 +52,7 @@ myDict <- dictionary(list(christmas = c("Christmas", "Santa", "holiday"),
                           country = c("United_States", "Sweden")))
 myDfm <- dfm(c("My Christmas was ruined by your opposition tax plan.", 
                "Does the United_States or Sweden have more progressive taxation?"),
-             remove = stopwords("english"), removePunct = TRUE,
+             remove = stopwords("english"), remove_punct = TRUE, tolower = FALSE,
              verbose = FALSE)
 myDfm
 # glob format
@@ -77,7 +76,7 @@ expect_equal(as.vector(tmp[, c("taxglob", "taxregex", "country")]), c(0, 0, 0, 0
 test_that("dfm_trim", {
 
     mycorpus <- corpus_subset(data_corpus_inaugural, Year > 1900 & Year < 2017)
-    preDictDfm <- dfm(mycorpus, removePunct = TRUE, removeNumbers = TRUE)
+    preDictDfm <- dfm(mycorpus, remove_punct = TRUE, remove_numbers = TRUE)
     
     nfeature(dfm_trim(preDictDfm, min_count = 7))
     nfeature(dfm_trim(preDictDfm, min_count = 0.001))
@@ -94,6 +93,29 @@ test_that("dfm_trim", {
     
 })
 
+test_that("dfm_trim works as expected", {
+    mydfm <- dfm(c("This is a sentence.", "This is a second sentence.", "Third sentence.", "Fouth sentence.", "Fifth sentence."))
+    expect_message(dfm_trim(mydfm, min_count =2, min_docfreq=2, verbose=T),
+                   regexp = "Removing features occurring:")
+    expect_message(dfm_trim(mydfm, min_count =2, min_docfreq=2, verbose=T),
+                   regexp = "fewer than 2 times: 4")
+    expect_message(dfm_trim(mydfm, min_count =2, min_docfreq=2, verbose=T),
+                   regexp = "in fewer than 2 documents: 4")
+    expect_message(dfm_trim(mydfm, min_count =2, min_docfreq=2, verbose=T),
+                   regexp = "  Total features removed: 4 \\(44.4%\\).")
+})
+
+test_that("dfm_trim works as expected", {
+    mydfm <- dfm(c("This is a sentence.", "This is a second sentence.", "Third sentence.", "Fouth sentence.", "Fifth sentence."))
+    expect_message(dfm_trim(mydfm, max_count =2, max_docfreq=2, verbose=T),
+                   regexp = "more than 2 times: 2")
+    expect_message(dfm_trim(mydfm, max_count =2, max_docfreq=2, verbose=T),
+                   regexp = "in more than 2 documents: 2")
+    
+    expect_message(dfm_trim(mydfm, max_count =5, max_docfreq=5, verbose=T),
+                   regexp = "No features removed.")
+})
+
 test_that("dfm_trim works without trimming arguments #509", {
     mydfm <- dfm(c("This is a sentence.", "This is a second sentence.", "Third sentence."))
     expect_equal(dim(mydfm[-2, ]), c(2, 7))
@@ -102,7 +124,7 @@ test_that("dfm_trim works without trimming arguments #509", {
 
 test_that("test c.corpus",
     expect_that(
-        matrix(dfm(corpus(c('What does the fox say?', 'What does the fox say?', '')), removePunct = TRUE)),
+        matrix(dfm(corpus(c('What does the fox say?', 'What does the fox say?', '')), remove_punct = TRUE)),
         equals(matrix(rep(c(1, 1, 0), 5), nrow=15, ncol=1))
     )
 )
@@ -118,7 +140,7 @@ test_that("test rbind.dfm with the same columns", {
     colnames(foxdfm) <- c('does', 'fox', 'say', 'the', 'what')
     rownames(foxdfm) <-  rep(c('text1', 'text2'), 2)
 
-    dfm1 <- dfm(c(fox, fox), removePunct = TRUE)
+    dfm1 <- dfm(c(fox, fox), remove_punct = TRUE)
 
     expect_true(
         all(rbind(dfm1, dfm1) == foxdfm)
@@ -133,8 +155,8 @@ test_that("test rbind.dfm with the same columns", {
 # TODO: Add function for testing the equality of dfms
 
 test_that("test rbind.dfm with different columns", {
-    dfm1 <- dfm('What does the fox?', removePunct = TRUE)
-    dfm2 <- dfm('fox say', removePunct = TRUE)
+    dfm1 <- dfm('What does the fox?', remove_punct = TRUE)
+    dfm2 <- dfm('fox say', remove_punct = TRUE)
 
     foxdfm <- c(1, 0, 1, 1, 0, 1, 1, 0, 1, 0)
     dim(foxdfm) <- c(2,5)
@@ -158,9 +180,9 @@ test_that("test rbind.dfm with different columns", {
 
 test_that("test rbind.dfm with different columns, three args and repeated words", {
 
-    dfm1 <- dfm('What does the?', removePunct = TRUE)
-    dfm2 <- dfm('fox say fox', removePunct = TRUE)
-    dfm3 <- dfm('The quick brown fox', removePunct = TRUE)
+    dfm1 <- dfm('What does the?', remove_punct = TRUE)
+    dfm2 <- dfm('fox say fox', remove_punct = TRUE)
+    dfm3 <- dfm('The quick brown fox', remove_punct = TRUE)
 
     foxdfm <- c(0, 0, 1, 1, 0, 0, 0, 2, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0)
     dim(foxdfm) <- c(3,7)
@@ -188,7 +210,7 @@ test_that("test rbind.dfm with a single argument returns the same dfm", {
         )
     )
     expect_that(
-        rbind(dfm(fox, removePunct = TRUE)),
+        rbind(dfm(fox, remove_punct = TRUE)),
         is_a('dfmSparse')
     )
 })
@@ -196,7 +218,7 @@ test_that("test rbind.dfm with a single argument returns the same dfm", {
 test_that("test that rbind.dfm with a single argument prints a warning", {
     fox <-'What does the fox say?'
     expect_that(
-        rbind(dfm(fox, removePunct = TRUE)),
+        rbind(dfm(fox, remove_punct = TRUE)),
         gives_warning('rbind.dfm called on single dfm')
         )
 
@@ -213,7 +235,7 @@ test_that("test rbind.dfm with the same features, but in a different order", {
     colnames(foxdfm) <- c('does', 'fox', 'say', 'the', 'what')
     rownames(foxdfm) <-  rep(c('text1', 'text2'), 2)
 
-    dfm1 <- dfm(c(fox, xof), removePunct = TRUE)
+    dfm1 <- dfm(c(fox, xof), remove_punct = TRUE)
 
     expect_true(
         all(rbind(dfm1, dfm1) == foxdfm)
@@ -310,12 +332,12 @@ test_that("dfm-methods works as expected", {
 })
 
 test_that("dfm_sample works as expected",{
-    myDfm <- dfm(data_char_inaugural[1:10], verbose = FALSE)
+    myDfm <- dfm(data_corpus_inaugural[1:10], verbose = FALSE)
     expect_error(dfm_sample(myDfm, what="documents", size = 20),
                   "size cannot exceed the number of documents \\(10\\)")
     expect_error(dfm_sample(myDfm, what="features", size = 3500),
                  "size cannot exceed the number of features \\(3358\\)")
-    expect_error(dfm_sample(data_char_inaugural[1:10]),
+    expect_error(dfm_sample(data_corpus_inaugural[1:10]),
                  "x must be a dfm object")
 })
 
@@ -370,4 +392,20 @@ test_that("dfm(x, dictionary = mwvdict) works with multi-word values", {
                                             "SEQUENCE1", "SEQUENCE2", "NOTSEQ")))
     )
 })
+
+
+test_that("dfm works with relational operators", {
+    testdfm <- dfm(c("This is an example.", "This is a second example."))
+    expect_is(testdfm == 0, "lgCMatrix")
+    expect_is(testdfm >= 0, "lgCMatrix")
+    expect_is(testdfm <= 0, "lgCMatrix")
+    expect_is(testdfm < 0, "lgCMatrix")
+    expect_is(testdfm < 1, "lgCMatrix")
+    expect_is(testdfm > 0, "lgCMatrix")
+    expect_is(testdfm > 1, "lgCMatrix")
+    expect_is(testdfm > -1, "lgCMatrix")
+    expect_is(testdfm < -1, "lgCMatrix")
+})
+
+
 

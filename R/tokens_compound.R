@@ -6,12 +6,16 @@
 #' to form a single "token".  This ensures that the sequences will be processed
 #' subsequently as single tokens, for instance in constructing a \link{dfm}.
 #' @param x an input \link{tokens} object
-#' @inheritParams sequence2list
+#' @param sequences the input sequence, one of: \itemize{ \item{character vector,
+#'   }{whose elements will be split on whitespace;} \item{list of characters,
+#'   }{consisting of a list of token patterns, separated by white space}; 
+#'   \item{\link{tokens} object;} \item{\link{dictionary} object}{;} 
+#'   \item{\link{collocations} object.}{} }
 #' @param concatenator the concatenation character that will connect the words 
 #'   making up the multi-word sequences.  The default \code{_} is highly 
 #'   recommended since it will not be removed during normal cleaning and 
 #'   tokenization (while nearly all other punctuation characters, at least those
-#'   in the Unicode punctuation class [P] will be removed.
+#'   in the Unicode punctuation class [P] will be removed).
 #' @inheritParams valuetype
 #' @param case_insensitive logical; if \code{TRUE}, ignore case when matching
 #' @param join logical; if \code{TRUE}, join overlapped compounds
@@ -22,7 +26,7 @@
 #' @examples
 #' mytexts <- c("The new law included a capital gains tax, and an inheritance tax.",
 #'              "New York City has raised taxes: an income tax and inheritance taxes.")
-#' mytoks <- tokens(mytexts, removePunct = TRUE)
+#' mytoks <- tokens(mytexts, remove_punct = TRUE)
 #' 
 #' # for lists of sequence elements
 #' myseqs <- list(c("tax"), c("income", "tax"), c("capital", "gains", "tax"), c("inheritance", "tax"))
@@ -44,9 +48,10 @@
 #' tokens_compound(toks, myDict)
 #'
 #' # with collocations
-#' collocs <- collocations("capital gains taxes are worse than inheritance taxes", size = 2:3)
-#' toks <- tokens("The new law included capital gains taxes and inheritance taxes.")
-#' tokens_compound(toks, collocs)
+#' #cols <- textstat_collocations("capital gains taxes are worse than inheritance taxes", 
+#' #                              size = 2, min_count = 1)
+#' #toks <- tokens("The new law included capital gains taxes and inheritance taxes.")
+#' #tokens_compound(toks, cols)
 tokens_compound <- function(x, sequences,
                     concatenator = "_", valuetype = c("glob", "regex", "fixed"),
                     case_insensitive = TRUE, join = FALSE) {
@@ -65,28 +70,32 @@ tokens_compound.tokens <- function(x, sequences,
     if (!is.tokens(x))
         stop("x must be a tokens object")
     
-    sequences <- sequence2list(sequences)
-    seqs <- as.list(sequences)
-    seqs <- seqs[lengths(seqs) > 1] # drop single words
-    
-    # Do nothing if no sequence is given
-    if (!length(seqs))
-        return(x)
-    
     valuetype <- match.arg(valuetype)
-    valuetype <- match.arg(valuetype)
-    
+
     names_org <- names(x)
     attrs_org <- attributes(x)
     types <- types(x)
     
-    seqs_id <- regex2id(seqs, types, valuetype, case_insensitive)
-    if(length(seqs_id) == 0) return(x) # do nothing
-    x <- qatd_cpp_tokens_compound(x, seqs_id, types, concatenator, join)
-    x <- reassign_attributes(x, attrs_org, exceptions = "types", attr_only = TRUE)
+    if (is.sequences(sequences) || is.collocations(sequences)) {
+        if (identical(attr(sequences, 'types'), types)) {
+            #cat("Skip regex2id\n")
+            seqs_ids <- attr(sequences, 'tokens')
+        } else { 
+            #cat("Use regex2id\n")
+            seqs <- features2list(sequences$collocation)
+            seqs_ids <- regex2id(seqs, types, valuetype, case_insensitive)
+        }
+    } else {
+        #cat("Use regex2id\n")
+        seqs <- features2list(sequences)
+        seqs <- seqs[lengths(seqs) > 1] # drop single words
+        seqs_ids <- regex2id(seqs, types, valuetype, case_insensitive)
+    }
+    if(length(seqs_ids) == 0) return(x) # do nothing
+    x <- qatd_cpp_tokens_compound(x, seqs_ids, types, concatenator, join)
+    attributes(x, FALSE) <- attrs_org
     attr(x, "concatenator") <- concatenator
-    
-    tokens_hashed_recompile(x)
+    return(x)
 }
 
 

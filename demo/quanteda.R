@@ -24,7 +24,7 @@ textplot_wordcloud(mydfm["BNP",])
 
 # some examples of tokenization and string cleaning
 
-(toks <- tokens(inaugCorpus[2], removePunct = TRUE))
+(toks <- tokens(inaugCorpus[2], remove_punct = TRUE))
 tokens_wordstem(toks)
 tokens_remove(toks, stopwords("english"))
 
@@ -45,9 +45,9 @@ summary(immigCorpusSent, 20)
 
 ## tokenize some texts
 txt <- "#TextAnalysis is MY <3 4U @myhandle gr8 #stuff :-)"
-tokens(txt, removePunct=TRUE)
-tokens(txt, removePunct=TRUE, removeTwitter=TRUE)
-(toks <- tokens(char_tolower(txt), removePunct=TRUE, removeTwitter=TRUE))
+tokens(txt, remove_punct=TRUE)
+tokens(txt, remove_punct=TRUE, remove_twitter=TRUE)
+(toks <- tokens(char_tolower(txt), remove_punct=TRUE, remove_twitter=TRUE))
 str(toks)
 
 # tokenize sentences
@@ -119,11 +119,11 @@ as.list(textstat_dist(presDfm, c("fair", "health", "terror"), margin = "features
 
 # form ngrams
 txt <- "Hey @kenbenoit #textasdata: The quick, brown fox jumped over the lazy dog!"
-tokens(char_tolower(txt), removePunct = TRUE, ngrams = 2)
-tokens(char_tolower(txt), removePunct = TRUE, ngrams = c(1,3))
+tokens(char_tolower(txt), remove_punct = TRUE, ngrams = 2)
+tokens(char_tolower(txt), remove_punct = TRUE, ngrams = c(1,3))
 
 # low-level options exist too
-(toks1 <- tokens(char_tolower(txt), removePunct = TRUE))
+(toks1 <- tokens(char_tolower(txt), remove_punct = TRUE))
 tokens_ngrams(toks1, n = c(1, 3, 5))
 
 # form "skip-grams"
@@ -132,11 +132,11 @@ tokens_ngrams(toks2, n = 2, skip = 1, concatenator = " ")
 tokens_ngrams(toks2, n = 3, skip = 0:1, concatenator = " ")
 
 # mine bigrams
-collocs2 <- collocations(inaugTexts, size = 2, method = "all")
+collocs2 <- collocations(data_corpus_inaugural, size = 2, method = "all")
 head(collocs2, 20)
 
 # mine trigrams
-collocs3 <- collocations(inaugTexts, size = 3, method = "all")
+collocs3 <- collocations(data_corpus_inaugural, size = 3, method = "all")
 head(collocs3, 20)
 
 # remove parts of speech and inspect

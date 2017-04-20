@@ -21,6 +21,7 @@
 #' @author Kenneth Benoit
 #' @keywords internal deprecated
 #' @examples
+#' \dontrun{
 #' mytexts <- c("The new law included a capital gains tax, and an inheritance tax.",
 #'              "New York City has raised a taxes: an income tax and a sales tax.")
 #' mydict <- dictionary(list(tax=c("tax", "income tax", "capital gains tax", "inheritance tax")))
@@ -30,11 +31,13 @@
 #' # when used as a dictionary for dfm creation
 #' mydfm2 <- dfm(cw, dictionary = dictionary(lapply(mydict, function(x) gsub(" ", "_", x))))
 #' mydfm2
+#' 
 #' # to pick up "taxes" in the second text, set valuetype = "regex"
 #' mydfm3 <- dfm(cw, dictionary = dictionary(lapply(mydict, phrasetotoken, mydict)),
 #'               valuetype = "regex")
 #' mydfm3
 #' ## one more token counted for "tax" than before
+#' }
 setGeneric("phrasetotoken", 
            function(object, phrases, ...) 
                standardGeneric("phrasetotoken"))
@@ -114,7 +117,7 @@ setMethod("phrasetotoken", signature = c("character", "character"),
               
               for (l in compoundPhrasesList) {
                   re.search <- paste("(\\b", paste(l, collapse = paste0(")\\p{WHITE_SPACE}+(")), "\\b)", sep = "")
-                  re.replace <- paste("$", 1:length(l), sep = "", collapse = concatenator)
+                  re.replace <- paste("$", seq_along(l), sep = "", collapse = concatenator)
                   object <- stringi::stri_replace_all_regex(object, re.search, re.replace, case_insensitive = case_insensitive)
               }
               object

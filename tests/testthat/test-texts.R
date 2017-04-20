@@ -19,19 +19,19 @@ test_that("test texts with groups", {
                                           label_factor = factor(c("A", "B", "A")),
                                           label_txt = c("A", "B", "A")))
     expect_equal(texts(mycorp, groups = "bool")[2], 
-                 c("TRUE" = "This is first document something completely different"))
+                 c("TRUE" = "This is first document  something completely different"))
     expect_equal(texts(mycorp, groups = as.factor(docvars(mycorp, "bool")))[2], 
-                 c("TRUE" = "This is first document something completely different"))
+                 c("TRUE" = "This is first document  something completely different"))
 
     expect_equal(texts(mycorp, groups = "label_factor")[1], 
-                 c(A = "This is first document something completely different"))
+                 c(A = "This is first document  something completely different"))
     expect_equal(texts(mycorp, groups = docvars(mycorp, "label_factor"))[1], 
-                 c(A = "This is first document something completely different"))
+                 c(A = "This is first document  something completely different"))
     
     expect_equal(texts(mycorp, groups = "label_txt")[1], 
-                 c(A = "This is first document something completely different"))
+                 c(A = "This is first document  something completely different"))
     expect_equal(texts(mycorp, groups = docvars(mycorp, "label_txt"))[1], 
-                 c(A = "This is first document something completely different"))
+                 c(A = "This is first document  something completely different"))
     
     expect_error(texts(mycorp, groups = "label_txt2"),
                  "groups must name docvars or provide data matching the documents in x")
@@ -43,4 +43,3 @@ test_that("as.character.corpus same as texts.corpus", {
     expect_identical(texts(data_corpus_inaugural), 
                      as.character(data_corpus_inaugural))
 })
-  

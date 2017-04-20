@@ -1,5 +1,6 @@
 //#include "dev.h"
 #include "quanteda.h"
+#include "recompile.h"
 using namespace quanteda;
 
 Text match(Text tokens, 
@@ -88,26 +89,18 @@ struct match_mt : public Worker{
 */
 
 // [[Rcpp::export]]
-List qatd_cpp_tokens_match(const List &texts_, 
+List qatd_cpp_tokens_match(const List &texts_,
+                           const CharacterVector types_,
                            const List &words_,
                            const IntegerVector &ids_,
                            const bool &overlap){
     
     Texts input = Rcpp::as<Texts>(texts_);
-    const IntegerVector ids = ids_;
-    
+    Types types = Rcpp::as<Types>(types_);
+
     MapNgrams map_words;
-    std::vector<std::size_t> spans(words_.size());
-    for (unsigned int g = 0; g < (unsigned int)words_.size(); g++) {
-        if (has_na(words_[g])) continue;
-        Ngram word = words_[g];
-        map_words[word] = ids[g];
-        spans[g] = word.size();
-    }
-    sort(spans.begin(), spans.end());
-    spans.erase(unique(spans.begin(), spans.end()), spans.end());
-    std::reverse(std::begin(spans), std::end(spans));
-    
+    std::vector<std::size_t> spans = register_ngrams(words_, ids_, map_words);
+
     // dev::Timer timer;
     Texts output(input.size());
     // dev::start_timer("Token match", timer);
@@ -120,8 +113,7 @@ List qatd_cpp_tokens_match(const List &texts_,
     }
 #endif
     // dev::stop_timer("Token match", timer);
-    ListOf<IntegerVector> output_ = Rcpp::wrap(output);
-    return output_;
+    return recompile(output, types);
 }
 
 /***R

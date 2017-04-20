@@ -61,10 +61,10 @@ selectFeatures.dfm <- function(x, features, selection = c("keep", "remove"),
 #' @param indexing use dfm-based index to efficiently process large tokenizedTexts object
 #' @export
 #' @examples 
-#' \dontrun{## performance comparisons
+#' \dontrun{
 #' data(SOTUCorpus, package = "quantedaData")
-#' toks <- tokenize(SOTUCorpus, removePunct = TRUE)
-#' # toks <- tokenize(tokenize(SOTUCorpus, what='sentence', simplify = TRUE), removePunct = TRUE)
+#' toks <- tokenize(SOTUCorpus, remove_punct = TRUE)
+#' # toks <- tokenize(tokenize(SOTUCorpus, what='sentence', simplify = TRUE), remove_punct = TRUE)
 #' # head to head, old v. new
 #' system.time(selectFeaturesOLD(toks, stopwords("english"), "remove", verbose = FALSE))
 #' system.time(selectFeatures(toks, stopwords("english"), "remove", verbose = FALSE))
@@ -91,11 +91,11 @@ selectFeatures.dfm <- function(x, features, selection = c("keep", "remove"),
 #'     pre = dfm(selectFeaturesOLD(toks, stopwords("english"), "remove"), verbose = FALSE),
 #'     post = dfm(toks, remove = stopwords("english"), verbose = FALSE),
 #'     times = 5, unit = "relative")
-#' }
+#' 
 #' 
 #' ## with simple examples
 #' toks <- tokenize(c("This is a sentence.", "This is a second sentence."), 
-#'                  removePunct = TRUE)
+#'                  remove_punct = TRUE)
 #' selectFeatures(toks, c("is", "a", "this"), selection = "remove", 
 #'                 valuetype = "fixed", padding = TRUE, case_insensitive = TRUE)
 #' 
@@ -110,13 +110,13 @@ selectFeatures.dfm <- function(x, features, selection = c("keep", "remove"),
 #'                valuetype = "glob", padding = TRUE, case_insensitive = FALSE)
 #' 
 #' # with longer texts
-#' txts <- data_char_inaugural[1:2]
-#' toks <- tokenize(txts)
+#' toks <- tokenize(data_corpus_inaugural[1:2])
 #' selectFeatures(toks, stopwords("english"), "remove")
 #' selectFeatures(toks, stopwords("english"), "keep")
 #' selectFeatures(toks, stopwords("english"), "remove", padding = TRUE)
 #' selectFeatures(toks, stopwords("english"), "keep", padding = TRUE)
-#' selectFeatures(tokenize(data_char_inaugural[2]), stopwords("english"), "remove", padding = TRUE)
+#' selectFeatures(tokenize(data_corpus_inaugural[2]), stopwords("english"), "remove", padding = TRUE)
+#' }
 selectFeatures.tokenizedTexts <- function(x, features, selection = c("keep", "remove"), 
                                            valuetype = c("glob", "regex", "fixed"),
                                            case_insensitive = TRUE, padding = FALSE, indexing = FALSE,
@@ -127,6 +127,7 @@ selectFeatures.tokenizedTexts <- function(x, features, selection = c("keep", "re
 #' @export
 #' @rdname selectFeatures
 #' @examples
+#' \dontrun{
 #' toksh <- tokens(c(doc1 = "This is a SAMPLE text", doc2 = "this sample text is better"))
 #' feats <- c("this", "sample", "is")
 #' # keeping features
@@ -139,6 +140,7 @@ selectFeatures.tokenizedTexts <- function(x, features, selection = c("keep", "re
 #' selectFeatures(toksh, feats, selection = "remove", padding = TRUE)
 #' selectFeatures(toksh, feats, selection = "remove", case_insensitive = FALSE)
 #' selectFeatures(toksh, feats, selection = "remove", padding = TRUE, case_insensitive = FALSE)
+#' }
 selectFeatures.tokens <- function(x, features, selection = c("keep", "remove"), 
                                   valuetype = c("glob", "regex", "fixed"),
                                   case_insensitive = TRUE, padding = FALSE, ...) {
@@ -151,10 +153,11 @@ selectFeatures.tokens <- function(x, features, selection = c("keep", "remove"),
 #' @param pos indexes of word position if called on collocations: remove if word
 #'   \code{pos} is a stopword
 #' @examples  
-#' 
+#' \dontrun{
 #' ## example for collocations
-#' (myCollocs <- collocations(data_char_inaugural[1:3], n=20))
+#' (myCollocs <- collocations(data_corpus_inaugural[1:3], n=20))
 #' selectFeatures(myCollocs, stopwords("english"), "remove")
+#' }
 #' @export
 selectFeatures.collocations <- function(x, features, selection = c("keep", "remove"), 
                                         valuetype = c("glob", "regex", "fixed"),
@@ -179,7 +182,7 @@ selectFeatures.collocations <- function(x, features, selection = c("keep", "remo
             valuetype <- "fixed"
         else {
             stop("glob not currently supported for selectFeatures.collocations")
-            features <- sapply(features, utils::glob2rx, USE.NAMES = FALSE)
+            features <- vapply(features, utils::glob2rx, character(1), USE.NAMES = FALSE)
             valuetype <- "regex"
         }
     }
@@ -191,7 +194,7 @@ selectFeatures.collocations <- function(x, features, selection = c("keep", "remo
     nstart <- nrow(x)
     stopwordTable <- data.table(word = features, remove = 1L)
     setkey(stopwordTable, word)
-    x$order <- 1:nrow(x)
+    x$order <- seq_len(nrow(x))
     
     if (case_insensitive)
         x[, c("word1", "word2", "word3") := list(char_tolower(word1), char_tolower(word2), char_tolower(word3))]
@@ -257,10 +260,10 @@ selectFeatures.collocations <- function(x, features, selection = c("keep", "remo
 #'                    execute the functions of its Chief Magistrate.",
 #'          wash2 <- "When the occasion proper for it shall arrive, I shall endeavor to express
 #'                    the high sense I entertain of this distinguished honor.")
-#' removeFeatures(tokenize(txt, removePunct = TRUE), stopwords("english"))
+#' removeFeatures(tokenize(txt, remove_punct = TRUE), stopwords("english"))
 #' 
 #' itText <- tokenize("Ecco alcuni di testo contenente le parole che vogliamo rimuovere.", 
-#'                    removePunct = TRUE)
+#'                    remove_punct = TRUE)
 #' removeFeatures(itText, stopwords("italian"), case_insensitive = TRUE)
 #' 
 #' ## example for dfm objects
@@ -268,7 +271,7 @@ selectFeatures.collocations <- function(x, features, selection = c("keep", "remo
 #' removeFeatures(mydfm, stopwords("english"))
 #' 
 #' ## example for collocations
-#' (myCollocs <- collocations(data_char_inaugural[1:3], n=20))
+#' (myCollocs <- collocations(data_corpus_inaugural[1:3], n=20))
 #' removeFeatures(myCollocs, stopwords("english"))
 #' removeFeatures(myCollocs, stopwords("english"), pos = 2)
 #' }
@@ -284,7 +287,7 @@ removeFeatures <- function(x, features, ...) {
 # @rdname selectFeatures
 # @examples
 # ## example for collocations
-# (myCollocs <- collocations(data_char_inaugural[1:3], n=20))
+# (myCollocs <- collocations(data_corpus_inaugural[1:3], n=20))
 # selectFeatures(myCollocs, stopwords("english"), "remove")
 # @export
 selectFeatures_collocations <- function(x, features, selection = c("keep", "remove"), 
@@ -309,7 +312,7 @@ selectFeatures_collocations <- function(x, features, selection = c("keep", "remo
         if (!sum(stringi::stri_detect_charclass(features, c("[*?]"))))
             valuetype <- "fixed"
         else {
-            features <- sapply(features, utils::glob2rx, USE.NAMES = FALSE)
+            features <- vapply(features, utils::glob2rx, character(1), USE.NAMES = FALSE)
             valuetype <- "regex"
         }
     }

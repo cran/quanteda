@@ -1,5 +1,5 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-### [![quanteda: quantitative analysis of textual data](https://rawgit.com/kbenoit/quanteda/master/images/quanteda_logo.svg)](https://kbenoit.github.io/quanteda/)
+### [![quanteda: quantitative analysis of textual data](https://rawgit.com/kbenoit/quanteda/master/images/quanteda_logo.svg)](http://quanteda.io)
 
 [![CRAN Version](https://www.r-pkg.org/badges/version/quanteda)](https://CRAN.R-project.org/package=quanteda) [![Downloads](https://cranlogs.r-pkg.org/badges/quanteda)](https://CRAN.R-project.org/package=quanteda) [![Total Downloads](https://cranlogs.r-pkg.org/badges/grand-total/quanteda?color=orange)](https://CRAN.R-project.org/package=quanteda) [![Travis-CI Build Status](https://travis-ci.org/kbenoit/quanteda.svg?branch=master)](https://travis-ci.org/kbenoit/quanteda) [![Build status](https://ci.appveyor.com/api/projects/status/e3tf2h1ff0nlv249/branch/master?svg=true)](https://ci.appveyor.com/project/kbenoit/quanteda/branch/master) [![codecov.io](https://codecov.io/github/kbenoit/quanteda/coverage.svg?branch=master)](https://codecov.io/gh/kbenoit/quanteda/branch/master)
 
@@ -11,10 +11,29 @@ This version of the package is a transitional release prior to v1.0. It includes
 About the package
 -----------------
 
-An R package for managing and analyzing text, created by [Kenneth Benoit](kbenoit@lse.ac.uk) in collaboration with a team of core [contributors](https://github.com/kbenoit/quanteda/graphs/contributors): [Kohei Watanabe](https://github.com/koheiw), [Paul Nulty](https://github.com/pnulty), [Adam Obeng](https://github.com/adamobeng), [Haiyan Wang](https://github.com/HaiyanLW), [Ben Lauderdale](https://github.com/lauderdale), and [Will Lowe](https://github.com/conjugateprior).
+An R package for managing and analyzing text, created by [Kenneth Benoit](http://kenbenoit.net) in collaboration with a team of core [contributors](https://github.com/kbenoit/quanteda/graphs/contributors): [Kohei Watanabe](https://github.com/koheiw), [Paul Nulty](https://github.com/pnulty), [Adam Obeng](https://github.com/adamobeng), [Haiyan Wang](https://github.com/HaiyanLW), [Ben Lauderdale](https://github.com/lauderdale), and [Will Lowe](https://github.com/conjugateprior).
 Supported by the European Research Council grant ERC-2011-StG 283794-QUANTESS.
 
-For more details, see the [**package website**](https://kbenoit.github.io/quanteda/).
+For more details, see the [**package website**](http://quanteda.io).
+
+How to cite the package:
+
+
+    To cite package 'quanteda' in publications please use the
+    following:
+
+      Benoit, Kenneth et. al. ().  "quanteda: Quantitative Analysis of
+      Textual Data".  R package version: 0.9.9-49.
+      http://quanteda.io.
+
+    A BibTeX entry for LaTeX users is
+
+      @Manual{,
+        title = {quanteda: Quantitative Analysis of Textual Data},
+        author = {Kenneth Benoit and Kohei Watanabe and Paul Nulty and Adam Obeng and Haiyan Wang and Benjamin Lauderdale and Will Lowe},
+        note = {R package version 0.9.9-49},
+        url = {http://quanteda.io},
+      }
 
 ### Leave feedback
 
@@ -86,7 +105,7 @@ How to Install
 
 3.  Additional recommended packages:
 
-    The following packages work well with **quanteda** and we recommend that you also install them:
+    The following packages work well with or extend **quanteda** and we recommend that you also install them:
 
     -   [**readtext**](https://github.com/kbenoit/readtext): For reading text data into R.
 
@@ -97,30 +116,23 @@ How to Install
     -   [**quantedaData**](https://github.com/kbenoit/quantedaData): Additional textual data for use with **quanteda**.
 
         ``` r
-        r devtools::install_github("kbenoit/quantedaData")
+        devtools::install_github("kbenoit/quantedaData")
         ```
 
     -   [**spacyr**](https://github.com/kbenoit/spacyr): NLP using the [spaCy](http://spacy.io) library.
 
+    -   [**LIWCalike**](https://github.com/kbenoit/LIWCalike): An R implementation of the [Linguistic Inquiry and Word Count](http://liwc.wpengine.com) approach to text analysis.
+
 Getting Started
 ---------------
 
-See the [package website](http://kbenoit.github.io/quanteda), which includes the [Getting Started Vignette](https://kbenoit.github.io/quanteda/articles/quickstart.html).
+See the [package website](http://quanteda.io), which includes the [Getting Started Vignette](http://quanteda.io/articles/quickstart.html).
 
 Demonstration
 -------------
 
 ``` r
 library(quanteda)
-## quanteda version 0.9.9.20
-## 
-## Attaching package: 'quanteda'
-## The following object is masked from 'package:utils':
-## 
-##     View
-## The following object is masked from 'package:base':
-## 
-##     sample
 
 # create a corpus from the immigration texts from UK party platforms
 uk2010immigCorpus <- 
@@ -144,20 +156,20 @@ summary(uk2010immigCorpus)
 ##          UKIP   346    739        27         UKIP
 ## 
 ## Source:  /Users/kbenoit/Dropbox (Personal)/GitHub/quanteda/* on x86_64 by kbenoit
-## Created: Sun Feb  5 08:35:20 2017
+## Created: Wed Apr 19 13:16:11 2017
 ## Notes:   Immigration-related sections of 2010 UK party manifestos
 
 # key words in context for "deport", 3 words of context
 kwic(uk2010immigCorpus, "deport", 3)
-##                                                                    
-## [BNP, 159]         The BNP will | deport | all foreigners convicted
-## [BNP, 1970]                . 2. | Deport | all illegal immigrants  
-## [BNP, 1976] immigrants We shall | deport | all illegal immigrants  
-## [BNP, 2621]  Criminals We shall | deport | all criminal entrants
+##                                                                     
+##   [BNP, 159]        The BNP will | deport | all foreigners convicted
+##  [BNP, 1970]                . 2. | Deport | all illegal immigrants  
+##  [BNP, 1976] immigrants We shall | deport | all illegal immigrants  
+##  [BNP, 2621]  Criminals We shall | deport | all criminal entrants
 
 # create a dfm, removing stopwords
 mydfm <- dfm(uk2010immigCorpus, remove = c("will", stopwords("english")),
-             removePunct = TRUE)
+             remove_punct = TRUE)
 mydfm
 ## Document-feature matrix of: 9 documents, 1,547 features (83.8% sparse).
 
@@ -178,7 +190,7 @@ textplot_wordcloud(mydfm, min.freq = 6, random.order = FALSE,
                    colors = RColorBrewer::brewer.pal(8,"Dark2"))
 ```
 
-![](images/quanteda_example-1.png)
+![](man/images/quanteda_example-1.png)
 
 Contributing
 ------------

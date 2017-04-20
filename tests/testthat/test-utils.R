@@ -26,26 +26,112 @@ test_that("Test quanteda:::mktemp function for test dirs",{
     expect_true(file.exists(new_filename))
 })
 
-test_that("sequence2list works as expected", {
+test_that("features2list works as expected", {
     
     target <- list(c("United", "States"), "Congress", c("feder*", "gov*"))
     # character
-    expect_equal(quanteda:::sequence2list(c("United States", "Congress", "feder* gov*")),
+    expect_equal(quanteda:::features2list(c("United States", "Congress", "feder* gov*")),
                  target)
     # list
-    expect_equal(quanteda:::sequence2list(as.list(c("United States", "Congress", "feder* gov*"))),
+    expect_equal(quanteda:::features2list(list(c("United", "States"), c("Congress"), c("feder*", "gov*"))),
                  target)
     # tokens
-    expect_equal(quanteda:::sequence2list(tokens(c("United States", "Congress", "feder* gov*"), what = "fasterword")),
+    expect_equal(quanteda:::features2list(tokens(c("United States", "Congress", "feder* gov*"), what = "fasterword")),
                  target)
     # dictionary
-    expect_equal(quanteda:::sequence2list(dictionary(list(country = c("United States"), 
-                                                          institution = c("Congress", "feder* gov*")))),
+    expect_equal(quanteda:::features2list(dictionary(list(country = c("United States"), 
+                                                          institution = c("Congress", "feder* gov*")), 
+                                                     tolower = FALSE)),
                  target)
+    
+    expect_equal(quanteda:::features2list(dictionary(list(country = c("United+States"), 
+                                                          institution = c("Congress", "feder*+gov*")), 
+                                                     tolower = FALSE, concatenator = '+')),
+                 target)
+    
     # collocations
-    collocs <- collocations(tokens(c("United States", "Congress", "federal government")))
-    expect_equal(quanteda:::sequence2list(collocs),
+    colls <- textstat_collocations(tokens(c("United States", "Congress", "federal government")), min_count = 1)
+    expect_equal(quanteda:::features2list(colls),
                  list(c("United", "States"), c("federal", "government")))
 })
 
+test_that("features2vector works as expected", {
+    
+    # character
+    expect_warning(quanteda:::features2vector(c("United States", "Congress", "feder* gov*")))
+    expect_silent(quanteda:::features2vector(c("America", "Congress", "gov*")))
+                   
+    # list
+    expect_warning(quanteda:::features2vector(list(c("United", "States"), c("Congress"), c("feder*", "gov*"))))
+    expect_silent(quanteda:::features2vector(list("America", "Congress", "gov*")))
+                   
+    # tokens
+    expect_warning(quanteda:::features2vector(tokens(c("United States", "Congress", "feder* gov*"), what = "fasterword")))
+    expect_silent(quanteda:::features2vector(tokens(c("America", "Congress", "gov*"), what = "fasterword")))
+    
+    # dictionary
+    expect_warning(quanteda:::features2vector(dictionary(list(country = c("United States"), 
+                                                              institution = c("Congress", "feder* gov*")), tolower = FALSE)))
+    expect_silent(quanteda:::features2vector(dictionary(list(country = c("America"), 
+                                                              institution = c("Congress", "gov*")), tolower = FALSE)))
+    
+    # collocations
+    colls <- textstat_collocations(tokens(c("United States", "Congress", "federal government")), min_count = 1)
+    expect_warning(quanteda:::features2vector(colls))
+})
 
+
+
+test_that("deprecate_arguments works as expected", {
+    fn <- function(remove_numbers = TRUE, ...) {
+        args <- as.list(match.call())
+        remove_numbers <- quanteda:::deprecate_argument("removeNumbers", "remove_numbers", args)
+        cat("remove_numbers =", remove_numbers, "\n")
+    }
+    expect_warning(
+        fn(removeNumbers = FALSE),
+        "argument \"removeNumbers\" is deprecated: use \"remove_numbers\" instead."
+    )
+    expect_output(
+        fn(remove_numbers = FALSE),
+        "remove_numbers = FALSE"
+    )
+    
+    # for tokens
+    expect_identical(
+        as.character(tokens(c(d1 = "This: punctuation"), remove_punct = TRUE)),
+        c("This", "punctuation")
+    )
+    expect_identical(
+        as.character(tokens(c(d1 = "This: punctuation"), remove_punct = TRUE)),
+        as.character(tokens(c(d1 = "This: punctuation"), remove_punct = TRUE))
+    )
+    expect_warning(
+        as.character(tokens(c(d1 = "This: punctuation"), removePunct = TRUE)),
+        "argument \"removePunct\" is deprecated: use \"remove_punct\" instead."
+    )    
+    expect_warning(
+        tokens(c(d1 = "This: punctuation"), notanargument = TRUE),
+        "Argument notanargument not used"
+    )
+    
+})
+
+test_that("deprecate arguments works with values from parent frame", {
+    fn <- function(remove_numbers = TRUE, ...) {
+        args <- as.list(match.call())
+        args <- lapply(args, function(a) eval(a, enclos = parent.frame()))
+        remove_numbers <- quanteda:::deprecate_argument("removeNumbers", "remove_numbers", args)
+        cat("remove_numbers =", remove_numbers, "\n")
+    }
+    tmp = FALSE
+    
+    expect_output(
+        fn(remove_numbers = tmp),
+        "remove_numbers = FALSE"
+    )
+    expect_output(
+        fn(removeNumbers = tmp),
+        "remove_numbers = FALSE"
+    )
+})

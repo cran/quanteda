@@ -13,7 +13,7 @@
 #'   letters.  Lower-casing is unnecessary.
 #' @examples
 #' nscrabble(c("muzjiks", "excellency"))
-#' nscrabble(data_char_inaugural[1:5], mean)
+#' nscrabble(data_corpus_inaugural[1:5], mean)
 #' @export
 nscrabble <- function(x, FUN = sum) {
     UseMethod("nscrabble")
@@ -30,8 +30,8 @@ nscrabble.character <- function(x, FUN = sum) {
                              values = as.integer(rep(c(1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10), 2)))
     setkey(letterVals, letter)
     
-    textChars <- tokenize(x, what = "character", removePunct = TRUE)
-    textDT <- data.table(docIndex = rep(1:length(textChars), lengths(textChars)),
+    textChars <- tokenize(x, what = "character", remove_punct = TRUE)
+    textDT <- data.table(docIndex = rep(seq_along(textChars), lengths(textChars)),
                          Char = unlist(textChars, use.names = FALSE))
     setkey(textDT, Char)
     

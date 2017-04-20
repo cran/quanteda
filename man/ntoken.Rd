@@ -10,8 +10,8 @@ ntoken(x, ...)
 ntype(x, ...)
 }
 \arguments{
-\item{x}{a \pkg{quanteda} object: a character, \link{corpus}, or
-\link{tokens} object}
+\item{x}{a \pkg{quanteda} object: a character, \link{corpus}, 
+\link{tokens}, or \link{dfm} object}
 
 \item{...}{additional arguments passed to \code{\link{tokens}}}
 }
@@ -19,8 +19,7 @@ ntype(x, ...)
 count of the total tokens or types
 }
 \description{
-Get the count of tokens (total features) or types (unique tokens)
-in a text, corpus, or dfm.
+Get the count of tokens (total features) or types (unique tokens).
 }
 \details{
 The precise definition of "tokens" for objects not yet tokenized (e.g.
@@ -35,7 +34,7 @@ Due to differences between raw text tokens and features that have been
   defined for a \link{dfm}, the counts be different for dfm objects and the 
   texts from which the dfm was generated.  Because the method tokenizes the 
   text in order to count the tokens, your results will depend on the options 
-  passed through to \code{\link{tokenize}}
+  passed through to \code{\link{tokens}}
 }
 \examples{
 # simple example
@@ -44,12 +43,12 @@ ntoken(txt)
 ntype(txt)
 ntoken(char_tolower(txt))  # same
 ntype(char_tolower(txt))   # fewer types
-ntoken(char_tolower(txt), removePunct = TRUE)
-ntype(char_tolower(txt), removePunct = TRUE)
+ntoken(char_tolower(txt), remove_punct = TRUE)
+ntype(char_tolower(txt), remove_punct = TRUE)
 
 # with some real texts
-ntoken(corpus_subset(data_corpus_inaugural, Year<1806), removePunct = TRUE)
-ntype(corpus_subset(data_corpus_inaugural, Year<1806), removePunct = TRUE)
+ntoken(corpus_subset(data_corpus_inaugural, Year<1806), remove_punct = TRUE)
+ntype(corpus_subset(data_corpus_inaugural, Year<1806), remove_punct = TRUE)
 ntoken(dfm(corpus_subset(data_corpus_inaugural, Year<1800)))
 ntype(dfm(corpus_subset(data_corpus_inaugural, Year<1800)))
 }

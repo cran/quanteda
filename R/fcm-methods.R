@@ -12,7 +12,7 @@
 #' 
 #' txt <- c("The fox JUMPED over the dog.",
 #'          "The dog jumped over the fox.")
-#' toks <- tokens(txt, removePunct = TRUE)
+#' toks <- tokens(txt, remove_punct = TRUE)
 #' myfcm <- fcm(toks, context = "document")
 #' colnames(myfcm) <- rownames(myfcm) <- tolower(colnames(myfcm))
 #' colnames(myfcm)[5] <- rownames(myfcm)[5] <- "fox"
@@ -68,7 +68,7 @@ fcm_compress <- function(x) {
 #' @details \code{fcm_tolower} and \code{fcm_toupper} convert both dimensions of
 #'   the \link{fcm} to lower and upper case, respectively, and then recombine
 #'   the counts. This works only on fcm objects created with \code{context = 
-#'   "window"}.
+#'   "document"}.
 #' @export
 #' @examples
 #' # for a feature co-occurrence matrix
@@ -142,7 +142,7 @@ fcm_sort <- function(x) {
 #' @examples 
 #' toks <- tokens(c("this contains lots of stopwords",
 #'                  "no if, and, or but about it: lots"),
-#'                removePunct = TRUE)
+#'                remove_punct = TRUE)
 #' tmpfcm <- fcm(toks)
 #' tmpfcm
 #' fcm_remove(tmpfcm, stopwords("english"))

@@ -10,6 +10,7 @@
 \alias{[.corpus}
 \alias{[[.corpus}
 \alias{[[<-.corpus}
+\alias{str.corpus}
 \title{base method extensions for corpus objects}
 \usage{
 \method{print}{corpus}(x, ...)
@@ -27,9 +28,13 @@ is.corpuszip(x)
 \method{[[}{corpus}(x, i, ...)
 
 \method{[[}{corpus}(x, i) <- value
+
+\method{str}{corpus}(object, ...)
 }
 \arguments{
 \item{x}{a corpus object}
+
+\item{...}{not used}
 
 \item{c1}{corpus one to be added}
 
@@ -46,6 +51,8 @@ variable; if \code{FALSE}, return it as a single-column data.frame.  See
 \code{\link{drop}} for further details.}
 
 \item{value}{a vector that will form a new docvar}
+
+\item{object}{the corpus about which you want structural information}
 }
 \value{
 \code{is.corpus} returns \code{TRUE} if the object is a corpus
@@ -77,9 +84,9 @@ The \code{+} operator for a corpus object will combine two corpus
 \examples{
 
 # concatenate corpus objects
-corpus1 <- corpus(data_char_inaugural[1:2])
-corpus2 <- corpus(data_char_inaugural[3:4])
-corpus3 <- corpus_subset(data_corpus_inaugural, President == "Obama")
+corpus1 <- corpus(data_char_ukimmig2010[1:2])
+corpus2 <- corpus(data_char_ukimmig2010[3:4])
+corpus3 <- corpus(data_char_ukimmig2010[5:6])
 summary(c(corpus1, corpus2, corpus3))
 
 # ways to index corpus elements

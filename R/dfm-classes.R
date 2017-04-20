@@ -4,6 +4,7 @@
 ## Ken Benoit
 ####################################################################
 
+setClassUnion("dframe", members = c("data.frame", "NULL"))
 
 #' Virtual class "dfm" for a document-feature matrix
 #' 
@@ -35,7 +36,8 @@
 #' @keywords internal dfm
 setClass("dfm",
          slots = c(settings = "list", weightTf = "list", weightDf = "list", smooth = "numeric",
-                   ngrams = "integer", skip = "integer", concatenator = "character"),
+                   ngrams = "integer", skip = "integer", concatenator = "character", 
+                   docvars = "dframe"),
          prototype = list(settings = list(NULL),
                           Dim = integer(2), 
                           Dimnames = list(docs=NULL, features=NULL),
@@ -162,7 +164,7 @@ setMethod("+", signature(e1 = "numeric", e2 = "dfmDense"),
 #' @method as.matrix dfm
 #' @examples
 #' # coercion to matrix
-#' mydfm <- dfm(data_char_inaugural)
+#' mydfm <- dfm(data_corpus_inaugural)
 #' str(as.matrix(mydfm))
 #' 
 as.matrix.dfm <- function(x, ...) {
@@ -181,7 +183,7 @@ as.matrix.dfm <- function(x, ...) {
 #' @export
 #' @examples
 #' # coercion to a data.frame
-#' inaugDfm <- dfm(data_char_inaugural[1:5])
+#' inaugDfm <- dfm(data_corpus_inaugural[1:5])
 #' as.data.frame(inaugDfm[, 1:10])
 #' as.data.frame(inaugDfm[, 1:10], row.names = FALSE)
 as.data.frame.dfm <- function(x, row.names = NULL, optional = FALSE , ...) {
@@ -213,7 +215,7 @@ as.data.frame.dfm <- function(x, row.names = NULL, optional = FALSE , ...) {
 #' cbind(dfm1, dfm2)
 cbind.dfm <- function(...) {
     args <- list(...)
-    if (!all(sapply(args, is.dfm)))
+    if (!all(vapply(args, is.dfm, logical(1))))
         stop("all arguments must be dfm objects")
     dnames <- sapply(args, docnames)
     # make into a matrix-like object for apply to work below, even if just one document per input
@@ -257,7 +259,7 @@ cbind.dfm <- function(...) {
 #' rbind(dfm1, dfm2, dfm3)
 rbind.dfm <- function(...) {
     args <- list(...)
-    if (!all(sapply(args, is.dfm)))
+    if (!all(vapply(args, is.dfm, logical(1))))
         stop("all arguments must be dfm objects")
     catm(names(args))
 

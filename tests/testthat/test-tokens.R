@@ -1,3 +1,5 @@
+context("testing tokens")
+
 ##
 ## tokens_hashed tests
 ##
@@ -22,8 +24,8 @@ test_that("tokens_wordstem works as expected for tokens_hashed", {
 
     txt <- c(one = "Eating eater eaters eats ate.",
              two = "Taxing taxes taxed my tax return.")
-    toks <- tokenize(char_tolower(txt), removePunct = TRUE)
-    toksh <- tokens(char_tolower(txt), removePunct = TRUE)
+    toks <- tokenize(char_tolower(txt), remove_punct = TRUE)
+    toksh <- tokens(char_tolower(txt), remove_punct = TRUE)
     classic <- tokens_wordstem(toks)
     hashed <- tokens_wordstem(toksh)
     expect_equivalent(classic, as.tokenizedTexts(hashed))
@@ -32,8 +34,8 @@ test_that("tokens_wordstem works as expected for tokens_hashed", {
 test_that("ngrams works as expected for tokens_hashed", {
     txt <- c(one = char_tolower("Insurgents killed in ongoing fighting."),
              two = "A B C D E")
-    toks <- tokenize(txt, removePunct = TRUE)
-    toksh <- tokens(txt, removePunct = TRUE)
+    toks <- tokenize(txt, remove_punct = TRUE)
+    toksh <- tokens(txt, remove_punct = TRUE)
     classic <- tokens_ngrams(toks, n = 2:3)
     hashed <- as.tokenizedTexts(tokens_ngrams(toksh, n = 2:3))
     # testthat::expect_equivalent(as.list(classic),
@@ -197,86 +199,125 @@ test_that("longer features longer than documents do not crash (#447)", {
 
 test_that("tokens works as expected for what = \"character\"", {
     expect_equal(
-        as.character(tokens("one, two three.", what = "character", removeSeparators = TRUE)),
+        as.character(tokens("one, two three.", what = "character", remove_separators = TRUE)),
         c("o", "n", "e", ",", "t", "w", "o", "t", "h", "r", "e", "e", ".")
     )
     expect_equal(
-        as.character(tokens("one, two three.", what = "character", removeSeparators = FALSE)),
+        as.character(tokens("one, two three.", what = "character", remove_separators = FALSE)),
         c("o", "n", "e", ",", " ", "t", "w", "o", " ", "t", "h", "r", "e", "e", ".")
     )
     expect_equal(
-        as.character(tokens("one, two three.", what = "character", removePunct = TRUE)),
+        as.character(tokens("one, two three.", what = "character", remove_punct = TRUE)),
         c("o", "n", "e", "t", "w", "o", "t", "h", "r", "e", "e")
     )
 })
 
-#' # coerce an object into a tokens class
-#' as.tokens(toks)
+test_that("tokens works with unusual hiragana #554", {
+    skip_on_travis()
+    skip_on_cran()
+    skip_on_appveyor()
+    skip_on_os("windows")
+    txts <- c("づいﾞ", "゛んﾞ", "たーﾟ")
+    expect_equivalent(as.list(tokens(txts)),
+                      list(c('づ', 'いﾞ'), c('゛', 'んﾞ'), c('た', 'ーﾟ')))
+})
+
+test_that("types attribute is a character vector", {
+    toks <- tokens("one two three")
+    expect_true(is.character(attr(toks, 'types')))
+    expect_equal(length(attributes(attr(toks, 'types'))), 0)
+})
 
 
-#' \dontrun{
-#' tokens2 <- tokenize(head(inaugTexts, 10), removePunct=TRUE)
-#' tokens2_hashed <- hashTokens(tokens2)
-#' 
-#' profvis::profvis({
-#' ngrams(tokens2_hashed, n = 2:3, skip = 1:2, concatenator = "-")
-#' })
-#' 
-#' microbenchmark::microbenchmark(
-#'  old=ngrams(tokens2, n = 2:3, skip = 1:2, concatenator = "-"),
-#'  new=ngrams(tokens2_hashed, n = 2:3, skip = 1:2, concatenator = "-"),
-#'  times=10, unit='relative'
-#' )
-#' 
-#' 
-#' Rcpp::sourceCpp('src/ngrams_hashed.cpp')
-#' Rcpp::sourceCpp('src/ngrams_class.cpp')
-#' Rcpp::sourceCpp('src/ngrams.cpp')
-#' nm <- new(ngramMaker)
-#'
-#' microbenchmark::microbenchmark(
-#'    old=skipgramcpp(tokens2[[1]], 2:3, 1:2, '-'),
-#'    new=qatd_cpp_ngram_hashed_vector(tokens2_hashed[[1]], 2:3, 1:2),
-#'    class=nm$generate(tokens2_hashed[[1]], 2:3, 1:2),
-#'    times=100, unit='relative'
-#' )
-#' 
-#' microbenchmark::microbenchmark(
-#'  obj=nm$generate_list(tokens2_hashed, 2:3, 1:2),
-#'  ptr=nm$generate_list_ptr(tokens2_hashed, 2:3, 1:2),
-#'  times=100, unit='relative'
-#' )
-#' 
-#' 
-#' tokens3 <- rep(letters, 50)
-#' types3 <- unique(tokens3)
-#' tokens3_hashed <- match(tokens3, types3)
-#' microbenchmark::microbenchmark(
-#'    old=skipgramcpp(tokens3, 2:3, 1:2, '-'),
-#'    new=qatd_cpp_ngram_hashed_vector(tokens3_hashed, 2:3, 1:2),
-#'    times=10, unit='relative'
-#'  )
-#' 
-#' # Test with greater lexical diversity
-#' tokens4 <- paste0(sample(letters, length(tokens3), replace=TRUE), 
-#'                   sample(letters, length(tokens3), replace=TRUE))
-#' types4 <- unique(tokens4)
-#' tokens4_hashed <- match(tokens4, types4)
-#' microbenchmark::microbenchmark(
-#'    low=qatd_cpp_ngram_hashed_vector(tokens3_hashed, 2:3, 1:2),
-#'    high=qatd_cpp_ngram_hashed_vector(tokens4_hashed, 2:3, 1:2),
-#'    times=100, unit='relative'
-#' )
-#' 
-#' 
-#' # Comparison with tokenizers's skip-grams
-#' tokenizers::tokenize_skip_ngrams('a b c d e', n=3, k=1) 
-#' # "a c e" "a b c" "b c d" "c d e"
-#' tokenizers::tokenize_skip_ngrams('a b c d e', n=3, k=2) 
-#' # "a c e" "a b c" "b c d" "c d e"
-#' 
-#' ngrams(tokenize('a b c d e'), n=3, skip=0:1, concatenator=' ') 
-#' # "a b c" "a b d" "a c d" "a c e" "b c d" "b c e" "b d e" "c d e"
-#' 
-#'}
+test_that("remove_url works as expected", {
+    txt <- c("The URL was http://t.co/something.",
+             "The URL was http://quanteda.io",
+             "https://github.com/kbenoit/quanteda/issue/1 is another URL")
+    toks <- tokens(txt, remove_url = TRUE)
+    expect_equal(
+        as.list(toks),
+        list(c("The", "URL", "was"), c("The", "URL", "was"), c("is", "another", "URL"))
+    )
 
+    toks2 <- tokenize(txt, remove_url = TRUE)
+    expect_equivalent(
+        as.list(toks2),
+        list(c("The", "URL", "was"), c("The", "URL", "was"), c("is", "another", "URL"))
+    )
+})
+
+test_that("remove_punct and remove_twitter interact correctly, #607", {
+    txt <- "they: #stretched, @ @@ in,, a # ## never-ending @line."
+    expect_equal(
+        as.character(tokens(txt, what = "word", remove_punct = TRUE, remove_twitter = TRUE)),
+        c("they", "stretched", "in", "a", "never-ending", "line")
+    )    
+    expect_equal(
+        as.character(tokens(txt, what = "word", remove_punct = FALSE, remove_twitter = FALSE)),
+        c("they", ":", "#stretched", ",", "@", "@@", "in", ",", ",", "a", "#", "##", "never", "-", "ending", "@line", ".")
+    )    
+    # this is #607
+    expect_equal(
+        as.character(tokens(txt, what = "word", remove_punct = TRUE, remove_twitter = FALSE)),
+        c("they", "#stretched", "in", "a", "never-ending", "@line")
+    )
+    # remove_twitter should be inactive if remove_punct is FALSE
+    expect_equal(
+        as.character(tokens(txt, what = "word", remove_punct = FALSE, remove_twitter = TRUE)),
+        as.character(tokens(txt, what = "word", remove_punct = FALSE, remove_twitter = FALSE))
+    )
+    expect_warning(
+        tokens(txt, what = "word", remove_punct = FALSE, remove_twitter = TRUE),
+        "remove_twitter reset to FALSE when remove_punct = FALSE"
+    )
+})
+
+test_that("+ operator works with tokens", {
+    
+    txt1 <- c(d1 = "This is sample document one.",
+              d2 = "Here is the second sample document.")
+    txt2 <- c(d3 = "And the third document.")
+    
+    toks_added <- tokens(txt1) + tokens(txt2)
+    expect_equal(ntype(toks_added), length(attr(toks_added, "types")))
+    expect_equal(ndoc(toks_added), 3)
+
+})
+
+test_that("c() works with tokens", {
+
+    txt1 <- c(d1 = "This is sample document one.",
+              d2 = "Here is the second sample document.")
+    txt2 <- c(d3 = "And the third document.")
+    txt3 <- c(d4 = "This is sample document 4.")
+    txt4 <- c(d1 = "This is sample document five!")
+    
+    expect_equal(
+        c(tokens(txt1), tokens(txt2)),
+        tokens(txt1) + tokens(txt2)
+    )
+    
+    expect_equal(
+        c(tokens(txt1), tokens(txt2), tokens(txt3)),
+        tokens(txt1) + tokens(txt2) + tokens(txt3)
+    )
+    
+    expect_error(
+        c(tokens(txt1), tokens(txt4)),
+        'Document names are duplicated'
+    )
+})
+
+test_that("docvars are erased for tokens added", {
+    mycorpus <- corpus(c(d1 = "This is sample document one.",
+                         d2 = "Here is the second sample document."), 
+                        docvars = data.frame(dvar1 = c("A", "B"), dvar2 = c(1, 2)))
+    expect_equivalent(
+        docvars(tokens(mycorpus, include_docvars = TRUE)),
+        data.frame(dvar1 = c("A", "B"), dvar2 = c(1, 2))
+    )
+    expect_equivalent(
+        docvars(tokens(mycorpus) + tokens("And the third sample document.")),
+        data.frame()
+    )
+})

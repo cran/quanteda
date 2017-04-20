@@ -25,6 +25,10 @@ regex2fixed <- function(regex, types, valuetype, case_insensitive = FALSE, index
 
 regex2id <- function(regex, types, valuetype, case_insensitive = FALSE, index = TRUE) {
     
+    # Normalize
+    regex <- lapply(regex, stringi::stri_trans_nfc)
+    types <- stringi::stri_trans_nfc(types)
+    
     # Make case insensitive
     if (case_insensitive) {
         types_search <- stringi::stri_trans_tolower(types)
@@ -67,8 +71,8 @@ regex2id <- function(regex, types, valuetype, case_insensitive = FALSE, index = 
     
     # Separate multi and single-entry patterns
     len <- lengths(regex)
-    pats_multi <- regex[len>1] 
-    pats_single <- regex[len==1]
+    pats_multi <- regex[len > 1] 
+    pats_single <- regex[len == 1]
     
     # Process multi-entry patterns
     id <- list()
@@ -134,7 +138,12 @@ select_types <- function (regex, types_search, exact, index){
 # from the longest regex queries to limit the size of the index.
 index_regex <- function(types, valuetype, case_insensitive, len_max){
     
-    if (case_insensitive) types <- stringi::stri_trans_tolower(types)
+    # Normalize
+    types <- stringi::stri_trans_nfc(types)
+    
+    if (case_insensitive)
+        types <- stringi::stri_trans_tolower(types)
+
     if (valuetype == 'fixed') {
         exact <- TRUE
     } else {
@@ -180,13 +189,13 @@ expand <- function(elem){
     comb <- vector("list", m)
     if(m == 0) return(comb)
     k <- 1L
-    for (i in 1:length(elem)) {
+    for (i in seq_along(elem)) {
         vec <- elem[[i]]
         l <- length(vec)
         m <- m / l
         vec_rep <- vec[rep.int(rep.int(seq_len(l), rep.int(k, l)), m)]
         k <- k * l
-        for (j in 1:length(vec_rep)) {
+        for (j in seq_along(vec_rep)) {
             comb[[j]] <- c(comb[[j]], vec_rep[j])
         }
     }
@@ -216,19 +225,4 @@ is_indexed <- function(x){
     return(FALSE)
 }
 
-#' convert a vector to a list
-#' 
-#' Utility function to convert a vector to a list, used by \code{link{kwic}}.
-#' @param x character (vector)
-#' @keywords internal utilities
-vector2list <- function(x) {
-    if (is.list(x)) {
-        if (!all(sapply(x, is.character, USE.NAMES = FALSE)))
-            stop("Patterns must be a list of character type only")
-        return(x)
-    } else {
-        # message('Vector pattern is converted to list')
-        return(stringi::stri_split_fixed(x, ' '))
-    }
-}
 

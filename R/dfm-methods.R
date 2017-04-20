@@ -11,7 +11,7 @@
 #' @param x the dfm whose features will be extracted
 #' @return character vector of the features
 #' @examples
-#' inaugDfm <- dfm(data_char_inaugural, verbose = FALSE)
+#' inaugDfm <- dfm(data_corpus_inaugural, verbose = FALSE)
 #' 
 #' # first 50 features (in original text order)
 #' head(featnames(inaugDfm), 50)
@@ -35,7 +35,11 @@ featnames.NULL <- function(x) {
 #' @export
 #' @noRd
 featnames.dfm <- function(x) {
-    colnames(x)
+    if (is.null(colnames(x))) {
+        character()
+    } else {
+        colnames(x)
+    }
 }
 
 #' deprecated function name for featnames
@@ -51,7 +55,11 @@ features <- function(x) {
 #' @noRd
 #' @export
 docnames.dfm <- function(x) {
-    rownames(x)
+    if (is.null(rownames(x))) {
+        character()
+    } else {
+        rownames(x)
+    }
 }
 
 #' @noRd
@@ -80,13 +88,12 @@ is.dfm <- function(x) {
 as.dfm <- function(x) {
     if (!any((c("matrix", "data.frame") %in% class(x))))
         stop("as.dfm only applicable to matrix(-like) objects.")
-    new("dfmSparse", Matrix(as.matrix(x), sparse=TRUE))
-    #     
-    #     m <- as.matrix(x)
-    #     attr(m, "settings") <- attr(x, "settings")
-    #     attr(m, "weighting") <- attr(x, "weighting")
-    #     class(m) <- class(x)
-    #     m
+    new("dfmSparse", Matrix(as.matrix(x), 
+                            sparse = TRUE,
+                            dimnames = list(docs = if (is.null(rownames(x))) paste0("doc", seq_len(nrow(x))) else rownames(x),
+                                            features = if (is.null(colnames(x))) paste0("feat", seq_len(ncol(x))) else colnames(x)) 
+                            ) 
+        )
 }
 
 
@@ -172,3 +179,21 @@ sparsity <- function(x) {
     (1 - length(x@x) / prod(dim(x)))
 }
 
+#' internal functions for dfm objects
+#' 
+#' Internal function documentation for \link{dfm} objects.
+#' @name dfm-internal
+#' @keywords dfm internal
+NULL
+
+#' The \code{Compare} methods enable relational operators to be use with dfm. 
+#' Relational operations on a dfm with a numeric will return a
+#' \link[Matrix]{dgCMatrix-class} object.
+#' @rdname dfm-internal
+#' @param e1 a \link{dfm}
+#' @param e2 a numeric value to compare with values in a dfm
+#' @export
+#' @seealso \link{Comparison} operators
+setMethod("Compare", c("dfmSparse", "numeric"), function(e1, e2) {
+    as(callGeneric(as(e1, "dgCMatrix"), e2), "lgCMatrix")
+})

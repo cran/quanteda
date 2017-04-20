@@ -30,10 +30,10 @@ txt <- c(wash1 <- "Fellow citizens, I am again called upon by the voice of my co
                    execute the functions of its Chief Magistrate.",
          wash2 <- "When the occasion proper for it shall arrive, I shall endeavor to express
                    the high sense I entertain of this distinguished honor.")
-removeFeatures(tokenize(txt, removePunct = TRUE), stopwords("english"))
+removeFeatures(tokenize(txt, remove_punct = TRUE), stopwords("english"))
 
 itText <- tokenize("Ecco alcuni di testo contenente le parole che vogliamo rimuovere.", 
-                   removePunct = TRUE)
+                   remove_punct = TRUE)
 removeFeatures(itText, stopwords("italian"), case_insensitive = TRUE)
 
 ## example for dfm objects
@@ -41,7 +41,7 @@ mydfm <- dfm(data_char_ukimmig2010, verbose=FALSE)
 removeFeatures(mydfm, stopwords("english"))
 
 ## example for collocations
-(myCollocs <- collocations(data_char_inaugural[1:3], n=20))
+(myCollocs <- collocations(data_corpus_inaugural[1:3], n=20))
 removeFeatures(myCollocs, stopwords("english"))
 removeFeatures(myCollocs, stopwords("english"), pos = 2)
 }

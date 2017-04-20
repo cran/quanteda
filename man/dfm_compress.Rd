@@ -14,17 +14,17 @@ fcm_compress(x)
 
 \item{margin}{character indicating on which margin to compress a dfm, either 
 \code{"documents"}, \code{"features"}, or \code{"both"} (default).  For fcm
-objects, \code{"documents"} has an effect.}
+objects, \code{"documents"} has no effect.}
 
 \item{...}{additional arguments passed from generic to specific methods}
 }
 \description{
-"Compresses" a dfm (or fcm) whose dimension names are the same, for either
-documents or features.  This may happen, for instance, if features are made
-equivalent through application of a thesaurus.  It may also occur after
-lower-casing or stemming the features of a dfm, but this should only be done
-in very rare cases (approaching never: it's better to do this \emph{before}
-constructing the dfm.)  It could also be needed after a
+"Compresses" a \link{dfm} or \link{fcm} whose dimension names are the same,
+for either documents or features.  This may happen, for instance, if features
+are made equivalent through application of a thesaurus.  It may also occur
+after lower-casing or stemming the features of a dfm, but this should only be
+done in very rare cases (approaching never: it's better to do this
+\emph{before} constructing the dfm.)  It could also be needed after a 
 \code{\link{cbind.dfm}} or \code{\link{rbind.dfm}} operation.
 }
 \note{
@@ -41,7 +41,7 @@ dfm_compress(mat, margin = "features")
 dfm_compress(mat)
 
 # no effect if no compression needed
-compactdfm <- dfm(data_char_inaugural[1:5], verbose = FALSE)
+compactdfm <- dfm(data_corpus_inaugural[1:5])
 dim(compactdfm)
 dim(dfm_compress(compactdfm))
 
@@ -53,7 +53,7 @@ myfcm <- fcm(tokens("A D a C E a d F e B A C E D"),
 
 txt <- c("The fox JUMPED over the dog.",
          "The dog jumped over the fox.")
-toks <- tokens(txt, removePunct = TRUE)
+toks <- tokens(txt, remove_punct = TRUE)
 myfcm <- fcm(toks, context = "document")
 colnames(myfcm) <- rownames(myfcm) <- tolower(colnames(myfcm))
 colnames(myfcm)[5] <- rownames(myfcm)[5] <- "fox"

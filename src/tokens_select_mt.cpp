@@ -1,5 +1,6 @@
 //#include "dev.h"
 #include "quanteda.h"
+#include "recompile.h"
 using namespace quanteda;
 
 Text keep_token(Text tokens, 
@@ -99,25 +100,17 @@ struct select_mt : public Worker{
  */
 
 // [[Rcpp::export]]
-List qatd_cpp_tokens_select(const List &texts_, 
+List qatd_cpp_tokens_select(const List &texts_,
+                            const CharacterVector types_,
                             const List &words_,
                             int mode,
                             bool padding){
     
     Texts input = Rcpp::as<Texts>(texts_);
-
+    Types types = Rcpp::as<Types>(types_);
+    
     SetNgrams set_words;
-    std::vector<std::size_t> spans(words_.size());
-    for (unsigned int g = 0; g < (unsigned int)words_.size(); g++) {
-        if (has_na(words_[g])) continue;
-        Ngram word = words_[g];
-        set_words.insert(word);
-        spans[g] = word.size();
-    }
-    sort(spans.begin(), spans.end());
-    spans.erase(unique(spans.begin(), spans.end()), spans.end());
-    std::reverse(std::begin(spans), std::end(spans));
-
+    std::vector<std::size_t> spans = register_ngrams(words_, set_words);
     
     // dev::Timer timer;
     Texts output(input.size());
@@ -141,8 +134,7 @@ List qatd_cpp_tokens_select(const List &texts_,
     }
 #endif
     // dev::stop_timer("Token select", timer);
-    ListOf<IntegerVector> output_ = Rcpp::wrap(output);
-    return output_;
+    return recompile(output, types);
 }
 
 /***R

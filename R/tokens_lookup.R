@@ -33,7 +33,7 @@
 #' dict_fix <- dictionary(list(country = "united states", 
 #'                        law = c('law', 'constitution'), 
 #'                        freedom = c('freedom', 'liberty'))) 
-#' dfm(applyDictionary(toks, dict_fix, valuetype='fixed'))
+#' # dfm(applyDictionary(toks, dict_fix, valuetype='fixed'))
 #' dfm(tokens_lookup(toks, dict_fix, valuetype='fixed'))
 #' 
 #' # hierarchical dictionary example
@@ -61,7 +61,7 @@ tokens_lookup <- function(x, dictionary, levels = 1:5,
                           exclusive = TRUE,
 #                          overlap = FALSE,
                           multiword = TRUE,
-                          verbose = FALSE) {
+                          verbose = quanteda_options("verbose")) {
     UseMethod("tokens_lookup")    
 }
 
@@ -73,23 +73,18 @@ tokens_lookup.tokens <- function(x, dictionary, levels = 1:5,
                           case_insensitive = TRUE,
                           capkeys = !exclusive,
                           exclusive = TRUE,
-#                          overlap = FALSE,
                           multiword = TRUE,
-                          verbose = FALSE) {
- 
-    overlap <- FALSE
-    
+                          verbose = quanteda_options("verbose")) {
+
     if (!is.tokens(x))
         stop("x must be a tokens object")
     
     if (!is.dictionary(dictionary))
         stop("dictionary must be a dictionary object")
     
-    names_org <- names(x)
-    attrs_org <- attributes(x)
-    concatenator_dict <- attr(dictionary, 'concatenator')
     dictionary <- flatten_dictionary(dictionary, levels)
     valuetype <- match.arg(valuetype)
+    attrs <- attributes(x)
     
     # Generate all combinations of type IDs
     entries_id <- list()
@@ -101,12 +96,12 @@ tokens_lookup.tokens <- function(x, dictionary, levels = 1:5,
         catm("applying a dictionary consisting of ", length(dictionary), " key", 
              ifelse(length(dictionary) > 1, "s", ""), "\n", sep="")
     
-    for (h in 1:length(dictionary)) {
+    for (h in seq_along(dictionary)) {
         entries <- dictionary[[h]]
         
         # Substitute dictionary's concatenator with tokens' concatenator 
-        if (concatenator != concatenator_dict)
-            entries <- stringi::stri_replace_all_fixed(entries, concatenator_dict, concatenator)
+        if (concatenator != attr(dictionary, 'concatenator'))
+            entries <- stringi::stri_replace_all_fixed(entries, attr(dictionary, 'concatenator'), concatenator)
         
         # Separate entries by concatenator
         if (multiword) {
@@ -114,36 +109,24 @@ tokens_lookup.tokens <- function(x, dictionary, levels = 1:5,
         } else {
             entries <- as.list(entries)
         } 
-
         entries_temp <- regex2id(entries, types, valuetype, case_insensitive, index)
         entries_id <- c(entries_id, entries_temp)
         keys_id <- c(keys_id, rep(h, length(entries_temp)))
     }
     # if (verbose) 
     #     message('Searching ', length(entries_id), ' types of features...')
-    
-    if (exclusive) {
-        x <- qatd_cpp_tokens_lookup(x, entries_id, keys_id, overlap)
+    if (capkeys) {
+        keys <- char_toupper(names(dictionary))
     } else {
-        x <- qatd_cpp_tokens_match(x, entries_id, keys_id + length(types), FALSE)
+        keys <- names(dictionary)
     }
-    attributes(x) <- attrs_org
     if (exclusive) {
-        if (capkeys) {
-            types(x) <- char_toupper(names(dictionary))
-        } else {
-            types(x) <- names(dictionary)
-        }
+        x <- qatd_cpp_tokens_lookup(x, keys, entries_id, keys_id, FALSE)
     } else {
-        if (capkeys) {
-            types(x) <- c(types, char_toupper(names(dictionary)))
-        } else {
-            types(x) <- c(types, names(dictionary))
-        }
+        x <- qatd_cpp_tokens_match(x, c(types, keys), entries_id, keys_id + length(types), FALSE)
     }
-    
-    names(x) <- names_org
+    attributes(x, FALSE) <- attrs
     attr(x, "what") <- "dictionary"
     attr(x, "dictionary") <- dictionary
-    tokens_hashed_recompile(x)
+    return(x)
 }

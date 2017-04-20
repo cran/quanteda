@@ -6,9 +6,9 @@ mktemp <- function(prefix='tmp.', base_path=NULL, directory=F) {
     #  https://www.mktemp.org/manual.html
     if (is.null(base_path))
         base_path <- tempdir()
-
+    
     alphanumeric <- c(0:9, LETTERS, letters)
-
+    
     filename <- paste0(sample(alphanumeric, 10, replace=T), collapse='')
     filename <- paste0(prefix, filename)
     filename <- file.path(base_path, filename)
@@ -17,14 +17,14 @@ mktemp <- function(prefix='tmp.', base_path=NULL, directory=F) {
         filename <- paste0(prefix, filename)
         filename <- file.path(base_path, filename)
     }
-
+    
     if (directory) {
         dir.create(filename)
     }
     else {
         file.create(filename)
     }
-
+    
     return(filename)
 }
 
@@ -50,33 +50,20 @@ reassign_slots <- function(x_new, x_orig, exceptions = NULL) {
     x_new
 }
 
-#' copy the attributes from one S3 object to another
-#' 
-#' Copy the attributes from one S3 object to another.  Necessary when some
-#' operation defined for the base class obliterates them.
-#' @param x_new the object to which the attributes will be copied
-#' @param x_from the object from which the attributes will be copied, or a list
-#'   of attrbiutes if \code{attr_only = TRUE}
-#' @param exception a character vector of attribute names NOT to be copied
-#' @param attr_only logical; if \code{TRUE}, then \code{x_orig} is a list of
-#'   attributes rather than an object with attributes.
+
+#' R-like alternative to reassign_attributes()
 #' @keywords internal
-#' @author Ken Benoit
-reassign_attributes <- function(x_new, x_from, exceptions = NULL, attr_only = FALSE) {
-    if (!attr_only) { 
-        attrs_from <- attributes(x_from)
+#' @param x an object
+#' @param overwrite if \code{TRUE}, overwrite old attributes
+#' @param value new attributes
+#' @author Kohei Watanabe
+"attributes<-" <- function(x, overwrite = TRUE, value) {
+    if (overwrite) {
+        base::attributes(x) <- value
     } else {
-        attrs_from <- x_from
+        base::attributes(x) <- c(base::attributes(x), value[!(names(value) %in% names(base::attributes(x)))])
     }
-    # remove exceptions, if any
-    if (!is.null(exceptions)) attrs_from[[exceptions]] <- NULL
-    # copy the old attributes to the new object, keeping any new attributes not 
-    # found in the old object
-    attrs_new <- c(attributes(x_new)[setdiff(names(attributes(x_new)), names(attrs_from))],
-                   attrs_from)
-    # assign the attributes
-    attributes(x_new) <- attrs_new
-    x_new
+    return(x)
 }
 
 # This function generates random texts from English alphabets or any other characters.
@@ -166,43 +153,80 @@ code <- function(texts){
     cat(paste0('         "', texts[len], '")\n'))
 }
 
-#' convert sequences to a simple list
+#' convert various input as features to a simple list
 #' 
-#' Convert a sequence into a simple list, for input as a sequence in e.g. 
+#' Convert various input as features into a simple list, for input as a sequence in e.g. 
 #' \code{\link{tokens_compound}}.
-#' @param sequences the input sequence, one of: \itemize{ \item{character vector,
+#' @param features the input features, one of: \itemize{ \item{character vector,
 #'   }{whose elements will be split on whitespace;} \item{list of characters,
 #'   }{consisting of a list of token patterns, separated by white space}; 
 #'   \item{\link{tokens} object;} \item{\link{dictionary} object}{;} 
 #'   \item{\link{collocations} object.}{} }
-#' @return an unnamed list of sequences, with each element of the list a
+#' @return an unnamed list of features, with each element of the list a
 #'   character vector with the split sequence.
 #' @keywords internal utilities
-sequence2list <- function(sequences) {
+features2list <- function(features) {
     
+
     # convert the input into a simple, unnamed list of split characters
-    if (is.dictionary(sequences)) {
-        sequences <- stringi::stri_split_fixed(unlist(sequences, use.names = FALSE), " ")
-    } else if (is.collocations(sequences)) {
-            word1 <- word2 <- word3 <- NULL
-            # sort by word3 so that trigrams will be processed before bigrams
-            data.table::setorder(sequences, -word3, word1)
-            # concatenate the words                               
-            word123 <- sequences[, list(word1, word2, word3)]
-            sequences <- unlist(apply(word123, 1, list), recursive = FALSE)
-            sequences <- lapply(sequences, unname)
-            sequences <- lapply(sequences, function(y) y[y != ""])
-    } else if (is.list(sequences) | is.character(sequences)) {
-        sequences <- lapply(sequences, function(y) as.character(tokens(y, what = "fastestword")))
+    if (is.dictionary(features)) {
+        result <- stringi::stri_split_fixed(unlist(features, use.names = FALSE), 
+                                            attr(features, 'concatenator'))
+    } else if (is.collocations(features)) {
+        result <- stringi::stri_split_fixed(features$collocation, " ")
+    } else if (is.character(features)) {
+        result <- stringi::stri_split_fixed(features, " ")
+    } else if (is.tokens(features)) {
+        result <- as.list(features)
+    } else if (is.list(features)) {
+        result <- features
     } else {
-        stop("sequences must be a character vector, a list of character elements, a dictionary, or collocations")
+        stop("features must be a character vector, a list of character elements, a dictionary, or collocations")
     }
     
     # make sure the resulting list is all character
-    if (!all(is.character(unlist(sequences, use.names = FALSE))))
+    if (!all(is.character(unlist(result, use.names = FALSE))))
         stop("sequences must be a list of character elements or a dictionary")
-
-    sequences
+    return(as.list(result))
 }
-   
 
+#' convert various input as features to a vector
+#' 
+#' Convert various input as features to a vector for fucntions that 
+#' do not support multi-word features e.g.
+#' \code{\link{dfm_select}, \link{sequences}, \link{collocations}}.
+#' @inheritParams features2list
+#' @return an unnamed vector of features
+#' @keywords internal utilities
+features2vector <- function(features) {
+    
+    temp <- features2list(features)
+    if (any(lengths(temp) > 1)) {
+        warning(as.character(sys.calls())[1], ' does not support multi-word features')
+    }
+    return(unlist(temp, use.names = FALSE))
+}
+
+
+#' issue warning for deprecrated function arguments
+#' 
+#' Sets a new argument name to an older one, and issues a deprecation warning.
+#' @keywords internal
+#' @examples 
+#' fn <- function(remove_numbers = TRUE, ...) {
+#'     args <- as.list(match.call())
+#'     remove_numbers <- quanteda:::deprecate_argument("remove_numbers", "remove_numbers", args)
+#'     cat("remove_numbers =", remove_numbers, "\n")
+#' }
+#' fn(remove_numbers = FALSE)
+#' fn(remove_numbers = FALSE)
+deprecate_argument <- function(old, new, args){
+    if (!is.null(args[[old]])) {
+        warning("argument \"", old, "\" is deprecated: use \"", new , "\" instead.", call. = FALSE)
+        return(args[[old]])
+    } else if (!is.null(args[[new]])) {
+        return(args[[new]])
+    } else {
+        return(formals('tokens')[[new]])
+    }
+}

@@ -37,12 +37,6 @@ test_that("test show.corpus", {
 
 })
 
-test_that("docvars of corpus is a data.frame", {
-    expect_that(
-        docvars(data_corpus_inaugural),
-        is_a('data.frame')
-    )
-})
 
 test_that("test c.corpus", {
     concat.corpus <- c(data_corpus_inaugural, data_corpus_inaugural, data_corpus_inaugural)
@@ -83,16 +77,16 @@ test_that("test c.corpus", {
 
 test_that("test corpus constructors works for kwic", {
     
-    kwiccorpus <- corpus(kwic(inaugTexts, "christmas"))
+    kwiccorpus <- corpus(kwic(data_corpus_inaugural, "christmas"))
     expect_that(kwiccorpus, is_a("corpus"))
     expect_equal(sort(names(docvars(kwiccorpus))),
-                 c("context", "docname", "keyword", "position"))
+                 c("context", "docname", "from", "keyword", "to"))
 })
 
 
 test_that("test corpus constructors works for character", {
 
-    expect_that(corpus(inaugTexts), is_a("corpus"))
+    expect_that(corpus(data_char_ukimmig2010), is_a("corpus"))
 
 })
 
@@ -152,9 +146,9 @@ test_that("test corpus constructor works for tm objects", {
 
 test_that("test corpus constructor works for VCorpus with one document (#445)", {
     skip_if_not_installed("tm")
-    tmCorpus_length1 <- tm::VCorpus(tm::VectorSource(data_char_inaugural[1]))
+    tmCorpus_length1 <- tm::VCorpus(tm::VectorSource(data_corpus_inaugural[1]))
     expect_silent(qcorpus <- corpus(tmCorpus_length1))
-    expect_equal(texts(qcorpus)[1], data_char_inaugural[1])
+    expect_equal(texts(qcorpus)[1], data_corpus_inaugural[1])
 })
 
 test_that("corpus_subset works", {
@@ -188,3 +182,12 @@ test_that("corpus_segment works", {
     expect_equal(ndoc(corpus_segment(data_corpus_test, "sentences")), 6)
 })
 
+test_that("summary method works for corpus", {
+    expect_output(summary(data_corpus_irishbudget2010, verbose = TRUE), regexp = "^Corpus consisting of 14 documents\\.")
+})
+
+test_that("corpus works for texts with duplicate filenames", {
+    txt <- c(one = "Text one.", two = "text two", one = "second first text")
+    cor <- corpus(txt)
+    expect_equal(docnames(cor), c("one", "two", "one.1"))
+})

@@ -5,7 +5,7 @@
 \title{create a dictionary}
 \usage{
 dictionary(..., file = NULL, format = NULL, concatenator = " ",
-  toLower = TRUE, encoding = "")
+  tolower = TRUE, encoding = "auto")
 }
 \arguments{
 \item{...}{a named list of character vector dictionary entries, including \link{valuetype} pattern
@@ -28,7 +28,7 @@ by Lexicoder} \item{\code{"YAML"}}{the standard YAML format}}}
 This defaults to \code{"_"} except LIWC-formatted files, which defaults to 
 a single space \code{" "}.}
 
-\item{toLower}{if \code{TRUE}, convert all dictionary values to lowercase}
+\item{tolower}{if \code{TRUE}, convert all dictionary values to lowercase}
 
 \item{encoding}{additional optional encoding value for reading in imported 
 dictionaries. This uses the \link{iconv} labels for encoding.  See the 
@@ -39,7 +39,7 @@ A dictionary class object, essentially a specially classed named list
   of characters.
 }
 \description{
-Create a quanteda dictionary, either from a list or by importing from a 
+Create a \pkg{quanteda} dictionary class object, either from a list or by importing from a 
 foreign format.  Currently supported input file formats are the Wordstat,
 LIWC, Lexicoder v2 and v3, and Yoshikoder formats.  The import using the 
 LIWC format works with 
@@ -65,11 +65,11 @@ dfm(mycorpus, dictionary = mydict2)
 # import the Laver-Garry dictionary from http://bit.ly/1FH2nvf
 lgdict <- dictionary(file = "http://www.kenbenoit.net/courses/essex2014qta/LaverGarry.cat",
                      format = "wordstat")
-head(dfm(data_char_inaugural, dictionary=lgdict))
+head(dfm(data_corpus_inaugural, dictionary = lgdict))
 
 # import a LIWC formatted dictionary from http://www.moralfoundations.org
 mfdict <- dictionary(file = "http://ow.ly/VMRkL", format = "LIWC")
-head(dfm(data_char_inaugural, dictionary = mfdict))}
+head(dfm(data_corpus_inaugural, dictionary = mfdict))}
 }
 \references{
 Wordstat dictionaries page, from Provalis Research 
@@ -81,6 +81,8 @@ Wordstat dictionaries page, from Provalis Research
   
   Yoshikoder page, from Will Lowe 
   \url{http://conjugateprior.org/software/yoshikoder/}.
+  
+  Lexicoder format, \url{http://www.lexicoder.com}
 }
 \seealso{
 \link{dfm}

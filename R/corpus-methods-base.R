@@ -26,7 +26,7 @@ print.corpus <- function(x, ...) {
     #         "indexed.\n", sep="")
     #     cat("Settings:")
     #      tempSettings <- unlist(settings(corp))
-    #      for (i in 1:length(tempSettings)) {
+    #      for (i in seq_along(tempSettings)) {
     #          print(tempSettings[i])
     #      }
 }
@@ -165,19 +165,19 @@ summary.corpus <- function(object, n = 100, verbose = TRUE, showmeta = FALSE, to
 #' @examples 
 #' 
 #' # concatenate corpus objects
-#' corpus1 <- corpus(data_char_inaugural[1:2])
-#' corpus2 <- corpus(data_char_inaugural[3:4])
-#' corpus3 <- corpus_subset(data_corpus_inaugural, President == "Obama")
+#' corpus1 <- corpus(data_char_ukimmig2010[1:2])
+#' corpus2 <- corpus(data_char_ukimmig2010[3:4])
+#' corpus3 <- corpus(data_char_ukimmig2010[5:6])
 #' summary(c(corpus1, corpus2, corpus3))
 #' @export
 c.corpus <- function(..., recursive = FALSE) {
-    dots <- list(...)
-    if (length(dots) == 1) return(dots[[1]])
-    result <- dots[[1]] + dots[[2]]
-    if (length(dots) == 2) return(result)
-    for (i in 3:length(dots))
-        result <- result + dots[[i]]
-    metacorpus(result, "source") <- paste0("Concatenation by c.corpus(", names(dots), ")")
+    x <- list(...)
+    if (length(x) == 1) return(x[[1]])
+    result <- x[[1]] + x[[2]]
+    if (length(x) == 2) return(result)
+    for (i in 3:length(x))
+        result <- result + x[[i]]
+    metacorpus(result, "source") <- paste0("Concatenation by c.corpus(", names(x), ")")
     return(result)
 }
 
@@ -231,5 +231,16 @@ c.corpus <- function(..., recursive = FALSE) {
 `[[<-.corpus` <- function(x, i, value) {
     x$documents[i] <- value
     x
+}
+
+#' @export
+#' @param object the corpus about which you want structural information
+#' @param ... not used
+#' @method str corpus
+#' @importFrom utils str
+#' @rdname corpus-class
+str.corpus <- function(object, ...) {
+    # message("OK, but note: accessing corpus internals directly voids your warranty.")
+    str(unclass(object))
 }
 
