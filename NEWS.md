@@ -1,5 +1,36 @@
 # quanteda 0.9.9
 
+## Changes since v0.9.9-50
+
+### New features
+
+* Corpus construction using `corpus()` now works for a `tm::SimpleCorpus` object. (#680)
+* Added `corpus_trim()` and `char_trim()` functions for selecting documents or subsets of documents based on sentence, paragraph, or document lengths.
+* Conversion of a dfm to an stm object now passes docvars through in the `$meta` of the return object.
+* New `dfm_group(x, groups = )` command, a convenience wrapper around `dfm.dfm(x, groups = )` (#725).
+* Methods for extending quanteda functions to readtext objects updated to match CRAN release of readtext package.
+* Corpus constructor methods for data.frame objects now conform to the "text interchange format" for corpus data.frames, automatically recognizing `doc_id` and `text` fields, which also provides interoperability with the **readtext** package.  corpus construction methods are now more explicitly tailored to input object classes.
+
+### Bug fixes and stability enhancements
+
+* `dfm_lookup()` behaves more robustly on different platforms, especially for keys whose values match no features (#704).
+* `textstat_simil()` and `textstat_dist()` no longer take the `n` argument, as this was not sorting features in correct order.
+* Fixed failure of `tokens(x, what = "character")` when `x` included Twitter characters `@` and `#` (#637).
+* Fixed bug #707 where `ntype.dfm()` produced an incorrect result.
+* Fixed bug #706 where `textstat_readability()` and `textstat_lexdiv()` for single-document returns when `drop = TRUE`.
+* Improved the robustness of `corpus_reshape()`.
+* `print`, and `head`, and `tail` methods for `dfm` are more robust (#684).
+* Fixed bug in `convert(x, to = "stm")` caused by zero-count documents and zero-count features in a dfm (#699, #700, #701).  This also removes docvar rows from `$meta` when this is passed through the dfm, for zero-count documents.
+* Corrected broken handling of nested Yoshikoder dictionaries in `dictionary()`. (#722)
+* `dfm_compress` now preserves a dfm's docvars if collapsing only on the features margin, which means that `dfm_tolower()` and `dfm_toupper()` no longer remove the docvars.
+* `fcm_compress()` now retains the fcm class, and generates and error when an asymmetric compression is attempted (#728).
+* `textstat_collocations()` now returns the collocations as character, not as a factor (#736)
+* Fixed a bug in `dfm_lookup(x, exclusive = FALSE)` wherein an empty dfm ws returned with there was no no match (#116).
+* Argument passing through `dfm()` to `tokens()` is now robust, and preserves variables defined in the calling environment (#721).
+* Fixed issues related to dictionaries failing when applying `str()`, `names()`, or other indexing operations, which started happening on Linux and Windows platforms following the CRAN move to 3.4.0. (#744)
+* Dictionary import using the LIWC format is more robust to improperly formatted input files (#685).
+* Weights applied using `dfm_weight()` now print friendlier error messages when the weight vector contains features not found in the dfm.  See [this Stack Overflow question](https://stackoverflow.com/questions/44132313/can-the-anew-dictionary-be-used-for-sentiment-analysis-in-quanteda/) for the use case that sparked this improvement.
+
 ## Changes since v0.9.9-24
 
 ### New features

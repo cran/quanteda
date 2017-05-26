@@ -44,7 +44,6 @@
 #' textstat_collocations(toks, method = "lr", min_count = 1)
 #' textstat_collocations(toks, method = "lr", max_size = 3, min_count = 1)
 #' (cols <- textstat_collocations(toks, method = "lr", max_size = 3, min_count = 2))
-#' as.tokens(cols)
 #' 
 #' # extracting multi-part proper nouns (capitalized terms)
 #' toks2 <- tokens(corpus_segment(data_corpus_inaugural, what = "sentence"))
@@ -129,21 +128,13 @@ is.collocations <- function(x) {
 #' @method "[" collocations
 #' @export
 #' @noRd
-"[.collocations" <- function(x, i, ...) {
-    x <- as.data.frame(x)[i,]
-    attr(x, 'tokens') <- attr(x, 'tokens')[i]
+"[.collocations" <- function(x, i = TRUE, j = TRUE, ...) {
+    toks <- attr(x, 'tokens')
+    x <- as.data.frame(x)[i, j, ...]
+    attr(x, 'tokens') <- toks[i]
     class(x) <- c("collocations", 'data.frame')
     return(x)
 }
 
-#' @export
-#' @method as.tokens collocations
-#' @rdname as.tokens
-as.tokens.collocations <- function(x) {
-    toks <- attr(x, 'tokens')
-    attr(toks, 'types') <- attr(x, 'types')
-    class(toks) <- c("tokens", "tokenizedTexts")
-    return(toks)
-}
 
 

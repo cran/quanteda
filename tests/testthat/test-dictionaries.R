@@ -49,7 +49,8 @@ test_that("dictionary constructor works with YAML format", {
 
 test_that("dictionary constructor works with LIWC format", {
     expect_equivalent(dictionary(file = "../data/dictionaries/mary.dic"),
-                      marydict)
+                      dictionary(list(A_CATEGORY = c("lamb", "little", "more"),
+                                      ANOTHER_CATEGORY = c("had", "mary"))))
 })
 
 test_that("dictionary constructor works with Lexicoder format", {
@@ -127,7 +128,7 @@ test_that("indexing for dictionary objects works", {
 
 test_that("indexing for dictionary keys works", {
     dict <- dictionary(one = c("a", "b"), two = c("c", "d"))
-    expect_is(dict[1], "dictionary")
+    expect_true(is.dictionary(dict[1]))
     expect_equal(
         dict[1],
         dictionary(one = c("a", "b"))
@@ -141,6 +142,14 @@ test_that("indexing for dictionary keys works", {
         print(dict[1]),
         "Dictionary object with 1 key entry\\."
     )
+    
+    testdict <- dictionary(file = "../data/dictionaries/issue-459.cat")
+    expect_identical(
+        testdict[["SOUTH"]],
+        testdict$SOUTH
+    )
+    
+    
 })
 
 
@@ -177,7 +186,15 @@ test_that("error if empty concatenator is given", {
     expect_error(dictionary(one = c("a", "b"), two = c("c", "d"), concatenator = ''),
                  'Concatenator cannot be null or an empty string')
     
-    expect_error(dictionary(one = c("a", "b"), two = c("c", "d"), concatenator = NULL),
-                 'Concatenator cannot be null or an empty string')
+    # expect_error(dictionary(one = c("a", "b"), two = c("c", "d"), concatenator = NULL),
+    #              'Concatenator cannot be null or an empty string')
 })
+
+test_that("dictionary woks with the Yoshicoder format", {
+    testdict <- dictionary(file = "../data/dictionaries/laver-garry.ykd")
+    expect_equal(names(testdict), 
+                 c("State in Economy", "Institutions", "Values", "Law and Order", "Environment", 
+                   "Culture", "Groups", "Rural", "Urban"))
+    
+})    
 

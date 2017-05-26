@@ -101,7 +101,7 @@ nfeature.tokens <- function(x) {
 #' @return count of the total tokens or types
 #' @details
 #' The precise definition of "tokens" for objects not yet tokenized (e.g.
-#' \link{character} or \link{corpus} objects can be controlled through optional
+#' \link{character} or \link{corpus} objects) can be controlled through optional
 #' arguments passed to \code{\link{tokens}} through \code{...}.
 #' @examples
 #' # simple example
@@ -176,7 +176,7 @@ ntype.corpus <- function(x, ...) {
 #' @export
 ntype.dfm <- function(x, ...) {
     ## only returns total NON-ZERO COUNT types
-    sum(colSums(x) > 0)
+    rowSums(x > 0)
 }
 
 #' @noRd

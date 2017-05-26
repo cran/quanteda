@@ -170,7 +170,7 @@ byPresMat
 presDfm <- dfm(corpus_subset(data_corpus_inaugural, Year>1980), 
                remove = stopwords("english"),
                stem = TRUE, remove_punct = TRUE)
-obamaSimil <- textstat_simil(presDfm, c("2009-Obama" , "2013-Obama"), n = NULL, 
+obamaSimil <- textstat_simil(presDfm, c("2009-Obama" , "2013-Obama"), 
                              margin = "documents", method = "cosine")
 obamaSimil
 # dotchart(as.list(obamaSimil)$"2009-Obama", xlab = "Cosine similarity")
@@ -191,7 +191,7 @@ obamaSimil
 #  plot(presCluster, xlab = "", sub = "", main = "Euclidean Distance on Normalized Token Frequency")
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-sim <- textstat_simil(presDfm, c("fair", "health", "terror"), method = "cosine", margin = "features", n = 10)
+sim <- textstat_simil(presDfm, c("fair", "health", "terror"), method = "cosine", margin = "features")
 as.list(sim)
 
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

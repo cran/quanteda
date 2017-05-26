@@ -251,7 +251,7 @@ test_that("remove_punct and remove_twitter interact correctly, #607", {
     expect_equal(
         as.character(tokens(txt, what = "word", remove_punct = TRUE, remove_twitter = TRUE)),
         c("they", "stretched", "in", "a", "never-ending", "line")
-    )    
+    )
     expect_equal(
         as.character(tokens(txt, what = "word", remove_punct = FALSE, remove_twitter = FALSE)),
         c("they", ":", "#stretched", ",", "@", "@@", "in", ",", ",", "a", "#", "##", "never", "-", "ending", "@line", ".")
@@ -321,3 +321,71 @@ test_that("docvars are erased for tokens added", {
         data.frame()
     )
 })
+
+test_that("what = character works with @ and #, issue #637", {
+    
+    expect_equal(as.list(tokens("This: is, a @test! #tag", what = "character", remove_punct = FALSE)),
+                 list(c("T", "h", "i", "s", ":", "i", "s", ",", 
+                        "a", "@", "t", "e", "s", "t", "!", "#", "t", "a", "g")))
+                      
+    expect_equal(as.list(tokens("This: is, a @test! #tag", what = "character", remove_punct = TRUE)),
+                 list(c("T", "h", "i", "s", "i", "s", 
+                        "a", "t", "e", "s", "t", "t", "a", "g")))
+
+})
+
+test_that("unlist retuns character vector, issue #716", {
+    expect_equal(unlist(tokens(c(doc1 = 'aaa bbb cccc', doc2 = 'aaa bbb dddd'))),
+                 c(doc11 = "aaa", doc12 = "bbb", doc13 = "cccc",
+                   doc21 = "aaa", doc22 = "bbb", doc23 = "dddd"))
+    expect_equal(unlist(tokens(c(doc1 = 'aaa bbb cccc', doc2 = 'aaa bbb dddd')), use.names = FALSE),
+                 c("aaa", "bbb", "cccc", "aaa", "bbb", "dddd"))
+})
+
+
+test_that("deprecated tokens arguments still work", {
+
+    expect_warning(
+        tokens("This contains 99 numbers.", removeNumbers = TRUE),
+        "removeNumbers is deprecated"
+    )
+    
+    # for tokens
+    expect_identical(
+        as.character(tokens(c(d1 = "This: punctuation"), remove_punct = TRUE)),
+        c("This", "punctuation")
+    )
+    expect_identical(
+        as.character(tokens(c(d1 = "This: punctuation"), remove_punct = TRUE)),
+        as.character(tokens(c(d1 = "This: punctuation"), removePunct = TRUE))
+    )
+    expect_warning(
+        tokens(c(d1 = "This: punctuation"), notanargument = TRUE),
+        "Argument notanargument not used"
+    )
+    
+})
+
+test_that("tokens arguments works with values from parent frame (#721)", {
+    expect_identical(
+        tokens("This contains 99 numbers.", remove_numbers = T),
+        tokens("This contains 99 numbers.", remove_numbers = TRUE),
+    )
+    
+    expect_identical(
+        dfm("This contains 99 numbers.", remove_numbers = T),
+        dfm("This contains 99 numbers.", remove_numbers = TRUE),
+    )
+
+    val <- FALSE
+    expect_identical(
+        tokens("This contains 99 numbers.", remove_numbers = val),
+        tokens("This contains 99 numbers.", remove_numbers = F),
+    )
+    expect_identical(
+        dfm("This contains 99 numbers.", remove_numbers = val),
+        dfm("This contains 99 numbers.", remove_numbers = F),
+    )
+})
+
+    

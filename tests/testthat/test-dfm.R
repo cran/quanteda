@@ -41,7 +41,7 @@ inaugTextsTokenized <- tokens_tolower(inaugTextsTokenized)
 txt <- "The tall brown trees with pretty leaves in its branches."
 dfm(txt)
 dfm(txt, stem = TRUE)
-dfm(txt, remove = stopwords("english"))  
+dfm(txt, remove = stopwords("english"))
 dfm(txt, stem = TRUE, remove = stopwords("english"))
 
 
@@ -245,32 +245,6 @@ test_that("test rbind.dfm with the same features, but in a different order", {
 })
 
 
-test_that("dfm_weight works", {
-    str <- c("apple is better than banana", "banana banana apple much better")
-    w <- c(apple = 5, banana = 3, much = 0.5)
-    mydfm <- dfm(str, remove = stopwords("english"))
-    expect_equivalent(as.matrix(dfm_weight(mydfm, weights = w)),
-                      matrix(c(5, 5, 1, 1, 3, 6, 0, 0.5), nrow = 2))
-    
-    expect_equivalent(round(as.matrix(dfm_weight(mydfm, type = "frequency")), 2),
-                      matrix(c(1, 1, 1, 1, 1, 2, 0, 1), nrow = 2))
-    
-    expect_equivalent(round(as.matrix(dfm_weight(mydfm, type = "relFreq")), 2),
-                      matrix(c(0.33, 0.2, 0.33, 0.2, 0.33, 0.4, 0, 0.2), nrow = 2))
-    
-    expect_equivalent(round(as.matrix(dfm_weight(mydfm, type = "relMaxFreq")), 2),
-                      matrix(c(1, 0.5, 1, 0.5, 1, 1, 0, 0.5), nrow = 2))
-    
-    expect_equivalent(round(as.matrix(dfm_weight(mydfm, type = "logFreq")), 2),
-                      matrix(c(1, 1, 1, 1, 1, 1.30, 0, 1), nrow = 2))
-    
-    # replication of worked example from
-    # https://en.wikipedia.org/wiki/Tf-idf#Example_of_tf.E2.80.93idf
-    str <- c("this is a  a sample", "this is another example another example example")
-    wikiDfm <- dfm(str)
-    expect_equivalent(round(as.matrix(tfidf(wikiDfm, normalize = TRUE)), 2),
-                      matrix(c(0, 0, 0, 0, 0.12, 0, 0.06, 0, 0, 0.09, 0, 0.13), nrow = 2))
-})
 
 test_that("dfm keeps all types with > 10,000 documents (#438) (a)", {
     generate_testdfm <- function(n) {
@@ -305,7 +279,7 @@ test_that("dfm.dfm works as expected", {
     testdfm <- dfm(data_corpus_irishbudget2010, tolower = TRUE)
     expect_identical(testdfm, dfm(testdfm, tolower = FALSE))
     expect_identical(testdfm, dfm(testdfm, tolower = TRUE))
-    groupeddfm <- dfm(testdfm, 
+    groupeddfm <- dfm(testdfm,
                       groups =  ifelse(docvars(data_corpus_irishbudget2010, "party") %in% c("FF", "Green"), "Govt", "Opposition"),
                       tolower = FALSE)
     expect_identical(colSums(groupeddfm), colSums(groupeddfm))
@@ -408,4 +382,42 @@ test_that("dfm works with relational operators", {
 })
 
 
+test_that("dfm's document counts in verbose message is correct", {
+    txt <- c(d1 = "a b c d e f g x y z",
+             d2 = "a c d x z",
+             d3 = "x y",
+             d4 = "f g")
+    expect_message(dfm(txt, remove = c('a', 'f'), verbose = TRUE),
+                   'removed 2 features and 0 documents')
+    expect_message(dfm(txt, select = c('a', 'f'), verbose = TRUE),
+                   'kept 2 features and 4 documents')
+})
+
+test_that("dfm print works with options as expected", {
+    tmp <- dfm(data_corpus_irishbudget2010)
+    expect_output(
+        head(tmp),
+        "Document-feature matrix of: 14 documents, 5,058 features.*\\(showing first 6 documents and first 6 features\\)"
+    )
+    expect_output(
+        head(tmp[1:5, 1:5]),
+        "Document-feature matrix of: 5 documents, 5 features.*\\(showing first 5 documents and first 5 features\\)"
+    )
+    expect_output(
+        print(tmp[1:5, 1:5]),
+        "Document-feature matrix of: 5 documents, 5 features.*5 x 5 sparse Matrix"
+    )
+    expect_output(
+        print(tmp[1:5, 1:5], show.values = FALSE),
+        "^Document-feature matrix of: 5 documents, 5 features \\(28% sparse\\)\\.$"
+    )
+    expect_output(
+        print(tmp[1:3, 1:3], ndoc = 2, nfeature = 2, show.values = TRUE),
+        "^Document-feature matrix of: 3 documents, 3 features.*3 x 3 sparse Matrix"
+    )
+    expect_output(
+        print(tmp[1:5, 1:5], show.summary = FALSE),
+        "^5 x 5 sparse Matrix"
+    )
+})
 

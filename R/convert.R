@@ -29,7 +29,6 @@
 #' @note There also exist a variety of converter shortcut commands, designed to 
 #' mimic the idioms of the packages into whose format they convert.  
 #' See \link{convert-wrappers} for details.
-#' @importFrom utils installed.packages
 #' @export
 #' @examples
 #' mycorpus <- corpus_subset(data_corpus_inaugural, Year > 1970)
@@ -150,9 +149,9 @@ dfm2austinformat <- function(d) {
 
 ## convert to tm format
 dfm2tmformat <- function(x, weighting = tm::weightTf) {
-    if (!("tm" %in% installed.packages()[, "Package"])) 
+    if (!requireNamespace("tm")) 
         stop("You must install the tm package installed for this conversion.")
-    if (!("slam" %in% installed.packages()[, "Package"]))
+    if (!requireNamespace("slam"))
         stop("You must install the slam package installed for this conversion.")
     sl <- slam::as.simple_triplet_matrix(x)
     td <- tm::as.DocumentTermMatrix(sl, weighting = weighting)
@@ -198,7 +197,7 @@ as.DocumentTermMatrix <- function(x, ...) {
 dfm2ldaformat <- function(x) {
     if (!is.dfm(x))
         stop("x must be a dfm class object")
-    if (!("tm" %in% installed.packages()[, "Package"]))
+    if (!requireNamespace("tm"))
         stop("You must install the slam package installed for this conversion.")
     tmDTM <- dfm2tmformat(x)
     return(dtm2ldaformat(tmDTM))
@@ -207,7 +206,7 @@ dfm2ldaformat <- function(x) {
 
 ## from the package topicmodels
 dtm2ldaformat <- function (x, omit_empty = TRUE) {
-    if (!("slam" %in% installed.packages()[, "Package"]))
+    if (!requireNamespace("slam"))
         stop("You must install the slam package installed for this conversion.")
     
     split.matrix <- function(x, f, drop = FALSE, ...) lapply(split(seq_len(ncol(x)), 
@@ -243,9 +242,9 @@ quantedaformat2dtm <- function(x) {
 }
 
 ldaformat2dtm <- function (documents, vocab, omit_empty = TRUE) {
-    if (!("tm" %in% installed.packages()[, "Package"]))
+    if (!requireNamespace("tm"))
         stop("You must install the tm package installed for this conversion.")
-    if (!("slam" %in% installed.packages()[, "Package"]))
+    if (!requireNamespace("slam"))
         stop("You must install the slam package installed for this conversion.")
     
     stm <- slam::simple_triplet_matrix(i = rep(seq_along(documents), vapply(documents, ncol, integer(1))), 
@@ -259,23 +258,39 @@ ldaformat2dtm <- function (documents, vocab, omit_empty = TRUE) {
 }
 
 dfm2stmformat <- function(data, meta) {
+    # get docvars (if any)
+    dvars <- docvars(data)
+        
     # sort features into alphabetical order
     data <- data[, order(featnames(data))]
     data <- as(data, "dgTMatrix")
     
     # find out which documents are not empty
     non_empty_docs <- which(rowSums(data) != 0)
+    non_empty_feats <- which(colSums(data) != 0)
+    
+    # find out which documents are empty
+    empty_docs <- which(rowSums(data) == 0)
+    if (length(empty_docs) > 0) warning("Dropped empty document(s): ", paste0(names(empty_docs), collapse=", "))
+    
+    # find out which feature are empty across all documents
+    empty_feats <- which(colSums(data) == 0)
+    if (length(empty_feats) > 0) warning("zero-count features: ", paste0(names(empty_feats), collapse=", "))
     
     # convert counts to STM documents format
-    documents <- ijv.to.doc(data[non_empty_docs, ]@i+1, data[non_empty_docs, ]@j+1, data[non_empty_docs, ]@x) 
+    documents <- ijv.to.doc(data[non_empty_docs, non_empty_feats]@i+1, data[non_empty_docs, non_empty_feats]@j+1, data[non_empty_docs, non_empty_feats]@x) 
     names(documents) <- rownames(data)[non_empty_docs]
     
-    # select docvars for non-empty docs
-    if (!is.null(meta))
+    # select docvars for non-empty docs or from dfm
+    # meta takes priority over built-in docvars
+    if (!is.null(meta)) {
         meta <- meta[non_empty_docs, , drop = FALSE]
+    } else if (length(dvars)) {
+        meta <- dvars[non_empty_docs, , drop = FALSE]
+    }
     
     # return the object
-    list(documents = documents, vocab = colnames(data), meta = meta)
+    list(documents = documents, vocab = colnames(data)[non_empty_feats], meta = meta)
 }
 
 
@@ -285,7 +300,7 @@ ijv.to.doc <- function(i, j, v) {
     index <- lapply(index, as.integer)
     count <- split(v, i)
     count <- lapply(count, as.integer)
-    mapply(rbind, index, count)
+    mapply(rbind, index, count, SIMPLIFY = FALSE)
 }
 
 #' convert a dfm to an lsa "textmatrix"

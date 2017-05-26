@@ -1,5 +1,5 @@
-//#include "dev.h"
 #include "quanteda.h"
+//#include "dev.h"
 #include "recompile.h"
 using namespace quanteda;
 
@@ -11,9 +11,13 @@ Text keep_token(Text tokens,
     if (tokens.size() == 0) return {}; // return empty vector for empty text
     
     unsigned int filler = UINT_MAX; // use upper limit as a filler
-    Text tokens_copy(tokens.size(), filler);
+    
+    bool match = false;
+    Text tokens_copy(tokens.size());
     if (padding) {
         std::fill(tokens_copy.begin(), tokens_copy.end(), 0);
+    } else {
+        std::fill(tokens_copy.begin(), tokens_copy.end(), filler);
     }
     for (std::size_t span : spans) { // substitution starts from the longest sequences
         if (tokens.size() < span) continue;
@@ -21,11 +25,18 @@ Text keep_token(Text tokens,
             Ngram ngram(tokens.begin() + i, tokens.begin() + i + span);
             auto it = set_words.find(ngram);
             if (it != set_words.end()) {
+                match = true;
                 std::copy(ngram.begin(), ngram.end(), tokens_copy.begin() + i);
             }
         }
     }
-    if (!padding) tokens_copy.erase(std::remove(tokens_copy.begin(), tokens_copy.end(), filler), tokens_copy.end());
+    if (match) {
+        if (!padding) {
+            tokens_copy.erase(std::remove(tokens_copy.begin(), tokens_copy.end(), filler), tokens_copy.end());
+        }
+    } else {
+        tokens_copy = {};
+    }
     return tokens_copy;
 }
 
@@ -36,7 +47,8 @@ Text remove_token(Text tokens,
 
     if (tokens.size() == 0) return {}; // return empty vector for empty text
     
-    unsigned int filler = std::numeric_limits<unsigned int>::max(); // use upper limit as a filler
+    unsigned int filler = UINT_MAX; // use upper limit as a filler
+    Text tokens_copy = tokens;
     bool match = false;
     for (std::size_t span : spans) { // substitution starts from the longest sequences
         if (tokens.size() < span) continue;
@@ -45,43 +57,47 @@ Text remove_token(Text tokens,
             auto it = set_words.find(ngram);
             if (it != set_words.end()) {
                 match = true;
-                std::fill(tokens.begin() + i, tokens.begin() + i + span, filler);
-                if (padding) tokens[i] = 0;
+                if (padding) {
+                    std::fill(tokens_copy.begin() + i, tokens_copy.begin() + i + span, 0);
+                } else {
+                    std::fill(tokens_copy.begin() + i, tokens_copy.begin() + i + span, filler);
+                }
             }
         }
     }
-    if (match) tokens.erase(std::remove(tokens.begin(), tokens.end(), filler), tokens.end());
-    return tokens;
+    if (match && !padding) {
+        tokens_copy.erase(std::remove(tokens_copy.begin(), tokens_copy.end(), filler), tokens_copy.end());
+    }
+    return tokens_copy;
 }
 
 struct select_mt : public Worker{
     
-    Texts &input;
-    Texts &output;
+    Texts &texts;
     const std::vector<std::size_t> &spans;
     const SetNgrams &set_words;
     const int &mode;
     const bool &padding;
     
     // Constructor
-    select_mt(Texts &input_, Texts &output_, const std::vector<std::size_t> &spans_, 
+    select_mt(Texts &texts_, const std::vector<std::size_t> &spans_, 
               const SetNgrams &set_words_, const int &mode_, const bool &padding_):
-              input(input_), output(output_), spans(spans_), set_words(set_words_), mode(mode_), padding(padding_) {}
+              texts(texts_), spans(spans_), set_words(set_words_), mode(mode_), padding(padding_) {}
     
     // parallelFor calles this function with std::size_t
     void operator()(std::size_t begin, std::size_t end){
         //Rcout << "Range " << begin << " " << end << "\n";
         if (mode == 1) {
             for (std::size_t h = begin; h < end; h++) {
-                output[h] = keep_token(input[h], spans, set_words, padding);
+                texts[h] = keep_token(texts[h], spans, set_words, padding);
             }
         } else if(mode == 2) {
             for (std::size_t h = begin; h < end; h++) {
-                output[h] = remove_token(input[h], spans, set_words, padding);
+                texts[h] = remove_token(texts[h], spans, set_words, padding);
             }
         } else {
             for (std::size_t h = begin; h < end; h++) {
-                output[h] = input[h];
+                texts[h] = texts[h];
             }
         }
     }
@@ -106,43 +122,42 @@ List qatd_cpp_tokens_select(const List &texts_,
                             int mode,
                             bool padding){
     
-    Texts input = Rcpp::as<Texts>(texts_);
+    Texts texts = Rcpp::as<Texts>(texts_);
     Types types = Rcpp::as<Types>(types_);
     
     SetNgrams set_words;
     std::vector<std::size_t> spans = register_ngrams(words_, set_words);
     
     // dev::Timer timer;
-    Texts output(input.size());
     // dev::start_timer("Token select", timer);
 #if QUANTEDA_USE_TBB
-    select_mt select_mt(input, output, spans, set_words, mode, padding);
-    parallelFor(0, input.size(), select_mt);
+    select_mt select_mt(texts, spans, set_words, mode, padding);
+    parallelFor(0, texts.size(), select_mt);
 #else
     if (mode == 1) {
-        for (std::size_t h = 0; h < input.size(); h++) {
-            output[h] = keep_token(input[h], spans, set_words, padding);
+        for (std::size_t h = 0; h < texts.size(); h++) {
+            texts[h] = keep_token(texts[h], spans, set_words, padding);
         }
     } else if(mode == 2) {
-        for (std::size_t h = 0; h < input.size(); h++) {
-            output[h] = remove_token(input[h], spans, set_words, padding);
+        for (std::size_t h = 0; h < texts.size(); h++) {
+            texts[h] = remove_token(texts[h], spans, set_words, padding);
         }
     } else {
-        for (std::size_t h = 0; h < input.size(); h++){
-            output[h] = input[h];
+        for (std::size_t h = 0; h < texts.size(); h++){
+            texts[h] = texts[h];
         }
     }
 #endif
     // dev::stop_timer("Token select", timer);
-    return recompile(output, types);
+    return recompile(texts, types);
 }
 
 /***R
-
-toks <- list(rep(1:10, 10000), rep(5:15, 10000))
+toks <- list(rep(1:10, 1))
+#toks <- list(rep(1:10, 1), rep(5:15, 1))
 #dict <- as.list(1:100000)
 dict <- list(c(1, 2), c(5, 6), 10, 15, 20)
-qatd_cpp_tokens_select(toks, dict, 1, TRUE)
+qatd_cpp_tokens_select(toks, letters, dict, 1, TRUE)
 
 
 

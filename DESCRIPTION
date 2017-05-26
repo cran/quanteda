@@ -1,5 +1,5 @@
 Package: quanteda
-Version: 0.9.9-50
+Version: 0.9.9-65
 Title: Quantitative Analysis of Textual Data
 Description: A fast, flexible framework for for the management, processing, and
     quantitative analysis of textual data in R.
@@ -30,19 +30,19 @@ Collate: 'RcppExports.R' 'View.R' 'bootstrap_dfm.R'
         'corpus-deprecated.R' 'corpus-methods-base.R'
         'corpus-methods-quanteda.R' 'corpus_reshape.R'
         'corpus_sample.R' 'corpus_segment.R' 'corpus_subset.R'
-        'corpus_trimsentences.R' 'corpuszip.R' 'data-deprecated.R'
+        'corpus_trim.R' 'corpuszip.R' 'data-deprecated.R'
         'data-documentation.R' 'dfm-classes.R' 'dfm-deprecated.R'
         'dfm-methods.R' 'dfm-print.R' 'dfm-subsetting.R' 'dfm.R'
         'dfm_compress.R' 'dfm_lookup.R' 'dfm_sample.R' 'dfm_select.R'
         'dfm_trim.R' 'dfm_weight.R' 'dictionaries-deprecated.R'
-        'docvars.R' 'fcm-methods.R' 'fcm.R' 'joinTokens-deprecated.R'
-        'kwic.R' 'nfunctions.R' 'nscrabble.R' 'nsyllable.R' 'phrases.R'
-        'plots-deprecated.R' 'quanteda.R' 'quanteda_options.R'
-        'readtext-methods.R' 'regex2fixed.R' 'resample.R'
-        'selectFeatures-old.R' 'selectFeatures.R' 'sequences.R'
-        'settings.R' 'similarity.R' 'stopwords.R'
-        'textmodel-generics.R' 'textmodel-internal.R' 'textmodel_NB.R'
-        'textmodel_ca.R' 'textmodel_wordfish.R'
+        'dictionaries-liwc_old.R' 'docvars.R' 'fcm-methods.R' 'fcm.R'
+        'joinTokens-deprecated.R' 'kwic.R' 'nfunctions.R' 'nscrabble.R'
+        'nsyllable.R' 'phrases.R' 'plots-deprecated.R' 'quanteda.R'
+        'quanteda_options.R' 'readtext-methods.R' 'regex2fixed.R'
+        'resample.R' 'selectFeatures-old.R' 'selectFeatures.R'
+        'sequences.R' 'settings.R' 'similarity.R' 'spacyr-methods.R'
+        'stopwords.R' 'textmodel-generics.R' 'textmodel-internal.R'
+        'textmodel_NB.R' 'textmodel_ca.R' 'textmodel_wordfish.R'
         'textmodel_wordscores.R' 'textmodel_wordshoal.R'
         'textplot_scale1d.R' 'textplot_wordcloud.R' 'textplot_xray.R'
         'textstat-deprecated.R' 'textstat_collocations.R'
@@ -56,7 +56,7 @@ RcppModules: ngramMaker
 RoxygenNote: 6.0.1
 SystemRequirements: C++11
 NeedsCompilation: yes
-Packaged: 2017-04-19 21:49:31 UTC; kbenoit
+Packaged: 2017-05-25 09:37:57 UTC; kbenoit
 Author: Kenneth Benoit [aut, cre, cph],
   Kohei Watanabe [ctb],
   Paul Nulty [ctb],
@@ -66,4 +66,4 @@ Author: Kenneth Benoit [aut, cre, cph],
   Will Lowe [ctb]
 Maintainer: Kenneth Benoit <kbenoit@lse.ac.uk>
 Repository: CRAN
-Date/Publication: 2017-04-20 09:07:57 UTC
+Date/Publication: 2017-05-26 07:43:06 UTC

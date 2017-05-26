@@ -1,5 +1,5 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-### [![quanteda: quantitative analysis of textual data](https://rawgit.com/kbenoit/quanteda/master/images/quanteda_logo.svg)](http://quanteda.io)
+### [![quanteda: quantitative analysis of textual data](https://cdn.rawgit.com/kbenoit/quanteda/master/images/quanteda_logo.svg)](http://quanteda.io)
 
 [![CRAN Version](https://www.r-pkg.org/badges/version/quanteda)](https://CRAN.R-project.org/package=quanteda) [![Downloads](https://cranlogs.r-pkg.org/badges/quanteda)](https://CRAN.R-project.org/package=quanteda) [![Total Downloads](https://cranlogs.r-pkg.org/badges/grand-total/quanteda?color=orange)](https://CRAN.R-project.org/package=quanteda) [![Travis-CI Build Status](https://travis-ci.org/kbenoit/quanteda.svg?branch=master)](https://travis-ci.org/kbenoit/quanteda) [![Build status](https://ci.appveyor.com/api/projects/status/e3tf2h1ff0nlv249/branch/master?svg=true)](https://ci.appveyor.com/project/kbenoit/quanteda/branch/master) [![codecov.io](https://codecov.io/github/kbenoit/quanteda/coverage.svg?branch=master)](https://codecov.io/gh/kbenoit/quanteda/branch/master)
 
@@ -23,7 +23,7 @@ How to cite the package:
     following:
 
       Benoit, Kenneth et. al. ().  "quanteda: Quantitative Analysis of
-      Textual Data".  R package version: 0.9.9-49.
+      Textual Data".  R package version: 0.9.9-63.
       http://quanteda.io.
 
     A BibTeX entry for LaTeX users is
@@ -31,7 +31,7 @@ How to cite the package:
       @Manual{,
         title = {quanteda: Quantitative Analysis of Textual Data},
         author = {Kenneth Benoit and Kohei Watanabe and Paul Nulty and Adam Obeng and Haiyan Wang and Benjamin Lauderdale and Will Lowe},
-        note = {R package version 0.9.9-49},
+        note = {R package version 0.9.9-63},
         url = {http://quanteda.io},
       }
 
@@ -107,11 +107,9 @@ How to Install
 
     The following packages work well with or extend **quanteda** and we recommend that you also install them:
 
-    -   [**readtext**](https://github.com/kbenoit/readtext): For reading text data into R.
+    -   [**readtext**](https://github.com/kbenoit/readtext): An easy way to read text data into R, from almost any input format.
 
-        ``` r
-        devtools::install_github("kbenoit/readtext")
-        ```
+    -   [**spacyr**](https://github.com/kbenoit/spacyr): NLP using the [spaCy](http://spacy.io) library, including part-of-speech tagging, entity recognition, and dependency parsing.
 
     -   [**quantedaData**](https://github.com/kbenoit/quantedaData): Additional textual data for use with **quanteda**.
 
@@ -119,9 +117,11 @@ How to Install
         devtools::install_github("kbenoit/quantedaData")
         ```
 
-    -   [**spacyr**](https://github.com/kbenoit/spacyr): NLP using the [spaCy](http://spacy.io) library.
-
     -   [**LIWCalike**](https://github.com/kbenoit/LIWCalike): An R implementation of the [Linguistic Inquiry and Word Count](http://liwc.wpengine.com) approach to text analysis.
+
+        ``` r
+        devtools::install_github("kbenoit/LIWCalike")
+        ```
 
 Getting Started
 ---------------
@@ -133,6 +133,13 @@ Demonstration
 
 ``` r
 library(quanteda)
+## quanteda version 0.9.9.63
+## Using 7 of 8 cores for parallel computing
+## 
+## Attaching package: 'quanteda'
+## The following object is masked from 'package:utils':
+## 
+##     View
 
 # create a corpus from the immigration texts from UK party platforms
 uk2010immigCorpus <- 
@@ -156,7 +163,7 @@ summary(uk2010immigCorpus)
 ##          UKIP   346    739        27         UKIP
 ## 
 ## Source:  /Users/kbenoit/Dropbox (Personal)/GitHub/quanteda/* on x86_64 by kbenoit
-## Created: Wed Apr 19 13:16:11 2017
+## Created: Thu May 25 07:00:17 2017
 ## Notes:   Immigration-related sections of 2010 UK party manifestos
 
 # key words in context for "deport", 3 words of context
