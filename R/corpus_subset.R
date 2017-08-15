@@ -5,10 +5,10 @@
 #' functions identically to \code{\link{subset.data.frame}}, using non-standard
 #' evaluation to evaluate conditions based on the \link{docvars} in the corpus.
 #' 
-#' @param x corpus object to be subsetted
-#' @param subset logical expression indicating elements or rows to keep: missing
+#' @param x \link{corpus} object to be subsetted
+#' @param subset logical expression indicating the documents to keep: missing
 #'   values are taken as false
-#' @param select expression, indicating the attributes to select from the corpus
+#' @param select expression, indicating the docvars to select from the corpus
 #' @param ... not used
 #' @return corpus object, with a subset of documents (and docvars) selected according to arguments
 #' @export
@@ -31,7 +31,7 @@ corpus_subset.corpus <- function(x, subset, select, ...) {
         .Deprecated("corpus_subset")
     
     if (length(addedArgs <- list(...)))
-        warning("Argument", ifelse(length(addedArgs)>1, "s ", " "), names(addedArgs), " not used.", sep = "")
+        warning("Argument", if (length(addedArgs) > 1L) "s " else " ", names(addedArgs), " not used.", sep = "")
     r <- if (missing(subset)) {
         rep_len(TRUE, nrow(documents(x)))
     } else {

@@ -1,12 +1,12 @@
 #' get or set for document-level variables
 #' 
-#' Get or set variables associated with a document in a \link{corpus}, or get
-#' these variables from a \link{tokens} or \link{dfm} object.
-#' @param x \link{corpus}, \link{tokens}, or \link{dfm} object whose
+#' Get or set variables associated with a document in a \link{corpus},
+#' \link{tokens} or \link{dfm} object.
+#' @param x \link{corpus}, \link{tokens}, or \link{dfm} object whose 
 #'   document-level variables will be read or set
 #' @param field string containing the document-level variable name
-#' @return \code{docvars} returns a data.frame of the document-level variables,
-#'   dropping the second dimension to form a vector if a single docvar is
+#' @return \code{docvars} returns a data.frame of the document-level variables, 
+#'   dropping the second dimension to form a vector if a single docvar is 
 #'   returned.
 #' @examples 
 #' # retrieving docvars from a corpus
@@ -31,7 +31,7 @@ docvars.corpus <- function(x, field = NULL) {
 
 #' @noRd
 #' @export
-docvars.tokens <- function(x, field = NULL) {
+docvars.tokenizedTexts <- function(x, field = NULL) {
     check_fields(x, field)
     dvars <- attr(x, "docvars")
     if (is.null(field))
@@ -47,6 +47,18 @@ docvars.dfm <- function(x, field = NULL) {
     if (is.null(field))
         dvars <- dvars[, which(substring(names(dvars), 1, 1) != "_"), drop = FALSE]
     get_docvars(dvars, field)    
+}
+
+#' @noRd
+#' @keywords internal
+docvars.kwic <- function(x) {
+    dvars <- attr(x, 'docvars')
+    if (is.null(dvars))
+        dvars <- data.frame()
+    dvars <- structure(dvars[attr(x, 'docid'),], 
+                       class = 'data.frame',
+                       row.names = paste(x$docname, attr(x, 'segid'), sep = "."))
+    select_fields(dvars)
 }
 
 ## internal function to return the docvars for all docvars functions
@@ -65,17 +77,23 @@ get_docvars <- function(dvars, field = NULL) {
 
 #' @rdname docvars
 #' @param value the new values of the document-level variable
-#' @note Another way to access and set docvars is through indexing of the corpus
-#'   \code{j} element, such as \code{data_corpus_irishbudget2010[, c("foren", 
-#'   "name"]} or for a single docvar, 
-#'   \code{data_corpus_irishbudget2010[["name"]]}.  The latter also permits 
-#'   assignment, including the easy creation of new document varibles, e.g. 
-#'   \code{data_corpus_irishbudget2010[["newvar"]] <- 
-#'   1:ndoc(data_corpus_irishbudget2010)}. See \code{\link{[.corpus}} for 
-#'   details.
-#'   
-#'   Assigning docvars to a \link{tokens} object is not supported.  (You should
-#'   only be manipulating these variables at the corpus level.)
+#' @note Reassigning document variables for a \link{tokens} or \link{dfm} object
+#' is allowed, but discouraged.  A better, more reproducible workflow is to
+#' create your docvars as desired in the \link{corpus}, and let these continue
+#' to be attached "downstream" after tokenization and forming a document-feature
+#' matrix.  Recognizing that in some cases, you may need to modify or add
+#' document variables to downstream objects, the assignment operator is defined
+#' for \link{tokens} or \link{dfm} objects as well.  Use with caution.
+#' 
+#' @section Index access to docvars in a corpus:
+#' Another way to access and set docvars is through indexing of the corpus 
+#' \code{j} element, such as \code{data_corpus_irishbudget2010[, c("foren", 
+#' "name"]}; or, for a single docvar, 
+#' \code{data_corpus_irishbudget2010[["name"]]}.  The latter also permits 
+#' assignment, including the easy creation of new document variables, e.g. 
+#' \code{data_corpus_irishbudget2010[["newvar"]] <- 
+#' 1:ndoc(data_corpus_irishbudget2010)}. See \code{\link{[.corpus}} for details.
+#' 
 #' @return \code{docvars<-} assigns \code{value} to the named \code{field}
 #' @examples 
 #' # assigning document variables to a corpus
@@ -107,8 +125,9 @@ get_docvars <- function(dvars, field = NULL) {
     x
 }
 
-## internal only
-"docvars<-.tokens" <- function(x, field = NULL, value) {
+
+#' @export
+"docvars<-.tokenizedTexts" <- function(x, field = NULL, value) {
     
     if (is.null(field) && (is.data.frame(value) || is.null(value))) {
         attr(x, "docvars") <- value
@@ -124,7 +143,7 @@ get_docvars <- function(dvars, field = NULL) {
     return(x)
 }
 
-## internal only
+#' @export
 "docvars<-.dfm" <- function(x, field = NULL, value) {
     
     if (is.null(field) && (is.data.frame(value) || is.null(value))) {
@@ -143,14 +162,24 @@ get_docvars <- function(dvars, field = NULL) {
 
 #' get or set document-level meta-data
 #' 
-#' Get or set the document-level meta-data.
+#' @description
+#' Get or set document-level meta-data.  Document-level meta-data are a special 
+#' type of \link{docvars}, meant to contain information about documents that 
+#' would not be used as a "variable" for analysis. An example could be the 
+#' source of the document, or notes pertaining to its transformation, copyright 
+#' information, etc.
+#' 
+#' Document-level meta-data differs from corpus-level meta-data in that the 
+#' latter pertains to the collection of texts as a whole, whereas the 
+#' document-level version can differ with each document.
 #' @param x a \link{corpus} object
-#' @param field character, the name of the metadata field(s) to be queried or set
+#' @param field character, the name of the metadata field(s) to be queried or 
+#'   set
 #' @return For \code{texts}, a character vector of the texts in the corpus.
 #'   
 #'   For \code{texts <-}, the corpus with the updated texts.
 #' @note Document-level meta-data names are preceded by an underscore character,
-#'   such as \code{_language}, but when named in in the \code{field} argument,
+#'   such as \code{_language}, but when named in in the \code{field} argument, 
 #'   do \emph{not} need the underscore character.
 #' @examples 
 #' mycorp <- corpus_subset(data_corpus_inaugural, Year > 1990)
@@ -159,6 +188,7 @@ get_docvars <- function(dvars, field = NULL) {
 #' metadoc(mycorp)
 #' metadoc(mycorp, "language") <- "english"
 #' summary(mycorp, showmeta = TRUE)
+#' @seealso \code{\link{metacorpus}}
 #' @export
 #' @keywords corpus
 metadoc <- function(x, field = NULL) 
@@ -224,8 +254,57 @@ metadoc.dfm <- function(x, field = NULL) {
 ## a field is not a valid docvar name
 check_fields <- function(x, field = NULL) {
     if (!is.null(field)) {
-        if (length(notin <- which(! field %in% c(names(docvars(x)), names(metadoc(x))))))
+        if (length(notin <- which(!field %in% c(names(docvars(x)), names(metadoc(x))))))
             stop("field(s) ", field[notin], " not found", call. = FALSE)
     }
+}
+
+# New docvar functions -----------------------------------------
+
+## helper function to get all docvars
+docvars_internal <- function(x) {
+    if (is.corpus(x)) {
+        return(documents(x))
+    } else if (is.tokens(x)) {
+        return(attr(x, 'docvars'))
+    } else if (is.dfm(x)) {
+        return(x@docvars)
+    }
+}
+
+get_docvars2 <- function(x, fields) {
+    if (check_docvars(x, fields)) {
+        return(docvars_internal(x)[,fields, drop = FALSE])
+    } else {
+        return(NULL)
+    }
+}
+
+## helper function to check fields
+check_docvars <- function(x, fields) {
+    dvars <- docvars_internal(x)
+    if (is.null(dvars)) 
+        return(rep(FALSE, length(fields)))
+    return(fields %in% names(dvars))
+}
+
+## internal function to select docvara fields
+select_fields <- function(x, types = c('user', 'system')) {
+
+    names <- names(x)
+    is_system <- stri_startswith_fixed(names, '_') 
+    is_text <- stri_detect_fixed(names, 'texts') | stri_detect_fixed(names, '_texts')
+    
+    result <- data.frame(row.names = row.names(x))
+    if ('text' %in% types) {
+        result <- cbind(result, x[,is_text, drop = FALSE])
+    } 
+    if ('system' %in% types) {
+        result <- cbind(result, x[,is_system & !is_text, drop = FALSE])
+    }
+    if ('user' %in% types) {
+        result <- cbind(result, x[,!is_system & !is_text, drop = FALSE])
+    } 
+    return(result)
 }
 

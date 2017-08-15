@@ -1,13 +1,13 @@
 context("test quanteda_options")
 
+
 test_that("quanteda_options initialize works correctly", {
-    quanteda_options(reset = TRUE)
-    
-    expect_equal(
-        quanteda_options(),
-        list(threads = getOption("quanteda_threads"),
-             verbose = getOption("quanteda_verbose"))
-    )
+    threads_temp <- getOption("quanteda_threads")
+    quanteda_options(verbose = TRUE, threads = 1)
+    quanteda_options(initialize = TRUE)
+    expect_equal(quanteda_options("threads"), 1)
+    expect_equal(quanteda_options("verbose"), TRUE)
+    quanteda_options(threads = threads_temp)
 })
 
 
@@ -35,7 +35,36 @@ test_that("quanteda_options works correctly to set options", {
         quanteda_options("threads"),
         getOption("quanteda_threads")
     )
+    
+    quanteda_options(print_dfm_max_ndoc = 13L)
+    expect_equal(
+        quanteda_options("print_dfm_max_ndoc"),
+        getOption("quanteda_print_dfm_max_ndoc")
+    )
+    
+    quanteda_options(print_dfm_max_nfeature = 13L)
+    expect_equal(
+        quanteda_options("print_dfm_max_nfeature"),
+        getOption("quanteda_print_dfm_max_nfeature")
+    )
 })
 
+test_that("quanteda functions work if package is not attached (#864)", {
+    skip("skipping test of option setting when quanteda is not attached")
+    detach("package:quanteda", unload = TRUE)
+    expect_output(
+        print(quanteda::dfm(c("a b c d", "a c d e f"))),
+        "Document-feature matrix of: 2 documents, 6 features"
+    )
+    require(quanteda)
+})
 
-
+test_that("quanteda_options reset works correctly", {
+    quanteda_options(reset = TRUE)
+    qopts <- quanteda:::QUANTEDA_OPTION_LIST
+    names(qopts) <- stringi::stri_replace_all_fixed(names(qopts), "quanteda_", "")
+    expect_equal(
+        quanteda_options(),
+        qopts        
+    )
+})

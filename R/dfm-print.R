@@ -12,54 +12,59 @@ NULL
 #'   \link{settings}.
 #' @param show.summary print a brief summary indicating the number of documents
 #'   and features
-#' @param ndoc max number of documents to print
-#' @param nfeature max number of features to print
+#' @param ndoc max number of documents to print; default is from the \code{quanteda_print_dfm_max_ndoc} setting
+#' @param nfeature max number of features to print; ; default is from the \code{quanteda_print_dfm_max_nfeature} setting
 #' @param ... further arguments passed to or from other methods
+#' @seealso \code{\link{quanteda_options}}
 #' @export
 #' @rdname print.dfm
 #' @keywords dfm
 setMethod("print", signature(x = "dfm"), 
-          function(x, show.values = FALSE, show.settings = FALSE, show.summary = TRUE, ndoc = 20L, nfeature = 20L, ...) {
+          function(x, show.values = FALSE, show.settings = FALSE, show.summary = TRUE, 
+                   ndoc = getOption("quanteda_print_dfm_max_ndoc"), 
+                   nfeature = getOption("quanteda_print_dfm_max_nfeature"), ...) {
               
-              if (!length(x)) {
-                  print(NULL)
-                  return()
-              } 
+              quanteda_options(initialize = TRUE)
 
               if (show.summary) {
                   cat("Document-feature matrix of: ",
                       format(ndoc(x), , big.mark=","), " document",
-                      ifelse(ndoc(x)>1 | ndoc(x)==0, "s, ", ", "),
+                      if (ndoc(x) > 1L || ndoc(x) == 0L) "s, " else ", ",
                       format(nfeature(x), big.mark=","), " feature",
-                      ifelse(nfeature(x)>1 | nfeature(x)==0, "s", ""),
-                      ifelse(is.resampled(x), paste(", ", nresample(x), " resamples", sep=""), ""),
-                      " (", format(sparsity(x)*100, digits = 3),
-                      "% sparse).\n", sep="")
+                      if (nfeature(x) > 1L || nfeature(x) == 0L) "s" else "",
+                      if (is.resampled(x)) paste0(", ", nresample(x), " resamples") else "",
+                      if (prod(dim(x))) paste0(" (", format(sparsity(x)*100, digits = 3), "% sparse)"),
+                      ".\n", sep = "")
               }
               
               if (show.settings) {
                   cat("Settings: TO BE IMPLEMENTED.")
               }
               
-              if (show.values == TRUE) {
-                  ndoc <- nrow(x)
+              
+              if (show.values == TRUE) {          
+                  # if show.values is set to TRUE, show full matrix
+                  nd <- nrow(x)
                   nfeature <- ncol(x)
-              } else if (missing(show.values)) {
+              } else if (missing(show.values)) {  
                   if (nrow(x) <= ndoc & ncol(x) <= nfeature) {
+                      # use TRUE default but limit dimensions
                       ndoc <- nrow(x)
                       nfeature <- ncol(x)
                       show.values <- TRUE
                   } else {
-                      show.values <- FALSE
-                  }
+                      # turn off display if > dimensions
+                      show.values <- FALSE        
+                  }                      
               }
-              
+
               if (show.values)
-                  if (is(x, "sparseMatrix"))
-                      Matrix::printSpMatrix2(x[1:ndoc, 1:nfeature], 
-                                             col.names=TRUE, zero.print=0, ...)
+                  if (is(x, "sparseMatrix")) {
+                      Matrix::printSpMatrix2(x[0:ndoc, 0:nfeature], 
+                                             col.names = TRUE, zero.print = 0, ...)
+                  }
               else if (is(x, "denseMatrix")) {
-                  getMethod("show", "denseMatrix")(x[1:ndoc, 1:nfeature], ...)
+                  getMethod("show", "denseMatrix")(x[0:ndoc, 0:nfeature], ...)
               } else {
                   print(as.matrix(x[1:ndoc, 1:nfeature]))
               }
@@ -73,7 +78,7 @@ setMethod("show", signature(object = "dfm"), function(object) print(object))
 #' return the first or last part of a dfm
 #' 
 #' For a \link{dfm} object, returns the first or last \code{n} documents 
-#' and first \code{ncol} features for inspection.
+#' and first \code{nfeature} features for inspection.
 #' @param x a dfm object
 #' @param n a single integer.  If positive, size for the resulting object: 
 #'   number of first/last documents for the dfm. If negative, all but the n 

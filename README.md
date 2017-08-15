@@ -1,12 +1,15 @@
+
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 ### [![quanteda: quantitative analysis of textual data](https://cdn.rawgit.com/kbenoit/quanteda/master/images/quanteda_logo.svg)](http://quanteda.io)
 
 [![CRAN Version](https://www.r-pkg.org/badges/version/quanteda)](https://CRAN.R-project.org/package=quanteda) [![Downloads](https://cranlogs.r-pkg.org/badges/quanteda)](https://CRAN.R-project.org/package=quanteda) [![Total Downloads](https://cranlogs.r-pkg.org/badges/grand-total/quanteda?color=orange)](https://CRAN.R-project.org/package=quanteda) [![Travis-CI Build Status](https://travis-ci.org/kbenoit/quanteda.svg?branch=master)](https://travis-ci.org/kbenoit/quanteda) [![Build status](https://ci.appveyor.com/api/projects/status/e3tf2h1ff0nlv249/branch/master?svg=true)](https://ci.appveyor.com/project/kbenoit/quanteda/branch/master) [![codecov.io](https://codecov.io/github/kbenoit/quanteda/coverage.svg?branch=master)](https://codecov.io/gh/kbenoit/quanteda/branch/master)
 
-**quanteda** v0.9.9: Important Changes
---------------------------------------
+**quanteda** v0.99 Important Changes
+------------------------------------
 
-This version of the package is a transitional release prior to v1.0. It includes some major API changes (see below), but with the most of the older functions retained and deprecated. v0.9.9 also implements many enhancements and performance improvements. See [Quanteda Structure and Design](https://kbenoit.github.io/quanteda/articles/development-plans.html) for details.
+Many important changes to the package have been underway, including API changes, as we approach a stable API, "1.0" release in October 2017. Version 0.99 represents the last version that will contain many of the deprecated object types and methods that date several releases.
+
+v0.999 also implements many enhancements and performance improvements over previous releases. See [NEWS.md](http://quanteda.io/news/index.html#quanteda-0-99) for details, and [Quanteda Structure and Design](https://kbenoit.github.io/quanteda/articles/development-plans.html) for a description of the package's underlying logic and design philosophy.
 
 About the package
 -----------------
@@ -23,15 +26,14 @@ How to cite the package:
     following:
 
       Benoit, Kenneth et. al. ().  "quanteda: Quantitative Analysis of
-      Textual Data".  R package version: 0.9.9-63.
-      http://quanteda.io.
+      Textual Data".  R package version: 0.9.99.  http://quanteda.io.
 
     A BibTeX entry for LaTeX users is
 
       @Manual{,
         title = {quanteda: Quantitative Analysis of Textual Data},
         author = {Kenneth Benoit and Kohei Watanabe and Paul Nulty and Adam Obeng and Haiyan Wang and Benjamin Lauderdale and Will Lowe},
-        note = {R package version 0.9.9-63},
+        note = {R package version 0.9.99},
         url = {http://quanteda.io},
       }
 
@@ -133,8 +135,8 @@ Demonstration
 
 ``` r
 library(quanteda)
-## quanteda version 0.9.9.63
-## Using 7 of 8 cores for parallel computing
+## quanteda version 0.9.99
+## Using 4 of 8 threads for parallel computing
 ## 
 ## Attaching package: 'quanteda'
 ## The following object is masked from 'package:utils':
@@ -152,31 +154,30 @@ summary(uk2010immigCorpus)
 ## Corpus consisting of 9 documents.
 ## 
 ##          Text Types Tokens Sentences        party
-##           BNP  1126   3330        88          BNP
-##     Coalition   144    268         4    Coalition
-##  Conservative   252    503        15 Conservative
-##        Greens   325    687        21       Greens
-##        Labour   296    703        29       Labour
-##        LibDem   257    499        14       LibDem
-##            PC    80    118         5           PC
-##           SNP    90    136         4          SNP
-##          UKIP   346    739        27         UKIP
+##           BNP  1125   3280        88          BNP
+##     Coalition   142    260         4    Coalition
+##  Conservative   251    499        15 Conservative
+##        Greens   322    679        21       Greens
+##        Labour   298    683        29       Labour
+##        LibDem   251    483        14       LibDem
+##            PC    77    114         5           PC
+##           SNP    88    134         4          SNP
+##          UKIP   346    723        27         UKIP
 ## 
 ## Source:  /Users/kbenoit/Dropbox (Personal)/GitHub/quanteda/* on x86_64 by kbenoit
-## Created: Thu May 25 07:00:17 2017
+## Created: Thu Aug 10 18:26:49 2017
 ## Notes:   Immigration-related sections of 2010 UK party manifestos
 
 # key words in context for "deport", 3 words of context
 kwic(uk2010immigCorpus, "deport", 3)
 ##                                                                     
-##   [BNP, 159]        The BNP will | deport | all foreigners convicted
-##  [BNP, 1970]                . 2. | Deport | all illegal immigrants  
-##  [BNP, 1976] immigrants We shall | deport | all illegal immigrants  
-##  [BNP, 2621]  Criminals We shall | deport | all criminal entrants
+##   [BNP, 157]        The BNP will | deport | all foreigners convicted
+##  [BNP, 1946]                . 2. | Deport | all illegal immigrants  
+##  [BNP, 1952] immigrants We shall | deport | all illegal immigrants  
+##  [BNP, 2585]  Criminals We shall | deport | all criminal entrants
 
 # create a dfm, removing stopwords
-mydfm <- dfm(uk2010immigCorpus, remove = c("will", stopwords("english")),
-             remove_punct = TRUE)
+mydfm <- dfm(uk2010immigCorpus, remove = stopwords("english"), remove_punct = TRUE)
 mydfm
 ## Document-feature matrix of: 9 documents, 1,547 features (83.8% sparse).
 

@@ -14,7 +14,8 @@
 #' These functions compute matrixes of distances and similarities between 
 #' documents or features from a \code{\link{dfm}} and return a 
 #' \code{\link[stats]{dist}} object (or a matrix if specific targets are
-#' selected).
+#' selected).  They are fast and robust because they operate directly on the sparse
+#' \link{dfm} objects.
 #' @param x a \link{dfm} object
 #' @param selection character vector of document names or feature labels from
 #'   \code{x}.  A \code{"dist"} object is returned if selection is \code{NULL}, 
@@ -34,7 +35,8 @@
 #' @note If you want to compute similarity on a "normalized" dfm object 
 #'   (controlling for variable document lengths, for methods such as correlation
 #'   for which different document lengths matter), then wrap the input dfm in 
-#'   \code{\link{weight}(x, "relFreq")}.
+#'   \code{\link{dfm_weight}(x, "relfreq")}.
+#' @return \code{textstat_simil} and \code{textstat_dist} return \code{dist} class objects.
 #' @export
 #' @seealso \code{\link{textstat_dist}}, \code{\link{as.list.dist}},
 #'   \code{\link{dist}}
@@ -92,7 +94,7 @@ textstat_simil.dfm <- function(x, selection = NULL,
     
     if (method %in% vecMethod) {
         if (method == "simple matching") method <- "smc"
-        temp <- get(paste0(method, "_sparse"))(x, y, margin = ifelse(margin == "documents", 1, 2))
+        temp <- get(paste0(method, "_sparse"))(x, y, margin = if (margin == "documents") 1 else 2)
     } else {
         stop(method, " is not implemented; consider trying proxy::simil().")
     }
@@ -118,7 +120,7 @@ textstat_simil.dfm <- function(x, selection = NULL,
             attr(result,"Labels") <- rownames(result)
         else if(!is.null(colnames(result)))
             attr(result,"Labels") <- colnames(result)
-        attr(result, "Size") <- ifelse(margin == "documents", nrow(result), ncol(result))
+        attr(result, "Size") <- if (margin == "documents") nrow(result) else ncol(result)
         attr(result, "method") <- method
         attr(result, "call") <- match.call()
         class(result) <- c("dist_selection")
@@ -164,7 +166,7 @@ correlation_sparse <- function(x, y = NULL, margin = 1) {
     muX <- if (margin == 2) colMeans(x) else rowMeans(x)
     
     if (!is.null(y)) {
-        stopifnot(ifelse(margin == 2, nrow(x) == nrow(y), ncol(x) == ncol(y)))
+        stopifnot(if (margin == 2) nrow(x) == nrow(y) else ncol(x) == ncol(y))
         muY <- if (margin == 2) colMeans(y) else rowMeans(y)
         covmat <- (as.matrix(cpFun(x,y)) - n * tcrossprod(muX, muY)) / (n-1)
         sdvecX <- sqrt((marginSums(x^2) - n * muX^2) / (n-1))

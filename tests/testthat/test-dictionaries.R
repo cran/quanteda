@@ -8,9 +8,9 @@ test_that("dictionary constructors fail if all elements unnamed: explicit", {
 })
 
 test_that("dictionary constructors fail if all elements unnamed: implicit", {
-    expect_error(dictionary(c("a", "b"), "c"),
+    expect_error(dictionary(list(c("a", "b"), "c")),
                  "Dictionary elements must be named: a b c")
-    expect_error(dictionary(first =  c("a", "b"), "c"),
+    expect_error(dictionary(list(first =  c("a", "b"), "c")),
                  "Unnamed dictionary entry: c")
 })
 
@@ -19,18 +19,20 @@ test_that("dictionary constructors fail if a value is numeric", {
                  "Non-character entries found: 2016")
 })
 
-test_that("dictionary constructor works on list explicitly or implicitly", {
-    expect_equal(dictionary(list(first =  c("a", "b"), second = "c")),
-                 dictionary(first =  c("a", "b"), second = "c"))
+# test_that("dictionary constructor works on list explicitly or implicitly", {
+#     expect_equal(dictionary(list(first =  c("a", "b"), second = "c")),
+#                  dictionary(first =  c("a", "b"), second = "c"))
+# })
+
+test_that("dictionary constructor ignores extra arguments", {
+    expect_error(
+        dictionary(list(first =  c("a", "b"), second = "c"), something = TRUE),
+        "unused argument \\(something = TRUE\\)"
+    )
 })
 
-test_that("dictionary constructor ignores non-character arguments in the implicit mode", {
-    expect_equal(dictionary(first =  c("a", "b"), second = "c"),
-                 dictionary(first =  c("a", "b"), second = "c", something = TRUE))
-})
-
-marydict <- dictionary("A CATEGORY" = c("more", "lamb", "little"),
-                       "ANOTHER CATEGORY" = c("had", "mary"))
+marydict <- dictionary(list("A CATEGORY" = c("more", "lamb", "little"),
+                       "ANOTHER CATEGORY" = c("had", "mary")))
 
 test_that("dictionary constructor works with wordstat format", {
     expect_equivalent(dictionary(file = "../data/dictionaries/mary.cat"),
@@ -127,11 +129,11 @@ test_that("indexing for dictionary objects works", {
 })
 
 test_that("indexing for dictionary keys works", {
-    dict <- dictionary(one = c("a", "b"), two = c("c", "d"))
+    dict <- dictionary(list(one = c("a", "b"), two = c("c", "d")))
     expect_true(is.dictionary(dict[1]))
     expect_equal(
         dict[1],
-        dictionary(one = c("a", "b"))
+        dictionary(list(one = c("a", "b")))
     )
 
     expect_output(
@@ -154,12 +156,12 @@ test_that("indexing for dictionary keys works", {
 
 
 test_that("dictionary_depth works correctly", {
-    dict1 <- dictionary(one = c("a", "b"), two = c("c", "d"))
+    dict1 <- dictionary(list(one = c("a", "b"), two = c("c", "d")))
     expect_equal(quanteda:::dictionary_depth(dict1), 1)
     
-    dict2 <- dictionary(one = c("a", "b"), 
+    dict2 <- dictionary(list(one = c("a", "b"), 
                         two = list(sub1 = c("c", "d"),
-                                   sub2 = c("e", "f")))
+                                   sub2 = c("e", "f"))))
     expect_equal(quanteda:::dictionary_depth(dict2), 2)
     
     expect_output(
@@ -170,7 +172,7 @@ test_that("dictionary_depth works correctly", {
 
 test_that("as.list is working", {
     
-    dict <- dictionary(one = c("a", "b"), two = c("c", "d"))
+    dict <- dictionary(list(one = c("a", "b"), two = c("c", "d")))
     expect_equal(
         as.list(dict),
         list(one = c("a", "b"), two = c("c", "d"))
@@ -181,20 +183,105 @@ test_that("as.list is working", {
     )
 })
 
-test_that("error if empty concatenator is given", {
-    
-    expect_error(dictionary(one = c("a", "b"), two = c("c", "d"), concatenator = ''),
-                 'Concatenator cannot be null or an empty string')
-    
-    # expect_error(dictionary(one = c("a", "b"), two = c("c", "d"), concatenator = NULL),
-    #              'Concatenator cannot be null or an empty string')
+test_that("error if empty separator is given", {
+    expect_error(dictionary(list(one = c("a", "b"), two = c("c", "d")), separator = ""),
+                 "separator must be a non-empty character")
+    expect_error(dictionary(list(one = c("a", "b"), two = c("c", "d")), separator = NULL),
+                 "separator must be a non-empty character")
 })
 
 test_that("dictionary woks with the Yoshicoder format", {
     testdict <- dictionary(file = "../data/dictionaries/laver-garry.ykd")
-    expect_equal(names(testdict), 
+    expect_equal(names(testdict), 'Laver and Garry') 
+    expect_equal(names(testdict[['Laver and Garry']]), 
                  c("State in Economy", "Institutions", "Values", "Law and Order", "Environment", 
                    "Culture", "Groups", "Rural", "Urban"))
     
 })    
 
+
+test_that("dictionary constructor works with LIWC format w/doubled terms", {
+    expect_equivalent(
+        dictionary(file = "../data/dictionaries/mary_doubleterm.dic"),
+        dictionary(list(A_CATEGORY = c("lamb", "little", "more"),
+                        ANOTHER_CATEGORY = c("had", "little", "mary")))
+    )
+})
+
+test_that("dictionary constructor works with LIWC format zero padding", {
+    expect_equivalent(
+        dictionary(file = "../data/dictionaries/mary_zeropadding.dic"),
+        dictionary(list(A_CATEGORY = c("lamb", "little", "more"),
+                        ANOTHER_CATEGORY = c("had", "little", "mary")))
+    )
+})
+
+test_that("dictionary constructor reports mssing cateogries in LIWC format", {
+    expect_message(
+        dictionary(file = "../data/dictionaries/mary_missingcat.dic"),
+        "note: ignoring undefined categories:" 
+    )
+})
+
+test_that("dictionary constructor works with LIWC format w/multiple tabs, spaces, etc", {
+    expect_equivalent(
+        dictionary(file = "../data/dictionaries/mary_multipletabs.dic"),
+        dictionary(list(A_CATEGORY = c("lamb", "little", "more"),
+                        ANOTHER_CATEGORY = c("had", "little", "mary")))
+    )
+})
+
+test_that("dictionary constructor works with LIWC format w/extra codes", {
+    expect_message(
+        dictionary(file = "../data/dictionaries/liwc_extracodes.dic"),
+        "note: 1 term ignored because contains unsupported <of> tag"
+    )
+    expect_message(
+        dictionary(file = "../data/dictionaries/liwc_extracodes.dic"),
+        "note: ignoring parenthetical expressions in lines:"
+    )
+    expect_message(
+        dictionary(file = "../data/dictionaries/liwc_extracodes.dic"),
+        "note: removing empty keys: friend, humans, insight, cause, discrep, filler"
+    )
+    dict <- dictionary(file = "../data/dictionaries/liwc_extracodes.dic")
+    expect_equal(
+        length(dict), 
+        10
+    )
+    expect_true(setequal(
+        names(dict), 
+        c("verb", "past", "whatever", "family", "affect", "posemo", "cogmech", "tentat", "whatever2", "time")
+    ))
+    
+    dict1 <- quanteda:::read_dict_liwc("../data/dictionaries/liwc_extracodes.dic")
+    dict2 <- quanteda:::list2dictionary(quanteda:::read_dict_liwc_old("../data/dictionaries/liwc_extracodes.dic"))
+    expect_equal(dict1[order(names(dict1))], dict2[order(names(dict2))])
+})
+
+
+test_that("dictionary works with yoshicoder, issue 819", {
+    expect_equal(
+        as.list(dictionary(file = "../data/dictionaries/issue-819.ykd")),
+        list('Dictionary' = list('pos' = list('A' = 'a word', 'B' = 'b word'))))
+})
+
+test_that("dictionary constructor works on a dictionary", {
+    dictlist <- list(one = LETTERS[1:2], Two = letters[1:3], three = c("E f", "g"))
+    dict <- dictionary(dictlist, tolower = FALSE)
+    expect_identical(
+        dict,
+        dictionary(dict, tolower = FALSE)
+    )
+
+    dictlist2 <- list(one = LETTERS[1:2], Two = letters[1:3], three = c("E_f", "g"))
+    dict2 <- dictionary(dictlist, tolower = FALSE)
+    expect_equal(
+        dictionary(dictlist, tolower = FALSE, separator = "_"),
+        dictionary(dict2, tolower = FALSE, separator = "_")
+    )
+    expect_equal(
+        as.list(dictionary(dict2, separator = "_", tolower = FALSE)),
+        dictlist
+    )
+})

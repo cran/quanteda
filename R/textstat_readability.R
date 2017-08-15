@@ -3,7 +3,8 @@
 #' Calculate the readability of text(s) using one of a variety of computed 
 #' indexes.
 #' @param x a character or \link{corpus} object containing the texts
-#' @param measure character vector defining the readability measure to calculate
+#' @param measure character vector defining the readability measure to calculate.  
+#'   Matches are case-insensitive.
 #' @param remove_hyphens if \code{TRUE}, treat constituent words in hyphenated as
 #'   separate terms, for purposes of computing word lengths, e.g.
 #'   "decision-making" as two terms of lengths 8 and 6 characters respectively,
@@ -108,7 +109,7 @@ textstat_readability.character <- function(x,
 
     addedArgs <- names(list(...))
     if (length(addedArgs))
-        warning("Argument", ifelse(length(addedArgs)>1, "s ", " "), addedArgs, " not used.", sep = "", noBreaks. = TRUE)
+        warning("Argument", if (length(addedArgs) > 1L) "s " else " ", addedArgs, " not used.", sep = "", noBreaks. = TRUE)
 
     # check that all measures are legal values
     validMeasures <- c("all", "ARI", "ARI.simple", "Bormuth", "Bormuth.GP",
@@ -128,11 +129,12 @@ textstat_readability.character <- function(x,
                        "Wheeler.Smith",
                        "meanSentenceLength",
                        "meanWordSyllables")
-    checkMeasure <- measure %in% validMeasures
+    checkMeasure <- char_tolower(measure) %in% char_tolower(validMeasures)
     if (!all(checkMeasure))
         stop("Invalid measure(s): ", measure[!checkMeasure])
     if ("all" %in% measure)
         measure <- validMeasures[-1]
+    measure <- validMeasures[char_tolower(validMeasures) %in% char_tolower(measure)]
 
     # to avoid "no visible binding for global variable" CHECK NOTE
     textID <- W <- St <- C <- Sy <- W3Sy <- W2Sy <- W_1Sy <- W6C <- W7C <- Wlt3Sy <- W_wl.Dale.Chall <-
@@ -146,7 +148,7 @@ textstat_readability.character <- function(x,
         Coleman.Liau <- meanSentenceLength <- meanWordSyllables <- NULL
 
     if (is.null(names(x)))
-        names(x) <- paste0("text", seq_along(x))
+        names(x) <- paste0(quanteda_options("base_docname"), seq_along(x))
 
     if (!missing(min_sentence_length) | !missing(max_sentence_length)) {
         x <- char_trim(x, 'sentences',
@@ -181,7 +183,7 @@ textstat_readability.character <- function(x,
                                W6C = sapply(wordLengths, function(x) sum(x >= 6)), # number of words with at least 6 letters
                                W7C = sapply(wordLengths, function(x) sum(x >= 7))) # number of words with at least 7 letters
     textFeatures[, W_wl.Dale.Chall := sapply(tokenizedWords, function(x) sum(!(x %in% data_char_wordlists$dalechall)))]
-    textFeatures[, Wlt3Sy := Sy - W3Sy]   # number of words with less than three syllables
+    textFeatures[, Wlt3Sy := W - W3Sy]   # number of words with less than three syllables
 
     if (any(c("all", "ARI") %in% measure))
         textFeatures[, ARI := 0.5 * W / St + 4.71 * C / W - 21.43]
@@ -364,7 +366,7 @@ textstat_readability.character <- function(x,
     }
 
     #     if (any(c("all", "TRI") %in% measure)) {
-    #         Ptn <- lengths(tokenize(x, remove_punct = FALSE)) - lengths(tokenizedWords)
+    #         Ptn <- lengths(tokens(x, remove_punct = FALSE)) - lengths(tokenizedWords)
     #         Frg <- NA  # foreign words -- cannot compute without a dictionary
     #         textFeatures[, TRI := (0.449 * W_1Sy) - (2.467 * Ptn) - (0.937 * Frg) - 14.417]
     #     }
@@ -425,7 +427,7 @@ prepositions <- c("a", "abaft", "abeam", "aboard", "about", "above", "absent", "
 # makeWordList <- function(filename) {
 #     wordList <- readtext(filename, cache = FALSE)@texts
 #     wordList <- stringi::stri_replace_all_regex(wordList, "-", "_")
-#     wordList <- tokenize(wordList, simplify = TRUE)
+#     wordList <- tokens(wordList, simplify = TRUE)
 #     wordList <- stringi::stri_replace_all_regex(wordList, "_", "-")
 #     wordList
 # }

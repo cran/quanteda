@@ -15,6 +15,7 @@
 #'   with the fixed metadata 
 #'   fields imported as \link{docvars} and corpus-level metadata imported
 #'   as \link{metacorpus} information.
+#' \item a \link{corpus} object.
 #' } 
 #' @param x a valid corpus source object
 #' @param docnames Names to be assigned to the texts.  Defaults to the names of 
@@ -22,7 +23,7 @@
 #'   names in a \pkg{tm} corpus; or a vector of user-supplied labels equal in 
 #'   length to the number of documents.  If none of these are round, then 
 #'   "text1", "text2", etc. are assigned automatically.
-#' @param docvars A data frame of attributes that is associated with each text.
+#' @param docvars a data.frame of document-level variables associated with each text
 #' @param text_field the character name or numeric index of the source
 #'   \code{data.frame} indicating the variable to be read in as text, which must
 #'   be a character vector. All other variables in the data.frame will be
@@ -64,9 +65,8 @@
 #'   \code{\link{subset}} method for a corpus.
 #'   
 #'   Indexing a corpus using two indexes (integers or column names) will return 
-#'   the document variables, equivalent to \code{docvars(x)}.  Because a corpus 
-#'   is also a list, it is also possible to access, create, or replace docvars 
-#'   using list notation, e.g. 
+#'   the document variables, equivalent to \code{docvars(x)}.  It is also
+#'   possible to access, create, or replace docvars using list notation, e.g.
 #'   
 #'   \code{myCorpus[["newSerialDocvar"]] <- 
 #'   paste0("tag", 1:ndoc(myCorpus))}.
@@ -86,7 +86,7 @@
 #' corpus(texts(data_corpus_irishbudget2010))
 #' 
 #' # import a tm VCorpus
-#' if (requireNamespace("tm")) {
+#' if (requireNamespace("tm", quietly = TRUE)) {
 #'     data(crude, package = "tm")    # load in a tm example VCorpus
 #'     mytmCorpus <- corpus(crude)
 #'     summary(mytmCorpus, showmeta=TRUE)
@@ -118,6 +118,19 @@ corpus <- function(x, ...) {
 
 #' @rdname corpus
 #' @export
+corpus.corpus <- function(x, docnames = quanteda::docnames(x), docvars = quanteda::docvars(x), metacorpus = quanteda::metacorpus(x), compress = FALSE, ...) {
+    if (!compress) {
+        if (!missing(docnames)) docnames(x) <- docnames
+        if (!missing(docvars)) docnames(x) <- docvars
+        if (!missing(metacorpus)) metacorpus(x) <- metacorpus
+        x
+    } else {
+        corpus(texts(x), docnames, docvars, metacorpus, compress = compress)
+    }
+}
+
+#' @rdname corpus
+#' @export
 corpus.character <- function(x, docnames = NULL, docvars = NULL, metacorpus = NULL, compress = FALSE, ...) {
     if (length(addedArgs <- list(...)))
         warning("Argument", ifelse(length(addedArgs)>1, "s ", " "), names(addedArgs), " not used.", sep = "")
@@ -143,7 +156,7 @@ corpus.character <- function(x, docnames = NULL, docvars = NULL, metacorpus = NU
         stopifnot(length(docnames) == length(x))
         names(x) <- docnames
     } else if (is.null(x_names)) {
-        names(x) <- paste("text", seq_along(x), sep="")
+        names(x) <- paste(quanteda_options("base_docname"), seq_along(x), sep="")
     } else if (is.null(names(x))) {
         # if they previously existed, but got obliterated by a stringi function
         names(x) <- x_names
@@ -157,7 +170,9 @@ corpus.character <- function(x, docnames = NULL, docvars = NULL, metacorpus = NU
     if (is.null(metacorpus$source)) {
         metacorpus$source <- paste(getwd(), "/* ", "on ",  Sys.info()["machine"], " by ", Sys.info()["user"], sep="")
     }
-    metacorpus$created <- date()
+    if (is.null(metacorpus$created)) {
+        metacorpus$created <- date()
+    }
 
     # create the documents data frame starting with the texts, using an empty field
     # this saves space if it needs to be separated later
@@ -211,7 +226,7 @@ corpus.character <- function(x, docnames = NULL, docvars = NULL, metacorpus = NU
 }
 
 #' @rdname corpus
-#' @param docid_field name of the data.frame variable containing the document
+#' @param docid_field column index of a document
 #'   identifier; defaults to \code{doc_id} but if this is not found, will use
 #'   the row.names of the data.frame if these are assigned
 #' @keywords corpus
@@ -305,6 +320,8 @@ corpus.kwic <- function(x, ...) {
 
 #' @rdname corpus
 #' @keywords corpus
+#' @importFrom data.table rbindlist data.table
+#' @importFrom lubridate is.POSIXlt
 #' @export
 corpus.Corpus <- function(x, metacorpus = NULL, compress = FALSE, ...) {
     
@@ -313,33 +330,49 @@ corpus.Corpus <- function(x, metacorpus = NULL, compress = FALSE, ...) {
     
     # special handling for VCorpus meta-data
     if (inherits(x, what = "VCorpus")) {
-        metad <- data.frame(do.call(rbind, (lapply(x$content, "[[", "meta"))),
-                        stringsAsFactors = FALSE, row.names = NULL)
-        # extract the content (texts)
-        texts <- sapply(x$content, "[[", "content")
-        # paste together texts if they appear to be vectors
-        if (any(lengths(texts) > 1))
-            texts <- vapply(texts, paste, character(1), collapse = " ")
+        # remove the classes that mess parsing this list
+        x <- unclass(x)
+        x <- lapply(x, unclass)
+        x$content <- lapply(x$content, unclass)
+        
+        # texts and associated docvars
+        if (is.data.frame(x$content[[1]][["content"]])) {
+            df <- as.data.frame(data.table::rbindlist(lapply(x$content, "[[", "content"), fill = TRUE))
+            doc_lengths <- sapply(lapply(x$content, "[[", "content"), nrow)
+            rownames(df) <- make_unique_tm_names(names_tmCorpus(x), doc_lengths)
+        } else {
+            texts <- sapply(x$content, "[[", "content")
+            # paste together texts if they appear to be vectors
+            if (any(lengths(texts) > 1))
+                texts <- vapply(texts, paste, character(1), collapse = " ")
+            doc_lengths <- 1
+            df <- data.frame(text = texts, stringsAsFactors = FALSE, row.names = names_tmCorpus(x))
+        }
+        
+        # document-level metadata
+        metad <- unclass(lapply(x$content, "[[", "meta"))
+        # flatten any elements that are themselves lists, into pasted vectors
+        metad <- flatten_lists(metad)
+        # get rid of any empty fields
+        metad <- lapply(metad, function(y) y[lengths(y) > 0])
+        metad <- data.table::rbindlist(metad, fill = TRUE)
+        # add metad to df, where meta is repeated as appropriate for content
+        df <- cbind(df, metad[rep(seq_len(nrow(metad)), times = doc_lengths), ])
+        
     } else if (inherits(x, what = "SimpleCorpus")) {
-        texts <- x$content
-        metad <- x$dmeta
+        df <- data.frame(text = as.character(x$content), stringsAsFactors = FALSE,
+                         row.names = names(x$content))
+        if (length(x$dmeta)) df <- cbind(df, x$dmeta)
     } else {
         stop("Cannot construct a corpus from this tm ", class(x)[1], " object")
     }
-    makechar <- function(x) gsub("character\\(0\\)", NA, as.character(x))
-    datetimestampIndex <- which(names(metad) == "datetimestamp")
-    metad[, -datetimestampIndex] <- apply(metad[, -datetimestampIndex], 2, makechar)
-    if (length(datetimestampIndex))
-        metad$datetimestamp <- t(as.data.frame((lapply(metad$datetimestamp, as.POSIXlt))))[,1]
-
-    # corpus-level meta-data
-    if (is.null(metacorpus)) 
-        metacorpus <- x$meta
-    metacorpus <- c(metacorpus, 
-                    list(source = paste("Converted from tm VCorpus \'", deparse(substitute(x)), "\'", sep="")))
     
-    corpus(texts, docvars = metad, metacorpus = metacorpus, compress = compress)
+    # corpus-level meta-data
+    if (is.null(metacorpus)) metacorpus <- x$meta
+    metacorpus <- c(metacorpus, 
+                    list(source = paste("Converted from tm Corpus \'", as.character(match.call())[2], "\'", sep="")))
+    
+    corpus(df, metacorpus = metacorpus, compress = compress)
 }
-
 
 setOldClass("corpus")

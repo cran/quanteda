@@ -1,17 +1,17 @@
 #' Naive Bayes classifier for texts
 #' 
-#' Currently working for vectors of texts -- not specially defined for a dfm.
-#' 
-#' This naive Bayes model works on word counts, with smoothing.
-#' @param x the dfm on which the model will be fit.  Does not need to contain 
+#' Fit a multinomial or Bernoulli Naive Bayes model, given a dfm and some
+#' training labels.
+#' @param x the \link{dfm} on which the model will be fit.  Does not need to contain 
 #'   only the training documents.
 #' @param y vector of training labels associated with each document identified 
 #'   in \code{train}.  (These will be converted to factors if not already 
 #'   factors.)
 #' @param smooth smoothing parameter for feature counts by class
-#' @param prior prior distribution on texts, see details
+#' @param prior prior distribution on texts; see Details
 #' @param distribution count model for text features, can be \code{multinomial} 
-#'   or \code{Bernoulli}
+#'   or \code{Bernoulli}.  To fit a "binary multinomial" model, first convert the 
+#'   dfm to a binary matrix using \code{\link{tf}(x, "boolean")}.
 #' @param ... more arguments passed through
 #' @return A list of return values, consisting of:
 #' @return \item{call}{original function call}
@@ -27,30 +27,45 @@
 #' @return \item{smooth}{smoothing parameter}
 #' @section Predict Methods: A \code{predict} method is also available for a 
 #'   fitted Naive Bayes object, see \code{\link{predict.textmodel_NB_fitted}}.
+#' @references Manning, C. D., Raghavan, P., & Schütze, H. (2008). Introduction
+#'   to Information Retrieval. Cambridge University Press.
+#'   \url{https://nlp.stanford.edu/IR-book/pdf/irbookonlinereading.pdf}
+#'   
+#'   Jurafsky, Daniel and James H. Martin. (2016) \emph{Speech and Language Processing.}  Draft of November 7, 2016.
+#'   \url{https://web.stanford.edu/~jurafsky/slp3/6.pdf}
 #' @author Kenneth Benoit
 #' @examples
 #' ## Example from 13.1 of _An Introduction to Information Retrieval_
-#' trainingset <- as.dfm(matrix(c(1, 2, 0, 0, 0, 0,
-#'                         0, 2, 0, 0, 1, 0,
-#'                         0, 1, 0, 1, 0, 0,
-#'                         0, 1, 1, 0, 0, 1,
-#'                         0, 3, 1, 0, 0, 1), 
-#'                       ncol=6, nrow=5, byrow=TRUE,
-#'                       dimnames = list(docs = paste("d", 1:5, sep = ""),
-#'                                       features = c("Beijing", "Chinese",  "Japan", "Macao", 
-#'                                                    "Shanghai", "Tokyo"))))
+#' txt <- c(d1 = "Chinese Beijing Chinese",
+#'          d2 = "Chinese Chinese Shanghai",
+#'          d3 = "Chinese Macao",
+#'          d4 = "Tokyo Japan Chinese",
+#'          d5 = "Chinese Chinese Chinese Tokyo Japan")
+#' trainingset <- dfm(txt, tolower = FALSE)
 #' trainingclass <- factor(c("Y", "Y", "Y", "N", NA), ordered = TRUE)
+#'  
 #' ## replicate IIR p261 prediction for test set (document 5)
-#' (nb.p261 <- textmodel_NB(trainingset, trainingclass))
+#' (nb.p261 <- textmodel_NB(trainingset, trainingclass, prior = "docfreq"))
 #' predict(nb.p261, newdata = trainingset[5, ])
 #' 
 #' # contrast with other priors
-#' predict(textmodel_NB(trainingset, trainingclass, prior = "docfreq"))
+#' predict(textmodel_NB(trainingset, trainingclass, prior = "uniform"))
 #' predict(textmodel_NB(trainingset, trainingclass, prior = "termfreq"))
 #' 
+#' ## replicate IIR p264 Bernoulli Naive Bayes
+#' (nb.p261.bern <- textmodel_NB(trainingset, trainingclass, distribution = "Bernoulli", 
+#'                               prior = "docfreq"))
+#' predict(nb.p261.bern, newdata = trainingset[5, ])
 #' @export
 textmodel_NB <- function(x, y, smooth = 1, prior = c("uniform", "docfreq", "termfreq"), 
                          distribution = c("multinomial", "Bernoulli"), ...) {
+    UseMethod("textmodel_NB")
+}
+
+#' @noRd
+#' @export
+textmodel_NB.dfm <- function(x, y, smooth = 1, prior = c("uniform", "docfreq", "termfreq"), 
+                             distribution = c("multinomial", "Bernoulli"), ...) {
     call <- match.call()
     prior <- match.arg(prior)
     distribution <- match.arg(distribution)
@@ -63,11 +78,12 @@ textmodel_NB <- function(x, y, smooth = 1, prior = c("uniform", "docfreq", "term
     levs <- levels(y.trclass)
     
     ## distribution
-    if (distribution == "Bernoulli") 
-        x <- tf(x, "boolean")
-    else
+    if (distribution == "Bernoulli") {
+        x.trset <- tf(x.trset, "boolean")
+    } else {
         if (distribution != "multinomial")
             stop("Distribution can only be multinomial or Bernoulli.")
+    }
     
     ## prior
     if (prior=="uniform") {
@@ -92,12 +108,21 @@ textmodel_NB <- function(x, y, smooth = 1, prior = c("uniform", "docfreq", "term
     } else stop("Prior must be either docfreq (default), wordfreq, or uniform")
     
     ## multinomial ikelihood: class x words, rows sum to 1
-    # d <- t(sapply(split(as.data.frame(x.trset), y.trclass), colSums))
     # combine all of the class counts
     rownames(x.trset) <- y.trclass
     d <- dfm_compress(x.trset, margin = "both")
 
-    PwGc <- rowNorm(d + smooth)
+    if (distribution == "multinomial") {
+        PwGc <- rowNorm(d + smooth)
+    } else if (distribution == "Bernoulli") {
+        # if (smooth != 1) {
+        #     warning("smoothing of 0 makes little sense for Bernoulli NB", call. = FALSE, noBreaks. = TRUE)
+        # }
+        # denominator here is same as IIR Fig 13.3 line 8 - see also Eq. 13.7
+        PwGc <- (d + smooth) / (as.vector(table(docnames(x.trset))[docnames(d)]) + smooth * ndoc(d))
+        PwGc <- as(PwGc, "dgeMatrix")
+    }
+    
     
     # order Pc so that these are the same order as rows of PwGc
     Pc <- Pc[rownames(PwGc)]
@@ -133,7 +158,7 @@ textmodel_NB <- function(x, y, smooth = 1, prior = c("uniform", "docfreq", "term
 #' @author Kenneth Benoit
 #' @rdname predict.textmodel
 #' @examples 
-#' (nbfit <- textmodel_NB(data_dfm_LBGexample, c("A", "A", "B", "C", "C", NA)))
+#' (nbfit <- textmodel_NB(data_dfm_lbgexample, c("A", "A", "B", "C", "C", NA)))
 #' (nbpred <- predict(nbfit))
 #' @keywords internal textmodel
 #' @export
@@ -150,10 +175,11 @@ predict.textmodel_NB_fitted <- function(object, newdata = NULL, ...) {
         object$PwGc <- object$PwGc[-notinref]
         object$PcGw <- object$PcGw[-notinref]
         object$Pw   <- object$Pw[-notinref]
-        object$data$x <- object$data$x[,-notinref]
-        newdata <- newdata[,-notinref] 
+        object$data$x <- object$data$x[, -notinref]
+        newdata <- newdata[, -notinref] 
     }
 
+    
     # make sure feature set is ordered the same in test and training set (#490)
     if (ncol(object$PcGw) != ncol(newdata))
         stop("feature set in newdata different from that in training set")
@@ -163,11 +189,34 @@ predict.textmodel_NB_fitted <- function(object, newdata = NULL, ...) {
     } else {
         stop("feature set in newdata different from that in training set")
     }
+    
+    if (object$distribution == "multinomial") {
+        
+        # log P(d|c) class conditional document likelihoods
+        log.lik <- newdata %*% t(log(object$PwGc))
+        # weight by class priors
+        log.posterior.lik <- t(apply(log.lik, 1, "+", log(object$Pc)))
+        
+    } else if (object$distribution == "Bernoulli") {
+        
+        newdata <- tf(newdata, "boolean")
+        Nc <- length(object$Pc)
+        
+        # initialize log posteriors with class priors
+        log.posterior.lik <- matrix(log(object$Pc), byrow = TRUE, ncol = Nc, nrow = nrow(newdata),
+                                    dimnames = list(rownames(newdata), names(object$Pc)))
+        # APPLYBERNOULLINB from IIR Fig 13.3
+        for (c in seq_len(Nc)) {
+            tmp1 <- log(t(newdata) * object$PwGc[c, ])
+            tmp1[is.infinite(tmp1)] <- 0
+            tmp0 <- log(t(!newdata) * (1 - object$PwGc[c, ]))
+            tmp0[is.infinite(tmp0)] <- 0
+            log.posterior.lik[, c] <- 
+                log.posterior.lik[, c] + colSums(tmp0) + colSums(tmp1)
+        }
+        
+    } 
 
-    # log P(d|c) class conditional document likelihoods
-    log.lik <- newdata %*% t(log(object$PwGc))
-    # weight by class priors
-    log.posterior.lik <- t(apply(log.lik, 1, "+", log(object$Pc)))
     
     # predict MAP class
     nb.predicted <- colnames(log.posterior.lik)[apply(log.posterior.lik, 1, which.max)]

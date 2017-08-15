@@ -78,6 +78,10 @@ setClass("textmodel_wordfish_predicted",
 #'   have also followed the practice begun with Slapin and Proksch's early 
 #'   implementation of the model that used a regularization parameter of 
 #'   se\eqn{(\sigma) = 3}, through the third element in \code{priors}.
+#'   
+#' @note In the rare situation where a warning message of "The algorighm did not converge." shows up, removing 
+#'   some documents may work. 
+#'   
 #' @references Jonathan Slapin and Sven-Oliver Proksch.  2008. "A Scaling Model 
 #'   for Estimating Time-Series Party Positions from Texts." \emph{American 
 #'   Journal of Political Science} 52(3):705-772.
@@ -87,7 +91,7 @@ setClass("textmodel_wordfish_predicted",
 #'   21(3), 298-313. \url{http://doi.org/10.1093/pan/mpt002}
 #' @author Benjamin Lauderdale, Haiyan Wang, and Kenneth Benoit
 #' @examples
-#' textmodel_wordfish(data_dfm_LBGexample, dir = c(1,5))
+#' textmodel_wordfish(data_dfm_lbgexample, dir = c(1,5))
 #' 
 #' \dontrun{
 #' ie2010dfm <- dfm(data_corpus_irishbudget2010, verbose = FALSE)
@@ -121,7 +125,20 @@ textmodel_wordfish <- function(x, dir = c(1, 2), priors = c(Inf, Inf, 3, 1), tol
                                abs_err = FALSE,
                                svd_sparse = TRUE,
                                residual_floor = 0.5) {
+    UseMethod("textmodel_wordfish")
+}
     
+#' @noRd
+#' @export
+textmodel_wordfish.dfm <- function(x, dir = c(1, 2), priors = c(Inf, Inf, 3, 1), tol = c(1e-6, 1e-8), 
+                               dispersion = c("poisson", "quasipoisson"), 
+                               dispersion_level = c("feature", "overall"),
+                               dispersion_floor = 0,
+                               sparse = TRUE, 
+                               threads = quanteda_options("threads"),
+                               abs_err = FALSE,
+                               svd_sparse = TRUE,
+                               residual_floor = 0.5) {
     dispersion <- match.arg(dispersion)
     dispersion_level <- match.arg(dispersion_level)
     
@@ -177,6 +194,7 @@ textmodel_wordfish <- function(x, dir = c(1, 2), priors = c(Inf, Inf, 3, 1), tol
     }
     # NOTE: psi is a 1 x nfeature matrix, not a numeric vector
     #       alpha is a ndoc x 1 matrix, not a numeric vector
+    if (any(is.nan(wfresult$theta))) warning("Warning: The algorithm did not converge.")
     new("textmodel_wordfish_fitted", 
         x = x,
         docs = docnames(x), 

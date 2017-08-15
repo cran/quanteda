@@ -5,57 +5,55 @@
 \title{create a document-feature matrix}
 \usage{
 dfm(x, tolower = TRUE, stem = FALSE, select = NULL, remove = NULL,
-  thesaurus = NULL, dictionary = NULL, valuetype = c("glob", "regex",
+  dictionary = NULL, thesaurus = NULL, valuetype = c("glob", "regex",
   "fixed"), groups = NULL, verbose = quanteda_options("verbose"), ...)
 }
 \arguments{
 \item{x}{character, \link{corpus}, \link{tokens}, or \link{dfm} object}
 
-\item{tolower}{convert all tokens to lowercase}
+\item{tolower}{convert all features to lowercase}
 
 \item{stem}{if \code{TRUE}, stem words}
 
-\item{select}{a user supplied regular expression defining which features to 
-keep, while excluding all others.  This can be used in lieu of a dictionary
-if there are only specific features that a user wishes to keep. To extract 
-only Twitter usernames, for example, set \code{select = "@*"} and make 
-sure that \code{remove_twitter = FALSE} as an additional argument passed to 
+\item{select}{a  \link{pattern}  of user-supplied features to keep, while 
+excluding all others.  This can be used in lieu of a dictionary if there 
+are only specific features that a user wishes to keep. To extract only 
+Twitter usernames, for example, set \code{select = "@*"} and make sure 
+that \code{remove_twitter = FALSE} as an additional argument passed to 
 \link{tokenize}.  Note: \code{select = "^@\\\w+\\\b"} would be the regular
 expression version of this matching pattern.  The pattern matching type 
-will be set by \code{valuetype}.}
+will be set by \code{valuetype}.  See also \code{\link{tokens_remove}}.}
 
-\item{remove}{a character vector of user-supplied features to ignore, such as
+\item{remove}{a \link{pattern} of user-supplied features to ignore, such as 
 "stop words".  To access one possible list (from any list you wish), use 
 \code{\link{stopwords}()}.  The pattern matching type will be set by 
-\code{valuetype}.  For behaviour of \code{remove} with \code{ngrams > 1}, 
-see Details.}
+\code{valuetype}.  See also \code{\link{tokens_select}}.  For behaviour of
+\code{remove} with \code{ngrams > 1}, see Details.}
 
-\item{thesaurus}{A list of character vector "thesaurus" entries, in a 
-dictionary list format, which operates as a dictionary but without 
-excluding values not matched from the dictionary.  Thesaurus keys are 
-converted to upper case to create a feature label in the dfm, as a reminder
-that this was not a type found in the text, but rather the label of a 
-thesaurus key.  For more fine-grained control over this and other aspects 
-of converting features into dictionary/thesaurus keys from pattern matches 
-to values, you can use \code{\link{dfm_lookup}} after creating the dfm.}
+\item{dictionary}{a \link{dictionary} object to apply to the tokens when 
+creating the dfm}
 
-\item{dictionary}{A list of character vector dictionary entries, including 
-regular expressions (see examples)}
+\item{thesaurus}{a \link{dictionary} object that will be applied as if 
+\code{exclusive = FALSE}. See also \code{\link{tokens_lookup}}.  For more 
+fine-grained control over this and other aspects of converting features 
+into dictionary/thesaurus keys from pattern matches to values, consider 
+creating the dfm first, and then applying \code{\link{dfm_lookup}} 
+separately, or using \code{\link{tokens_lookup}} on the tokenized text
+before calling \code{dfm}.}
 
 \item{valuetype}{how to interpret keyword expressions: \code{"glob"} for 
 "glob"-style wildcard expressions; \code{"regex"} for regular expressions;
 or \code{"fixed"} for exact matching. See \link{valuetype} for details.}
 
-\item{groups}{character vector containing the names of document variables for
-aggregating documents; only applies when calling dfm on a corpus object. 
-When \code{x} is a \link{dfm} object, \code{groups} provides a convenient 
-and fast method of combining and refactoring the documents of the dfm 
-according to the groups.}
+\item{groups}{either: a character vector containing the names of document 
+variables to be used for grouping; or a factor or object that can be 
+coerced into a factor equal in length or rows to the number of documents. 
+See \link{groups} for details.}
 
 \item{verbose}{display messages if \code{TRUE}}
 
-\item{...}{additional arguments passed to \link{tokens}, for character and 
-corpus}
+\item{...}{additional arguments passed to \link{tokens}; not used when \code{x}
+is a \link{dfm}}
 }
 \value{
 a \link{dfm-class} object
@@ -73,6 +71,11 @@ The default behavior for \code{remove}/\code{select} when
   construct the dfm using this modified tokenization object.  See the code 
   examples for an illustration.
 }
+\note{
+When \code{x} is a \link{dfm}, \code{groups} provides a convenient and
+  fast method of combining and refactoring the documents of the dfm according
+  to the groups.
+}
 \examples{
 ## for a corpus
 corpus_post80inaug <- corpus_subset(data_corpus_inaugural, Year > 1980)
@@ -88,7 +91,7 @@ dfm(corpus_post80inaug, remove = stopwords("english"), stem = TRUE, verbose = TR
 dfm("Banking industry", stem = TRUE, ngrams = 2, verbose = FALSE)
 
 # with dictionaries
-corpus_post1900inaug <- corpus_subset(data_corpus_inaugural, Year>1900)
+corpus_post1900inaug <- corpus_subset(data_corpus_inaugural, Year > 1900)
 mydict <- dictionary(list(christmas = c("Christmas", "Santa", "holiday"),
                opposition = c("Opposition", "reject", "notincorpus"),
                taxing = "taxing",

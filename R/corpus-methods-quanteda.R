@@ -2,11 +2,9 @@
 #' 
 #' Get or set the corpus-level metadata in a \link{corpus} object.
 #' @param x a \link{corpus} object
-#' @param field metadata field name(s);  if \code{NULL} (default), return all
+#' @param field metadata field name(s);  if \code{NULL} (default), return all 
 #'   metadata names
-#' @return For \code{metacorpus}, a list of the metadata fields in the corpus. 
-#'   If a list is not what you wanted, you can wrap the results in \link{unlist}, 
-#'   but this will remove any metadata field that is set to \code{NULL}.
+#' @return For \code{metacorpus}, a named list of the metadata fields in the corpus. 
 #'   
 #'   For \code{metacorpus <-}, the corpus with the updated metadata.
 #' @export
@@ -47,15 +45,32 @@ metacorpus.corpus <- function(x, field = NULL) {
 
 # internal accessor for documents object
 # @export
-documents <- function(corp) {
-    corp$documents
+documents <- function(x) {
+    UseMethod("documents")
 }
+
+documents.corpus <- function(x) {
+    x$documents
+}
+
+documents.tokens <- function(x) {
+    docvars(x)
+}
+
+documents.dfm <- function(x) {
+    docvars(x)
+}
+
 
 # internal replacement function for documents
 # @export
-"documents<-" <- function(corp, value) {
-    corp$documents <- value
-    corp
+"documents<-" <- function(x, value) {
+    UseMethod("documents<-")
+}
+
+"documents<-.corpus" <- function(x, value) {
+    x$documents <- value
+    x
 }
 
 
@@ -63,11 +78,10 @@ documents <- function(corp) {
 #' 
 #' Get or replace the texts in a \link{corpus}, with grouping options. 
 #' Works for plain character vectors too, if \code{groups} is a factor.
+#' @note The \code{groups} will be used for concatenating the texts based on shared
+#' values of \code{groups}, without any specified order of aggregation.
 #' @param x a \link{corpus} or character object
-#' @param groups either: a character vector containing the names of document
-#'   variables to be used for grouping; or a factor (or object that can be
-#'   coerced into a factor) equal in length to the number of documents, used for
-#'   aggregating the texts through concatenation
+#' @inheritParams groups
 #' @param spacer when concatenating texts by using \code{groups}, this will be the 
 #'   spacing added between texts.  (Default is two spaces.)
 #' @return For \code{texts}, a character vector of the texts in the corpus.
@@ -194,12 +208,15 @@ docnames <- function(x) {
 docnames.corpus <- function(x) {
     # didn't use accessor documents() because didn't want to pass
     # that large object
-    rownames(x$documents)
+    if (is.null(rownames(x$documents))) {
+        paste0('text', seq_len(ndoc(x)))
+    } else {
+        rownames(x$documents)
+    }
 }
 
 #' @param value a character vector of the same length as \code{x}
-#' @return \code{docnames <-} assigns new values to the document names of a corpus. (Does not work
-#' for dfm objects, whose document names are fixed.)
+#' @return \code{docnames <-} assigns new values to the document names of an object.
 #' @export
 #' @examples 
 #' # reassign the document names of the inaugural speech corpus

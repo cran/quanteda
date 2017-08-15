@@ -36,7 +36,7 @@ setClass("fcm",
 #'   \code{"document"} for co-occurrence counts within document; \code{"window"}
 #'   for co-occurrence within a defined window of words, which requires a 
 #'   postive integer value for \code{window}.  Note: if \code{x} is a dfm object, then
-#'   \code{context} can only be \code{"windows"}.
+#'   \code{context} can only be \code{"document"}.
 #' @param window positive integer value for the size of a window on either side 
 #'   of the target feature, default is 5, meaning 5 words before and after the 
 #'   target feature
@@ -49,7 +49,7 @@ setClass("fcm",
 #'   function of distance from the target feature.  Only makes sense for \code{context = "window"}.}
 #'   }
 #' @param weights a vector of weights applied to each distance from 
-#'   \code{1:window}, strictly decreasing by default; can be a customer defined vector of the same length as 
+#'   \code{1:window}, strictly decreasing by default; can be a custom-defined vector of the same length as 
 #'   \code{length(weights)}
 #' @param ordered if \code{TRUE} the number of times that a term appears before or after the target feature 
 #'      are counted seperately. Only makes sense for context = "window".
@@ -74,7 +74,7 @@ setClass("fcm",
 #'   
 #'   \link{fcm} provides all of this functionality, returning a \eqn{V * V}
 #'   matrix (where \eqn{V} is the vocabulary size, returned by
-#'   \code{\link{ntype}}). The \code{tri = TRUE} option will only return the
+#'   \code{\link{nfeature}}). The \code{tri = TRUE} option will only return the
 #'   upper part of the matrix.
 #'   
 #'   Unlike some implementations of co-occurrences, \link{fcm} counts feature
@@ -164,28 +164,28 @@ fcm.dfm <- function(x, context = c("document", "window"),
         stop("fcm.dfm only works on context = \"document\"")
 
     if (count == "boolean") {
-        tokenCo <- x > 1
+        temp <- x > 1
         x <- tf(x, "boolean") 
     } else if (count == "frequency") {
-        tokenCo <- x
-        tokenCo@x <- choose(tokenCo@x, 2)
+        temp <- x
+        temp@x <- choose(temp@x, 2)
     } else {
         stop("Cannot have weighted counts with context = \"document\"")
     }
 
-    result <- Matrix::crossprod(x) 
-    
     # compute co_occurrence of the diagonal elements
-    tokenCoSum <- colSums(tokenCo) # apply(tokenCo, MARGIN = 2, sum)
-    ft <- tokenCoSum >= 1
-    diagIndex <- which(ft)
-    lengthToken <- length(ft)
-    diagCount <- Matrix::sparseMatrix(i = diagIndex,
-                                      j = diagIndex,
-                                      x = tokenCoSum[ft],
-                                      dims = c(lengthToken , lengthToken))
+    sum_col <- colSums(temp) # apply(temp, MARGIN = 2, sum)
+    feature <- sum_col >= 1
+    index_diag <- which(feature)
+    length_feature <- length(feature)
+    temp2 <- Matrix::sparseMatrix(i = index_diag,
+                                  j = index_diag,
+                                  x = sum_col[feature],
+                                  dims = c(length_feature , length_feature))
+    
+    result <- Matrix::crossprod(x)
     diag(result) <- 0
-    result <- result + diagCount
+    result <- result + temp2
     result <- result[rownames(result), colnames(result)]
     
     # discard the lower diagonal if tri == TRUE
@@ -237,7 +237,7 @@ fcm.tokenizedTexts <- function(x, context = c("document", "window"),
         if (!is.tokens(x)) x <- as.tokens(x)
         types <- types(x)
         n <- sum(lengths(x)) * window * 2
-        result <- qatd_cpp_fcm(x, nfeature(x), count, window, weights, ordered, tri, n)
+        result <- qatd_cpp_fcm(x, length(types), count, window, weights, ordered, tri, n)
         # set the dimnames of result
         dimnames(result) <- list(features = types, features = types)
     }
@@ -265,8 +265,8 @@ setMethod("print", signature(x = "fcm"),
                       format(ndoc(x), big.mark = ","), " by ",
                       # ifelse(ndoc(x) > 1 | ndoc(x) == 0, "s, ", ", "),
                       format(nfeature(x), big.mark = ","), " feature",
-                      ifelse(nfeature(x) > 1 | nfeature(x) == 0, "s", ""),
-                      ifelse(is.resampled(x), paste(", ", nresample(x), " resamples", sep = ""), ""),
+                      if (nfeature(x) != 1L) "s" else "",
+                      if (is.resampled(x)) paste(", ", nresample(x), " resamples", sep = "") else "",
                       ".\n", sep = "")
               }
               if (show.settings) {
@@ -275,7 +275,7 @@ setMethod("print", signature(x = "fcm"),
               if (show.values | (nrow(x) <= ndoc & ncol(x) <= nfeature)) {
                   Matrix::printSpMatrix2(x[1:min(ndoc, ndoc(x)), 1:min(nfeature, nfeature(x))], 
                                          col.names = TRUE, 
-                                         zero.print = ifelse(x@tri, ".", 0), ...)
+                                         zero.print = if (x@tri) "." else 0, ...)
               }
           })
 
