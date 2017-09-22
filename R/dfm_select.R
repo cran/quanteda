@@ -126,7 +126,7 @@ dfm_select.dfm <-  function(x, pattern,
     # select features based on feature length
     if (!padding) {
         features_keep <- intersect(features_keep, which(stri_length(featnames(x)) >= min_nchar & 
-                                                            stri_length(featnames(x)) <= max_nchar))
+                                                        stri_length(featnames(x)) <= max_nchar))
     }
     
     if (!length(features_keep)) features_keep <- 0
@@ -139,11 +139,11 @@ dfm_select.dfm <-  function(x, pattern,
         # add non-existent features
         features_add <- setdiff(pattern, featnames(temp))
         if (length(features_add)) {
-            pad_feature <- as(sparseMatrix(i = NULL, j = NULL, 
-                                           dims = c(ndoc(temp), length(features_add)), 
-                                           dimnames = list(docnames(temp), features_add)), 
-                              "dgCMatrix")
-            temp <- cbind(temp, new("dfmSparse", pad_feature))
+            # pad_feature <- as(sparseMatrix(i = NULL, j = NULL, 
+            #                                dims = c(ndoc(temp), length(features_add)), 
+            #                                dimnames = list(docnames(temp), features_add)), 
+            #                   "dgCMatrix")
+            temp <- cbind(temp, make_null_dfm(features_add, docnames(temp)))
         }
         temp <- reassign_slots(temp, x)
     }

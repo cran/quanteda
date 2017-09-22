@@ -1,5 +1,5 @@
 Package: quanteda
-Version: 0.99
+Version: 0.99.9
 Title: Quantitative Analysis of Textual Data
 Description: A fast, flexible, and comprehensive framework for 
     quantitative text analysis in R.  Provides functionality for corpus management,
@@ -21,10 +21,10 @@ Depends: R (>= 3.2.2), methods
 Imports: utils, stats, Matrix (>= 1.2), data.table (>= 1.9.6),
         SnowballC, wordcloud, Rcpp (>= 0.12.12), RcppParallel,
         RSpectra, stringi, fastmatch, ggplot2 (>= 2.2.0), XML, yaml,
-        lubridate
+        lubridate, magrittr
 LinkingTo: Rcpp, RcppParallel, RcppArmadillo (>= 0.7.600.1.0)
 Suggests: knitr, rmarkdown, lda, proxy, topicmodels, tm (>= 0.6), slam,
-        testthat, RColorBrewer, xtable, DT, ca
+        testthat, RColorBrewer, xtable, DT, ca, purrr
 URL: http://quanteda.io
 Encoding: UTF-8
 BugReports: https://github.com/kbenoit/quanteda/issues
@@ -58,14 +58,14 @@ Collate: 'RcppExports.R' 'View.R' 'bootstrap_dfm.R'
         'textstat_lexdiv.R' 'textstat_readability.R' 'textstat_simil.R'
         'tokenize.R' 'tokenize_outtakes.R' 'tokens.R'
         'tokens_compound.R' 'tokens_group.R' 'tokens_lookup.R'
-        'tokens_ngrams.R' 'tokens_old.R' 'tokens_select.R'
-        'tolower-deprecated.R' 'tolower-functions.R' 'utils.R'
-        'wordstem.R' 'zzz.R'
+        'tokens_ngrams.R' 'tokens_old.R' 'tokens_segment.R'
+        'tokens_select.R' 'tolower-deprecated.R' 'tolower-functions.R'
+        'utils.R' 'wordstem.R' 'zzz.R'
 RcppModules: ngramMaker
 RoxygenNote: 6.0.1
 SystemRequirements: C++11
 NeedsCompilation: yes
-Packaged: 2017-08-10 17:28:35 UTC; kbenoit
+Packaged: 2017-09-22 12:15:11 UTC; kbenoit
 Author: Kenneth Benoit [aut, cre, cph],
   Kohei Watanabe [ctb],
   Paul Nulty [ctb],
@@ -75,4 +75,4 @@ Author: Kenneth Benoit [aut, cre, cph],
   Will Lowe [ctb]
 Maintainer: Kenneth Benoit <kbenoit@lse.ac.uk>
 Repository: CRAN
-Date/Publication: 2017-08-15 22:50:00 UTC
+Date/Publication: 2017-09-22 20:24:23 UTC

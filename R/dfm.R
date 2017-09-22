@@ -118,6 +118,10 @@ dfm <- function(x,
                 groups = NULL, 
                 verbose = quanteda_options("verbose"), 
                 ...) {
+    dfm_env$START_TIME <- proc.time()
+    object_class <- class(x)[1]
+    if (object_class == "dfmSparse") object_class <- "dfm"
+    if (verbose) message("Creating a dfm from a ", object_class, " input...")
     UseMethod("dfm")
 }
 
@@ -126,10 +130,12 @@ dfm_env <- new.env()
 dfm_env$START_TIME <- NULL  
 
 # dfm function to check that any ellipsis arguments belong only to tokens formals
-check_dfm_dots <-  function(dots) {
-    if (length(dots) && any(!(names(dots)) %in% names(formals(tokens))))
-        warning("Argument", ifelse(length(dots)>1, "s ", " "), names(dots), " not used.", sep = "", noBreaks. = TRUE)
-}
+# check_dfm_dots <-  function(dots, permissible_args = NULL) {
+#     if (length(dots) && any(!(names(dots)) %in% permissible_args))
+#         warning("Argument", ifelse(length(dots)>1, "s ", " "), names(dots), " not used.", 
+#                 noBreaks. = TRUE, call. = FALSE)
+# }
+
 
 
 #' @rdname dfm
@@ -146,19 +152,13 @@ dfm.character <- function(x,
                           groups = NULL,
                           verbose = quanteda_options("verbose"),
                           ...) {
-    
-    if (who_called_me_first(sys.calls(), "dfm") == "character") {
-        dfm_env$START_TIME <- proc.time()
-        if (verbose) catm("Creating a dfm from a character vector ...\n")
-    }
-
-    dfm(corpus(x),
+    dfm.tokens(tokens(corpus(x)),
         tolower = tolower, 
         stem = stem, 
         select = select, remove = remove, 
         dictionary = dictionary, thesaurus = thesaurus, valuetype = valuetype, 
         groups = groups, 
-        verbose = verbose,
+        verbose = verbose, 
         ...)
 }
 
@@ -177,20 +177,16 @@ dfm.corpus <- function(x,
                        groups = NULL, 
                        verbose = quanteda_options("verbose"),
                        ...) {
-    if (who_called_me_first(sys.calls(), "dfm") == "corpus") {
-        dfm_env$START_TIME <- proc.time()
-        if (verbose) catm("Creating a dfm from a corpus ...\n")
-    }
-    dfm(tokens(x, ...),  
-        tolower = tolower, 
-        stem = stem, 
-        select = select, remove = remove, 
-        dictionary = dictionary, thesaurus = thesaurus, valuetype = valuetype, 
-        groups = groups, 
-        verbose = verbose)
+    dfm.tokens(tokens(x),  
+               tolower = tolower, 
+               stem = stem, 
+               select = select, remove = remove, 
+               dictionary = dictionary, thesaurus = thesaurus, valuetype = valuetype, 
+               groups = groups, 
+               verbose = verbose,
+               ...)
 }    
 
-    
 #' @noRd
 #' @importFrom utils glob2rx
 #' @export
@@ -205,17 +201,41 @@ dfm.tokenizedTexts <- function(x,
                                groups = NULL, 
                                verbose = quanteda_options("verbose"), 
                                ...) {
+    dfm.tokens(as.tokens(x),  
+               tolower = tolower, 
+               stem = stem, 
+               select = select, remove = remove, 
+               dictionary = dictionary, thesaurus = thesaurus, valuetype = valuetype, 
+               groups = groups, 
+               verbose = verbose, 
+               ...)
+}
+    
+#' @noRd
+#' @importFrom utils glob2rx
+#' @export
+dfm.tokens <- function(x, 
+                       tolower = TRUE,
+                       stem = FALSE, 
+                       select = NULL,
+                       remove = NULL,
+                       dictionary = NULL,
+                       thesaurus = NULL,
+                       valuetype = c("glob", "regex", "fixed"), 
+                       groups = NULL, 
+                       verbose = quanteda_options("verbose"), 
+                       ...) {
 
     valuetype <- match.arg(valuetype)
+    check_dots(list(...), names(formals('tokens')))
+    
     # set document names if none
     if (is.null(names(x))) {
         names(x) <- paste0(quanteda_options("base_docname"), seq_along(x))
     } 
-
-    if (who_called_me_first(sys.calls(), "dfm") %in% c("tokens", "tokenizedTexts")) {
-        dfm_env$START_TIME <- proc.time()
-        if (verbose) catm("Creating a dfm from a", class(x)[1], "object ...\n")
-        check_dfm_dots(list(...))
+    
+    # call tokens only if options given
+    if (length(intersect(names(list(...)), names(formals('tokens'))))) {
         x <- tokens(x, ...)
     }
     
@@ -280,7 +300,7 @@ dfm.tokenizedTexts <- function(x,
         result@docvars <- data.frame(row.names = docnames(x))
     }
     
-    dfm(result, tolower = FALSE, stem = stem, verbose = verbose)
+    dfm.dfm(result, tolower = FALSE, stem = stem, verbose = verbose)
 }
 
 #' @noRd
@@ -300,12 +320,7 @@ dfm.dfm <- function(x,
                     ...) {
 
     valuetype <- match.arg(valuetype)
-    if (length(args <- list(...))) warning("arguments ", names(args), "unused")
-
-    if ((who_called_me_first(sys.calls(), "dfm") == "dfm")) {
-        dfm_env$START_TIME <- proc.time()
-        if (verbose) catm("Creating a dfm from a", class(x)[1], "object ...\n")
-    }
+    check_dots(list(...))
 
     if (tolower) {
         if (verbose) catm("   ... lowercasing\n", sep="")
@@ -344,7 +359,7 @@ dfm.dfm <- function(x,
     
     language <- quanteda_options("language_stemmer")
     if (stem) {
-        if (verbose) catm("   ... stemming features (", stri_trans_totitle(language), ")", sep="")
+        if (verbose) catm("   ... stemming features (", stri_trans_totitle(language), ")\n", sep="")
         oldNfeature <- nfeature(x)
         x <- dfm_wordstem(x, language)
         if (verbose) 
@@ -447,3 +462,14 @@ make_ngram_pattern <- function(features, valuetype, concatenator) {
     features
 }
 
+# create an empty dfm for given features and documents
+make_null_dfm <- function(feature = NULL, document = NULL) {
+    temp <- as(sparseMatrix(
+        i = NULL,
+        j = NULL,
+        dims = c(length(document), length(feature)),
+        dimnames = list(docs = document, features = feature)
+    ),
+    "dgCMatrix")
+    new("dfmSparse", temp)
+}

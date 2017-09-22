@@ -206,7 +206,13 @@ tokens.corpus <- function(x, ..., hash = TRUE, include_docvars = TRUE, old = FAL
 #' @rdname tokens
 #' @export
 #' @noRd
-#' 
+tokens.tokenizedTexts <-  function(x, ...) {
+    tokens(as.tokens(x), ...)
+}
+
+#' @rdname tokens
+#' @export
+#' @noRd
 tokens.tokens <-  function(x, what = c("word", "sentence", "character", "fastestword", "fasterword"),
                            remove_numbers = FALSE,
                            remove_punct = FALSE,
@@ -220,7 +226,7 @@ tokens.tokens <-  function(x, what = c("word", "sentence", "character", "fastest
                            concatenator = "_",
                            hash = TRUE,
                            verbose = quanteda_options("verbose"),
-                           include_docvars,
+                           include_docvars = TRUE,
                            ...) {
     
     types <- types(x)
@@ -246,10 +252,12 @@ tokens.tokens <-  function(x, what = c("word", "sentence", "character", "fastest
     
     if (length(regex))
         x <- tokens_remove(x, paste(regex, collapse = '|'), valuetype = 'regex', padding = FALSE)
-    if (!identical(ngrams, 1L))
+    if (!identical(ngrams, 1L) || !identical(skip, 0L))
         x <- tokens_ngrams(x, n = ngrams, skip = skip, concatenator = concatenator)
     if (hash == FALSE)
         x <- as.tokenizedTexts(x)
+    if (!include_docvars)
+        docvars(x) <- data.frame(row.names = docnames(x))
     return(x)
 }
 
@@ -487,6 +495,20 @@ print.tokens <- function(x, ...) {
     x[[i]]
 }
 
+#' @method "[<-" tokens
+#' @export
+#' @noRd
+"[<-.tokens" <- function(x, i, value) {
+    stop('assignment to tokens objects is not allowed', call. = FALSE)
+}
+
+#' @method "[[<-" tokens
+#' @export
+#' @noRd
+"[[<-.tokens" <- function(x, i, value) {
+    stop('assignment to tokens objects is not allowed', call. = FALSE)
+}
+
 #' @method lengths tokens
 #' @noRd
 #' @export
@@ -561,7 +583,8 @@ tokens_internal <- function(x, what = c("word", "sentence", "character", "fastes
     # warn about unused arguments
     if (length(added_args <- list(...)) & 
         !all(names(added_args) %in% paste0("remove", c("Numbers", "Punct", "Symbols", "Separators", "Twitter", "Hyphens", "URL", "simplify")))) {
-        warning("Argument", if (length(added_args) > 1L) "s " else " ", names(added_args), " not used.", sep = "")
+        warning("Argument", if (length(added_args) > 1L) "s " else " ", names(added_args), 
+                " not used.", sep = "", call. = FALSE, noBreaks. = TRUE)
     }
     
     # deprecate "simplify"

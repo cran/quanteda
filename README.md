@@ -9,7 +9,7 @@
 
 Many important changes to the package have been underway, including API changes, as we approach a stable API, "1.0" release in October 2017. Version 0.99 represents the last version that will contain many of the deprecated object types and methods that date several releases.
 
-v0.999 also implements many enhancements and performance improvements over previous releases. See [NEWS.md](http://quanteda.io/news/index.html#quanteda-0-99) for details, and [Quanteda Structure and Design](https://kbenoit.github.io/quanteda/articles/development-plans.html) for a description of the package's underlying logic and design philosophy.
+v0.99 also implements many enhancements and performance improvements over previous releases. See [NEWS.md](http://quanteda.io/news/index.html#quanteda-0-99) for details, and [Quanteda Structure and Design](https://kbenoit.github.io/quanteda/articles/development-plans.html) for a description of the package's underlying logic and design philosophy.
 
 About the package
 -----------------
@@ -26,14 +26,14 @@ How to cite the package:
     following:
 
       Benoit, Kenneth et. al. ().  "quanteda: Quantitative Analysis of
-      Textual Data".  R package version: 0.9.99.  http://quanteda.io.
+      Textual Data".  R package version: 0.99.  http://quanteda.io.
 
     A BibTeX entry for LaTeX users is
 
       @Manual{,
         title = {quanteda: Quantitative Analysis of Textual Data},
         author = {Kenneth Benoit and Kohei Watanabe and Paul Nulty and Adam Obeng and Haiyan Wang and Benjamin Lauderdale and Will Lowe},
-        note = {R package version 0.9.99},
+        note = {R package version 0.99},
         url = {http://quanteda.io},
       }
 
@@ -135,7 +135,7 @@ Demonstration
 
 ``` r
 library(quanteda)
-## quanteda version 0.9.99
+## quanteda version 0.99
 ## Using 4 of 8 threads for parallel computing
 ## 
 ## Attaching package: 'quanteda'
@@ -165,7 +165,7 @@ summary(uk2010immigCorpus)
 ##          UKIP   346    723        27         UKIP
 ## 
 ## Source:  /Users/kbenoit/Dropbox (Personal)/GitHub/quanteda/* on x86_64 by kbenoit
-## Created: Thu Aug 10 18:26:49 2017
+## Created: Wed Aug 16 12:47:04 2017
 ## Notes:   Immigration-related sections of 2010 UK party manifestos
 
 # key words in context for "deport", 3 words of context

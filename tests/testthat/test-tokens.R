@@ -443,6 +443,20 @@ test_that("remove_hyphens is working correctly", {
                  c("a", "b", "c", "d"))
 })
 
+test_that("tokens.tokens() does nothing by default", {
+    
+    toks <- tokens(data_corpus_inaugural, 
+                   remove_numbers = FALSE,
+                   remove_punct = FALSE,
+                   remove_symbols = FALSE,
+                   remove_separators = TRUE,
+                   remove_twitter = FALSE,
+                   remove_hyphens = FALSE,
+                   remove_url = FALSE)
+    expect_equal(toks, tokens(toks))
+    
+})
+
 test_that("test that features remove by tokens.tokens is comparable to tokens.character", {
     
     chars <- c("a b c 12345 ! @ # $ % ^ & * ( ) _ + { } | : \' \" < > ? ! , . \t \n \u2028 \u00A0 \u2003 \uFE0F",
@@ -528,5 +542,16 @@ test_that("tokens works as expected with NA, and blanks", {
         as.character(as.tokens(list(""))),
         ""
     )
+})
+
+test_that("assignment operators are disabled for tokens object", {
+    toks <- tokens(c(d1 = "a b c d", d2 = "c d e"))
+    
+    try(toks[[1]] <- c(6, 100, 'z'), silent = TRUE)
+    expect_equal(as.list(toks),
+                 list(d1 = c("a", "b", "c", "d"), d2 = c("c", "d", "e")))
+    
+    expect_error(toks[[1]] <- c(6, 100, 'z'), 'assignment to tokens objects is not allowed')
+    expect_error(toks[1] <- list(c(6, 100, 'z')), 'assignment to tokens objects is not allowed')
 })
     
