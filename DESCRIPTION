@@ -1,5 +1,5 @@
 Package: quanteda
-Version: 0.99.9
+Version: 0.99.12
 Title: Quantitative Analysis of Textual Data
 Description: A fast, flexible, and comprehensive framework for 
     quantitative text analysis in R.  Provides functionality for corpus management,
@@ -17,7 +17,7 @@ Authors@R: c( person("Kenneth", "Benoit", email = "kbenoit@lse.ac.uk", role =
     person("Benjamin", "Lauderdale", email = "B.E.lauderdale@lse.ac.uk", role = "ctb"),
     person("Will", "Lowe", email = "wlowe@princeton.edu", role = "ctb") )
 License: GPL-3
-Depends: R (>= 3.2.2), methods
+Depends: R (>= 3.4.0), methods
 Imports: utils, stats, Matrix (>= 1.2), data.table (>= 1.9.6),
         SnowballC, wordcloud, Rcpp (>= 0.12.12), RcppParallel,
         RSpectra, stringi, fastmatch, ggplot2 (>= 2.2.0), XML, yaml,
@@ -41,9 +41,9 @@ Collate: 'RcppExports.R' 'View.R' 'bootstrap_dfm.R'
         'dfm_compress.R' 'dfm_group.R' 'dfm_lookup.R' 'dfm_sample.R'
         'dfm_select.R' 'dfm_subset.R' 'dfm_trim.R' 'dfm_weight.R'
         'dictionaries-deprecated.R' 'dictionaries-liwc_old.R'
-        'dictionaries.R' 'docvars.R' 'fcm-methods.R' 'fcm.R'
-        'joinTokens-deprecated.R' 'kwic.R' 'nfunctions.R' 'nscrabble.R'
-        'nsyllable.R' 'phrases.R' 'plots-deprecated.R'
+        'dictionaries.R' 'docnames.R' 'docvars.R' 'fcm-methods.R'
+        'fcm.R' 'joinTokens-deprecated.R' 'kwic.R' 'nfunctions.R'
+        'nscrabble.R' 'nsyllable.R' 'phrases.R' 'plots-deprecated.R'
         'quanteda-documentation.R' 'quanteda_options.R'
         'readtext-methods.R' 'regex2fixed.R' 'resample.R'
         'selectFeatures-old.R' 'selectFeatures.R' 'settings.R'
@@ -65,7 +65,7 @@ RcppModules: ngramMaker
 RoxygenNote: 6.0.1
 SystemRequirements: C++11
 NeedsCompilation: yes
-Packaged: 2017-09-22 12:15:11 UTC; kbenoit
+Packaged: 2017-10-06 11:30:23 UTC; kbenoit
 Author: Kenneth Benoit [aut, cre, cph],
   Kohei Watanabe [ctb],
   Paul Nulty [ctb],
@@ -75,4 +75,4 @@ Author: Kenneth Benoit [aut, cre, cph],
   Will Lowe [ctb]
 Maintainer: Kenneth Benoit <kbenoit@lse.ac.uk>
 Repository: CRAN
-Date/Publication: 2017-09-22 20:24:23 UTC
+Date/Publication: 2017-10-06 16:23:12 UTC

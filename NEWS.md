@@ -1,5 +1,16 @@
 # quanteda 0.99
 
+## Changes since v0.99.9
+
+### New Features
+
+* Added methods for changing the docnames of tokens and dfm objects (#987).
+
+### Bug fixes and stability enhancements
+
+* The computation of tfidf has been more thoroughly described in the documentation for this function (#997).
+
+
 ## Changes since v0.99
 
 ### New Features
