@@ -29,7 +29,7 @@
 #'   boundary delimiter that defines the segmentation points for splitting a
 #'   text into new "document" units.  Boundaries are always defined as the
 #'   pattern matches, plus the end and beginnings of each document.  The new
-#'   "documents" that are created following the segmenation will then be the
+#'   "documents" that are created following the segmentation will then be the
 #'   texts found between boundaries.
 #'   
 #'   The pattern itself will be saved as a new document variable named 
@@ -46,7 +46,7 @@
 #' @section Using patterns: One of the most common uses for
 #'   \code{corpus_segment} is to partition a corpus into sub-documents using
 #'   tags.  The default pattern value is designed for a user-annotated tag that
-#'   is a term begining with double "hash" signs, followed by a whitespace, for
+#'   is a term beginning with double "hash" signs, followed by a whitespace, for
 #'   instance as \code{##INTRODUCTION The text}.
 #'   
 #'   Glob and fixed pattern types use a whitespace character to signal the end 
@@ -184,6 +184,8 @@ char_segment.character <- function(x, pattern = "##*",
     return(result)
 }
 
+# internal functions ----------
+
 # internal function for char_segment and corpus_segment
 segment_texts <- function(x, pattern = NULL, valuetype = "regex", 
                           extract_pattern = FALSE, pattern_position = "after", 
@@ -273,28 +275,3 @@ segment_texts <- function(x, pattern = NULL, valuetype = "regex",
     return(result)
 }
 
-#' segment: deprecated function
-#' 
-#' See \code{\link{corpus_segment}}
-#' @param x object to be segmented
-#' @param ... additional arguments passed to  \code{\link{corpus_segment}}.
-#' @export
-#' @keywords internal deprecated
-segment <- function(x, ...) {
-    .Deprecated("corpus_segment")
-    UseMethod("segment")
-}
-
-#' @rdname segment
-#' @keywords internal deprecated
-#' @export
-segment.character <- function(x, ...) {
-    char_segment(x, ...)
-}
-
-#' @rdname segment
-#' @keywords internal deprecated
-#' @export
-segment.corpus <- function(x, ...) {
-    corpus_segment(x, ...)
-}

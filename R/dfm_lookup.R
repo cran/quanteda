@@ -9,7 +9,7 @@
 #' the document).
 #' @param x the dfm to which the dictionary will be applied
 #' @param dictionary a \link{dictionary} class object
-#' @param levels levels of entries in a hierachical dictionary that will be 
+#' @param levels levels of entries in a hierarchical dictionary that will be 
 #'   applied
 #' @param exclusive if \code{TRUE}, remove all features not in dictionary, 
 #'   otherwise, replace values in dictionary with keys while leaving other 
@@ -75,6 +75,7 @@ dfm_lookup.dfm <- function(x, dictionary, levels = 1:5,
     if (!is.dictionary(dictionary))
         stop("dictionary must be a dictionary object")
     
+    x <- as.dfm(x)
     dictionary <- flatten_dictionary(dictionary, levels)
     valuetype <- match.arg(valuetype)
     attrs <- attributes(x)

@@ -7,7 +7,7 @@
 #' to sentences, and then back to documents (possibly after modifying the sentences).
 #' @param x corpus whose document units will be reshaped
 #' @param to new document units in which the corpus will be recast
-#' @param ... additonal arguments passed to \code{\link{tokens}}, since the
+#' @param ... additional arguments passed to \code{\link{tokens}}, since the
 #'   syntactic segmenter uses this function)
 #' @inheritParams corpus_segment
 #' @return A corpus object with the documents defined as the new units,
@@ -97,17 +97,4 @@ corpus_reshape.corpus <- function(x, to = c("sentences", "paragraphs", "document
         stop("reshape to", to, "is not supported")
     }
     return (result)
-}
-
-
-#' deprecated name for corpus_reshape
-#' 
-#' The deprecated function name for what is now \code{\link{corpus_reshape}}. 
-#' Please use that instead.
-#' @param ... all arguments
-#' @keywords internal deprecated
-#' @export
-changeunits <- function(...) {
-    .Deprecated("corpus_reshape")
-    UseMethod("corpus_reshape")
 }

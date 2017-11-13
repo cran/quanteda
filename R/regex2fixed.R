@@ -22,11 +22,11 @@ regex2fixed <- function(pattern, types = NULL, valuetype = NULL, case_insensitiv
 #'
 #' @description \code{regex2id} converts regex or glob to type IDs to allow C++
 #'   function to perform fast searches in tokens object. C++ functions use a
-#'   list of type IDs to construct a hash table, agaist which sub-vectors of
+#'   list of type IDs to construct a hash table, against which sub-vectors of
 #'   tokens object are matched. This function constructs index of glob patterns
 #'   for faster matching.
 #' @inheritParams pattern
-#' @param types unique types of tokens obtaine by \code{quanteda:::types()}
+#' @param types unique types of tokens obtained by \code{quanteda:::types()}
 #' @inheritParams valuetype
 #' @param case_insensitive ignore case when matching, if \code{TRUE}
 #' @param index If TRUE, index is constructed automatically. It also accept
@@ -193,17 +193,18 @@ index_types <- function(types, valuetype, case_insensitive, max_len = NULL){
     if (is.null(valuetype)) stop('valuetype cannot be NULL')
     if (is.null(case_insensitive)) stop('case_insensitive cannot be NULL')
     
-    if (valuetype == 'regex') {
-        index_empty <- list()
-        attr(index_empty, 'types_search') <- types
-        attr(index_empty, 'types') <- types
-        attr(index_empty, 'valuetype') <- valuetype
-        attr(index_empty, 'case_insensitive') <- case_insensitive
-        return(index_empty)
-    }
-    
     # normalize unicode
     types <- stri_trans_nfc(types)
+    
+    if (valuetype == 'regex' || length(types) == 0) {
+        index <- list()
+        attr(index, 'types_search') <- types
+        attr(index, 'types') <- types
+        attr(index, 'valuetype') <- valuetype
+        attr(index, 'case_insensitive') <- case_insensitive
+        attr(index, 'key') <- character()
+        return(index)
+    }
     
     # lowercases for case-insensitive search
     if (case_insensitive) {
@@ -211,6 +212,7 @@ index_types <- function(types, valuetype, case_insensitive, max_len = NULL){
     } else {
         types_search <- types
     }
+        
     # index for fixed patterns
     pos_tmp <- seq_along(types_search)
     key_tmp <- list(types_search)
@@ -245,18 +247,20 @@ index_types <- function(types, valuetype, case_insensitive, max_len = NULL){
     key <- unlist(key_tmp, use.names = FALSE) 
     pos <- unlist(pos_tmp, use.names = FALSE)
     index <- split(pos, factor(key, ordered = FALSE, levels = unique(key))) # set factor for quick split
+    key <- names(index)
     
-    attr(index, 'key') <- names(index)
+    attr(index, 'names') <- NULL # names attribute slows down
     attr(index, 'types_search') <- types_search
     attr(index, 'types') <- types
     attr(index, 'valuetype') <- valuetype
     attr(index, 'case_insensitive') <- case_insensitive
-    attr(index, 'names') <- NULL # names attribute slows down
+    attr(index, 'key') <- key
     
     return(index)
 }
 
-#' internal function for \code{select_types()} to seach the index using fastmatch.
+#' internal function for \code{select_types()} to search the index using
+#' fastmatch.
 #' @rdname regex2id
 #' @param regex a glob expression to search
 #' @param index an index object created by \code{index_types()}
