@@ -2,7 +2,7 @@
 % Please edit documentation in R/corpus_reshape.R
 \name{corpus_reshape}
 \alias{corpus_reshape}
-\title{recast the document units of a corpus}
+\title{Recast the document units of a corpus}
 \usage{
 corpus_reshape(x, to = c("sentences", "paragraphs", "documents"),
   use_docvars = TRUE, ...)
@@ -45,7 +45,7 @@ summary(corpus_reshape(corp, to = "sentences"), showmeta = TRUE)
 corp2_para <- corpus_reshape(corp2, to="paragraphs")
 corp2_para
 summary(corp2_para, 100, showmeta = TRUE)
-## Note that Bush 2005 is recorded as a single paragraph because that text used a single
-## \\n to mark the end of a paragraph.
+## Note that Bush 2005 is recorded as a single paragraph because that text 
+## used a single \\n to mark the end of a paragraph.
 }
 \keyword{corpus}

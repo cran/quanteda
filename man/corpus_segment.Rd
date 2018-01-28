@@ -3,7 +3,7 @@
 \name{corpus_segment}
 \alias{corpus_segment}
 \alias{char_segment}
-\title{segment texts on a pattern match}
+\title{Segment texts on a pattern match}
 \usage{
 corpus_segment(x, pattern = "##*", valuetype = c("glob", "regex", "fixed"),
   extract_pattern = TRUE, pattern_position = c("before", "after"),
@@ -130,10 +130,11 @@ cbind(texts(corp_seg3), docvars(corp_seg3), metadoc(corp_seg3))
 # segment into paragraphs and removing the "- " bullet points
 cat(data_char_ukimmig2010[4])
 char_segment(data_char_ukimmig2010[4], 
-             pattern = "\\\\n\\\\n(\\\\-\\\\s){0,1}", valuetype = "regex", remove_pattern = TRUE)
+             pattern = "\\\\n\\\\n(\\\\-\\\\s){0,1}", valuetype = "regex", 
+             remove_pattern = TRUE)
 
 # segment a text into clauses
-txt <- c(d1 = "This, is a sentence?  You: come here.", d2 = "Yes, yes, okay.")
+txt <- c(d1 = "This, is a sentence?  You: come here.", d2 = "Yes, yes okay.")
 char_segment(txt, pattern = "\\\\p{P}", valuetype = "regex", 
              pattern_position = "after", remove_pattern = FALSE)
 }

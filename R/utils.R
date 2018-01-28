@@ -55,7 +55,7 @@ reassign_slots <- function(x_new, x_org, exceptions = NULL) {
 }
 
 
-#' function extending base::attributes()
+#' Function extending base::attributes()
 #' @param x an object
 #' @param overwrite if \code{TRUE}, overwrite old attributes
 #' @param value new attributes
@@ -69,7 +69,7 @@ reassign_slots <- function(x_new, x_org, exceptions = NULL) {
     return(x)
 }
 
-#' function to assign multiple slots to a S4 object
+#' Function to assign multiple slots to a S4 object
 #' @param x an S4 object
 #' @param exceptions slots to ignore
 #' @param value a list of attributes extracted by attributes()
@@ -84,7 +84,7 @@ reassign_slots <- function(x_new, x_org, exceptions = NULL) {
     return(x)
 }
 
-#' utility function to create a object with new set of attributes
+#' Utility function to create a object with new set of attributes
 #' @param x an underlying R object of a new object
 #' @param attrs attributes of a new object
 #' @param overwrite_attributes overwrite attributes of the input object, if \code{TRUE}
@@ -101,7 +101,7 @@ create <- function(x, what, attrs = NULL, overwrite_attributes = FALSE, ...) {
 }
 
 
-#' convert various input as pattern to a vector used in tokens_select, 
+#' Convert various input as pattern to a vector used in tokens_select, 
 #' tokens_compound and kwic.
 #' @inheritParams pattern
 #' @inheritParams valuetype
@@ -116,11 +116,13 @@ pattern2id <- function(pattern, types, valuetype, case_insensitive,
     if (is.dfm(pattern)) 
         stop('dfm cannot be used as pattern')
     
-    if (is.sequences(pattern) || is.collocations(pattern)) {
+    if (is.collocations(pattern)) {
+        if (nrow(pattern) == 0) return(list())
         pattern <- stri_split_charclass(pattern$collocation, "\\p{Z}")
         pattern_id <- lapply(pattern, function(x) fastmatch::fmatch(x, types))
-        pattern_id <- pattern_id[sapply(pattern_id, function(x) all(!is.na(x)))]
+        pattern_id <- pattern_id[vapply(pattern_id, function(x) all(!is.na(x)), logical(1))]
     } else {
+        if (length(pattern) == 0) return(list())
         if (is.dictionary(pattern)) {
             pattern <- unlist(pattern, use.names = FALSE)
             pattern <- split_dictionary_values(pattern, concatenator)
@@ -136,14 +138,14 @@ pattern2id <- function(pattern, types, valuetype, case_insensitive,
 }
 
 
-#' internal function for \code{select_types()} to check if a string is a regular expression
+#' Internal function for \code{select_types()} to check if a string is a regular expression
 #' @param x a character string to be tested
 #' @keywords internal
 is_regex <- function(x){
     any(stri_detect_fixed(x, c(".", "(", ")", "^", "{", "}", "+", "$", "*", "?", "[", "]", "\\")))
 }
 
-#' internal function for \code{select_types()} to escape regular expressions 
+#' Internal function for \code{select_types()} to escape regular expressions 
 #' 
 #' This function escapes glob patterns before \code{utils:glob2rx()}, therefore * and ?
 #' are unescaped.
@@ -163,5 +165,27 @@ check_dots <-  function(dots, permissible_args = NULL) {
         warning("Argument", if (length(impermissible_args) > 1) "s " else " ", 
                 paste(impermissible_args, collapse = ', '), " not used.", 
                 noBreaks. = TRUE, call. = FALSE)
+}
+
+#' Print friendly object class not defined message
+#' 
+#' Checks valid methods and issues a friendlier error message in case the method is 
+#' undefined for the supplied object type.
+#' @param object_class character describing the object class
+#' @param function_name character which is the function name
+#' @keywords internal
+#' @examples 
+#' # as.tokens.default <- function(x, concatenator = "", ...) {
+#' #     stop(friendly_class_undefined_message(class(x), "as.tokens"))
+#' # }
+friendly_class_undefined_message <- function(object_class, function_name) {
+    valid_object_types <- 
+        utils::methods(function_name) %>% 
+        as.character() %>% 
+        stringi::stri_replace_first_fixed(paste0(function_name, "."), "")
+    valid_object_types <- valid_object_types[valid_object_types != "default"]
+    paste0(function_name, "() only works on ", 
+         paste(valid_object_types, collapse = ", "),
+         " objects.")
 }
 

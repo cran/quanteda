@@ -1,5 +1,4 @@
-
-#' replace types in tokens object
+#' Replace types in tokens object
 #'
 #' Substitute token types based on vectorized one-to-one matching. Since this
 #' function is created for lemmatization or user-defined stemming, it does not
@@ -34,11 +33,27 @@ tokens_replace <- function(x, pattern, replacement = NULL, case_insensitive = TR
     UseMethod("tokens_replace")
 }
 
-#' @rdname tokens_replace
-#' @noRd
+#' @export
+tokens_replace.default <- function(x, pattern, replacement = NULL, case_insensitive = TRUE, 
+                                  verbose = quanteda_options("verbose")) {
+    stop(friendly_class_undefined_message(class(x), "tokens_replace"))
+}
+    
 #' @export
 tokens_replace.tokens <- function(x, pattern, replacement = NULL, case_insensitive = TRUE, 
                                   verbose = quanteda_options("verbose")) {
+    
+    if (!length(pattern)) return(x)
+    attr(x, 'types') <- replace_type(types(x), pattern, replacement, case_insensitive)
+    tokens_recompile(x)
+}
+
+
+#' Replace types by patterns
+#'
+#' @noRd
+#' @keywords internal
+replace_type <- function(type, pattern, replacement, case_insensitive) {
     
     if (is.dictionary(pattern)) {
         if (!is.null(replacement))
@@ -51,16 +66,13 @@ tokens_replace.tokens <- function(x, pattern, replacement = NULL, case_insensiti
         stop("Lengths of 'pattern' and 'replacement' must be the same")
     if (!is.character(pattern) || !is.character(replacement))
         stop("'pattern' and 'replacement' must be characters")
-    if (!length(pattern) || !length(replacement))
-        return(x)
     
-    type <- attr(x, 'types')
     if (case_insensitive) {
         type_new <- replacement[match(stri_trans_tolower(type), stri_trans_tolower(pattern))]
     } else {
         type_new <- replacement[match(type, pattern)]
     }
+    
     type_new <- ifelse(is.na(type_new), type, type_new)
-    attr(x, 'types') <- type_new
-    tokens_recompile(x)
+    return(type_new)
 }

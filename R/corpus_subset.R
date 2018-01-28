@@ -1,4 +1,4 @@
-#' extract a subset of a corpus
+#' Extract a subset of a corpus
 #' 
 #' Returns subsets of a corpus that meet certain conditions, including direct 
 #' logical operations on docvars (document-level variables).  \code{corpus_subset}
@@ -8,7 +8,7 @@
 #' @param x \link{corpus} object to be subsetted
 #' @param subset logical expression indicating the documents to keep: missing
 #'   values are taken as false
-#' @param select expression, indicating the docvars to select from the corpus
+#' @param select expression, indicating the \link{docvars} to keep
 #' @param ... not used
 #' @return corpus object, with a subset of documents (and docvars) selected according to arguments
 #' @export
@@ -22,8 +22,11 @@ corpus_subset <- function(x, subset, select, ...) {
     UseMethod("corpus_subset")
 }
     
-#' @rdname corpus_subset
-#' @noRd    
+#' @export
+corpus_subset.default <- function(x, subset, select, ...) {
+    stop(friendly_class_undefined_message(class(x), "corpus_subset"))
+}
+
 #' @export
 corpus_subset.corpus <- function(x, subset, select, ...) {
     

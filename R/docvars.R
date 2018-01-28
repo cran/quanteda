@@ -1,6 +1,6 @@
 # docvars ------
 
-#' get or set for document-level variables
+#' Get or set document-level variables
 #' 
 #' Get or set variables associated with a document in a \link{corpus},
 #' \link{tokens} or \link{dfm} object.
@@ -19,6 +19,11 @@
 #' @keywords corpus
 docvars <- function(x, field = NULL) {
     UseMethod("docvars")
+}
+
+#' @export
+docvars.default <- function(x, field = NULL) {
+    stop(friendly_class_undefined_message(class(x), "docvars"))
 }
 
 #' @noRd
@@ -101,24 +106,27 @@ docvars.kwic <- function(x) {
     UseMethod("docvars<-")
 }
 
+#' @export
+"docvars<-.default" <- function(x, field = NULL, value) {
+    stop(friendly_class_undefined_message(class(x), "docvars<-"))
+}
 
-#' @noRd
 #' @export
 "docvars<-.corpus" <- function(x, field = NULL, value) {
-    if ("texts" %in% field) stop("You should use texts() instead to replace the corpus texts.")
+    if ("texts" %in% field) 
+        stop("You should use texts() instead to replace the corpus texts.")
     if (is.null(field)) {
         field <- names(value)
         if (is.null(field))
-            field <- paste("docvar", seq_len(ncol(as.data.frame(value))), sep="")
+            field <- paste("docvar", seq_len(ncol(as.data.frame(value))), 
+                           sep = "")
     }
     documents(x)[field] <- value
     x
 }
 
-
 #' @export
 "docvars<-.tokens" <- function(x, field = NULL, value) {
-    
     if (is.null(field) && (is.data.frame(value) || is.null(value))) {
         attr(x, "docvars") <- value
     } else {
@@ -152,7 +160,7 @@ docvars.kwic <- function(x) {
 
 # metadoc -------
 
-#' get or set document-level meta-data
+#' Get or set document-level meta-data
 #' 
 #' @description
 #' Get or set document-level meta-data.  Document-level meta-data are a special 
@@ -186,6 +194,10 @@ docvars.kwic <- function(x) {
 metadoc <- function(x, field = NULL) 
     UseMethod("metadoc")
 
+#' @export
+metadoc.default <- function(x, field = NULL) {
+    stop(friendly_class_undefined_message(class(x), "metadoc"))
+}
 
 #' @noRd
 #' @export
@@ -194,7 +206,8 @@ metadoc.corpus <- function(x, field = NULL) {
         field <- paste0("_", field)
         check_fields(x, field)
     }
-    dvars <- documents(x)[, which(substring(names(documents(x)), 1, 1) == "_"), drop = FALSE]
+    dvars <- documents(x)[, which(substring(names(documents(x)), 1, 1) == "_"), 
+                          drop = FALSE]
     get_docvars(dvars, field)
 }
 
@@ -224,11 +237,16 @@ metadoc.dfm <- function(x, field = NULL) {
 #' @param value the new value of the new meta-data field
 #' @export
 "metadoc<-" <- function(x, field = NULL, value) 
-    UseMethod("metadoc")
+    UseMethod("metadoc<-")
+
+#' @export
+"metadoc<-.default" <- function(x, field = NULL, value) {
+    stop(friendly_class_undefined_message(class(x), "metadoc<-"))
+}
 
 #' @noRd
 #' @export
-"metadoc<-" <- function(x, field = NULL, value) {
+"metadoc<-.corpus" <- function(x, field = NULL, value) {
     # CHECK TO SEE THAT VALUE LIST IS IN VALID DOCUMENT-LEVEL METADATA LIST
     # (this check not yet implemented)
     if (is.null(field)) {

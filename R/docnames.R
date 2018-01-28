@@ -1,5 +1,4 @@
-
-#' get or set document names
+#' Get or set document names
 #' 
 #' Get or set the document names of a \link{corpus}, \link{tokens}, or \link{dfm} object.
 #' @param x the object with docnames
@@ -24,6 +23,11 @@ docnames <- function(x) {
     UseMethod("docnames")
 }
 
+#' @export
+docnames.default <- function(x) {
+    stop(friendly_class_undefined_message(class(x), "docnames"))
+}
+
 #' @noRd
 #' @export
 docnames.corpus <- function(x) {
@@ -46,6 +50,11 @@ docnames.corpus <- function(x) {
 #' @rdname docnames
 "docnames<-" <- function(x, value) {
     UseMethod("docnames<-")
+}
+
+#' @export
+"docnames<-.default" <- function(x, value) {
+    stop(friendly_class_undefined_message(class(x), "docnames<-"))
 }
 
 #' @noRd

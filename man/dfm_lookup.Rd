@@ -2,7 +2,7 @@
 % Please edit documentation in R/dfm_lookup.R
 \name{dfm_lookup}
 \alias{dfm_lookup}
-\title{apply a dictionary to a dfm}
+\title{Apply a dictionary to a dfm}
 \usage{
 dfm_lookup(x, dictionary, levels = 1:5, exclusive = TRUE,
   valuetype = c("glob", "regex", "fixed"), case_insensitive = TRUE,
@@ -78,5 +78,8 @@ dfm_lookup(myDfm, myDict, valuetype = "fixed", case_insensitive = FALSE)
 # show unmatched tokens
 dfm_lookup(myDfm, myDict, nomatch = "_UNMATCHED")
 
+}
+\seealso{
+dfm_replace
 }
 \keyword{dfm}

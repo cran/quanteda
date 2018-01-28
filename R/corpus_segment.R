@@ -1,4 +1,4 @@
-#' segment texts on a pattern match
+#' Segment texts on a pattern match
 #' 
 #' Segment corpus text(s) or a character vector, splitting
 #' on a pattern match.  This is useful for breaking the texts into smaller
@@ -101,8 +101,15 @@ corpus_segment <- function(x, pattern = "##*",
     UseMethod("corpus_segment")
 }
 
-#' @noRd
-#' @rdname corpus_segment
+#' @export    
+corpus_segment.default <- function(x, pattern = "##*",
+                                  valuetype = c("glob", "regex", "fixed"),
+                                  extract_pattern = TRUE,
+                                  pattern_position = c("before", "after"),
+                                  use_docvars = TRUE) {
+    stop(friendly_class_undefined_message(class(x), "corpus_segment"))
+}
+    
 #' @export    
 corpus_segment.corpus <- function(x, pattern = "##*",
                                   valuetype = c("glob", "regex", "fixed"),
@@ -152,10 +159,11 @@ corpus_segment.corpus <- function(x, pattern = "##*",
 #' # segment into paragraphs and removing the "- " bullet points
 #' cat(data_char_ukimmig2010[4])
 #' char_segment(data_char_ukimmig2010[4], 
-#'              pattern = "\\n\\n(\\-\\s){0,1}", valuetype = "regex", remove_pattern = TRUE)
+#'              pattern = "\\n\\n(\\-\\s){0,1}", valuetype = "regex", 
+#'              remove_pattern = TRUE)
 #' 
 #' # segment a text into clauses
-#' txt <- c(d1 = "This, is a sentence?  You: come here.", d2 = "Yes, yes, okay.")
+#' txt <- c(d1 = "This, is a sentence?  You: come here.", d2 = "Yes, yes okay.")
 #' char_segment(txt, pattern = "\\p{P}", valuetype = "regex", 
 #'              pattern_position = "after", remove_pattern = FALSE)
 #' @keywords character
@@ -166,8 +174,15 @@ char_segment <- function(x, pattern = "##*",
                          pattern_position = c("before", "after")) {
     UseMethod("char_segment")
 }
+
+#' @export
+char_segment.default <- function(x, pattern = "##*",
+                                   valuetype = c("glob", "regex", "fixed"),
+                                   remove_pattern = TRUE,
+                                   pattern_position = c("before", "after")) {
+    stop(friendly_class_undefined_message(class(x), "char_segment"))
+}
         
-#' @noRd
 #' @export
 char_segment.character <- function(x, pattern = "##*",
                                    valuetype = c("glob", "regex", "fixed"),
@@ -177,7 +192,8 @@ char_segment.character <- function(x, pattern = "##*",
     valuetype <- match.arg(valuetype)
     pattern_position <- match.arg(pattern_position)
     
-    temp <- segment_texts(x, pattern, valuetype, remove_pattern, pattern_position)
+    temp <- segment_texts(x, pattern, valuetype, remove_pattern, 
+                          pattern_position)
     result <- temp$texts
     if (!is.null(names(x)))
         names(result) <- rownames(temp)
@@ -205,9 +221,10 @@ segment_texts <- function(x, pattern = NULL, valuetype = "regex",
     
     if (is.null(pattern)) {
         
-        if (what == "tokens") {
-            temp <- as.list(tokens(x, ...))
-        } else if (what == "sentences") {
+        # if (what == "tokens") {
+        #     temp <- as.list(tokens(x, ...))
+        # } else 
+        if (what == "sentences") {
             temp <- as.list(tokens(x, what = "sentence", ...))
         }
         
@@ -229,9 +246,11 @@ segment_texts <- function(x, pattern = NULL, valuetype = "regex",
         temp <- stri_trim_both(x)
         if (valuetype == "fixed") {
             if (pattern_position == "after") {
-                temp <- stri_replace_all_fixed(temp, pattern, stri_c(pattern, "\uE000"))
+                temp <- stri_replace_all_fixed(temp, pattern, 
+                                               stri_c(pattern, "\uE000"))
             } else {
-                temp <- stri_replace_all_fixed(temp, pattern, stri_c("\uE000", pattern))
+                temp <- stri_replace_all_fixed(temp, pattern, 
+                                               stri_c("\uE000", pattern))
             }
         } else {
             if (pattern_position == "after") {
@@ -240,12 +259,14 @@ segment_texts <- function(x, pattern = NULL, valuetype = "regex",
                 temp <- stri_replace_all_regex(temp, pattern, "\uE000$0")
             }
         }
-        temp <- stri_split_fixed(temp, pattern = "\uE000", omit_empty = omit_empty)
+        temp <- stri_split_fixed(temp, pattern = "\uE000", 
+                                 omit_empty = omit_empty)
     }
     
-    result <- data.frame(texts = unlist(temp, use.names = FALSE), stringsAsFactors = FALSE)
+    result <- data.frame(texts = unlist(temp, use.names = FALSE), 
+                         stringsAsFactors = FALSE)
     result$docid <- rep(seq_len(length(temp)), lengths(temp))
-    if (!is.null(docname)) result$docname = rep(docname, lengths(temp))
+    if (!is.null(docname)) result$docname <- rep(docname, lengths(temp))
     
     if (!is.null(pattern)) {    
         if (extract_pattern) {
@@ -255,16 +276,20 @@ segment_texts <- function(x, pattern = NULL, valuetype = "regex",
                 result$pattern <- stri_extract_first_regex(result$texts, pattern)
             }
             if (pattern_position == "after") {
-                result$texts <- stri_replace_last_fixed(result$texts, result$pattern, '', vectorize_all = TRUE)
+                result$texts <- stri_replace_last_fixed(result$texts, 
+                                                        result$pattern, '', 
+                                                        vectorize_all = TRUE)
             } else {
-                result$texts <- stri_replace_first_fixed(result$texts, result$pattern, '', vectorize_all = TRUE)
+                result$texts <- stri_replace_first_fixed(result$texts, 
+                                                         result$pattern, '', 
+                                                         vectorize_all = TRUE)
             }
         }
     }
     
     result$texts <- stri_trim_both(result$texts)
     result <- result[!is.na(result$texts),]
-    if (omit_empty) result <- result[result$texts != '',] # remove empty documents 
+    if (omit_empty) result <- result[result$texts != '',] # remove empty docs
     result$segid <- unlist(lapply(rle(result$docid)$lengths, seq_len))
 
     if (!is.null(docname)) {

@@ -23,7 +23,11 @@ fcm_compress <- function(x) {
     UseMethod("fcm_compress")
 }
 
-#' @noRd
+#' @export
+fcm_compress.default <- function(x) {
+    stop(friendly_class_undefined_message(class(x), "fcm_compress"))
+}
+
 #' @export
 fcm_compress.fcm <- function(x) {
     if (!is.fcm(x))
@@ -34,12 +38,13 @@ fcm_compress.fcm <- function(x) {
     attrs <- attributes(x)
     x <- dfm_compress(x, margin = "both")
     result <- new("fcm", as(x, 'dgCMatrix'), count = attrs$count,
-                  context = attrs$context, window = attrs$window, weights = attrs$weights, tri = attrs$tri)
+                  context = attrs$context, window = attrs$window,
+                  weights = attrs$weights, tri = attrs$tri)
     names(result@Dimnames) <- c("features", "features")
     return(result)
 } 
 
-#' sort an fcm in alphabetical order of the features
+#' Sort an fcm in alphabetical order of the features
 #' 
 #' Sorts an \link{fcm} in alphabetical order of the features.
 #' 
@@ -64,8 +69,12 @@ fcm_compress.fcm <- function(x) {
 fcm_sort <- function(x) {
     UseMethod("fcm_sort")    
 }
-    
-#' @noRd
+
+#' @export
+fcm_sort.default <- function(x) {
+    stop(friendly_class_undefined_message(class(x), "fcm_sort"))
+}
+
 #' @export
 fcm_sort.fcm <- function(x) {
     attrs <- attributes(x)
@@ -95,22 +104,35 @@ fcm_sort.fcm <- function(x) {
 fcm_select <- function(x, pattern = NULL, selection = c("keep", "remove"), 
                        valuetype = c("glob", "regex", "fixed"),
                        case_insensitive = TRUE,
-                       verbose = TRUE, ...) {
+                       verbose = quanteda_options("verbose"), ...) {
     UseMethod("fcm_select")
 }
 
-#' @noRd
 #' @export
-fcm_select.fcm <- function(x, pattern = NULL, selection = c("keep", "remove"), 
+fcm_select.default <- function(x, pattern = NULL, 
+                               selection = c("keep", "remove"), 
+                               valuetype = c("glob", "regex", "fixed"),
+                               case_insensitive = TRUE,
+                               verbose = quanteda_options("verbose"), ...) {
+    stop(friendly_class_undefined_message(class(x), "fcm_select"))
+}
+
+#' @export
+fcm_select.fcm <- function(x, pattern = NULL, 
+                           selection = c("keep", "remove"), 
                            valuetype = c("glob", "regex", "fixed"),
                            case_insensitive = TRUE,
-                           verbose = TRUE, ...) {
+                           verbose = quanteda_options("verbose"), ...) {
     
     attrs <- attributes(x)
-    x <- t(dfm_select(x, pattern, selection, valuetype, case_insensitive, verbose = verbose, ...))
-    x <- t(dfm_select(x, pattern, selection, valuetype, case_insensitive, verbose = FALSE, ...))
+    x <- t(dfm_select(x, pattern, selection, valuetype, 
+                      case_insensitive, verbose = verbose, ...))
+    x <- t(dfm_select(x, pattern, selection, valuetype, 
+                      case_insensitive, verbose = FALSE, ...))
     result <- new("fcm", as(x, 'dgCMatrix'), count = attrs$count,
-                  context = attrs$context, window = attrs$window, weights = attrs$weights, tri = attrs$tri)
+                  context = attrs$context, 
+                  window = attrs$window, 
+                  weights = attrs$weights, tri = attrs$tri)
     names(result@Dimnames) <- c("features", "features")
     return(result)
 }
@@ -122,7 +144,11 @@ fcm_remove <- function(x, pattern = NULL, ...) {
     UseMethod("fcm_remove")
 }
 
-#' @noRd
+#' @export
+fcm_remove.default <- function(x, pattern = NULL, ...) {
+    stop(friendly_class_undefined_message(class(x), "fcm_remove"))
+}
+
 #' @export
 fcm_remove.fcm <- function(x, pattern = NULL, ...) {
     fcm_select(x, pattern, selection = "remove", ...)
@@ -132,6 +158,11 @@ fcm_remove.fcm <- function(x, pattern = NULL, ...) {
 #' @export
 fcm_keep <- function(x, pattern = NULL, ...) {
     UseMethod("fcm_keep")
+}
+
+#' @export
+fcm_keep.default <- function(x, pattern = NULL, ...) {
+    stop(friendly_class_undefined_message(class(x), "fcm_keep"))
 }
 
 #' @noRd

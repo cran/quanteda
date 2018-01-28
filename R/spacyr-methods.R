@@ -3,7 +3,7 @@
 ### spacy_parsed objects
 ###
 
-#' extensions for and from spacy_parse objects
+#' Extensions for and from spacy_parse objects
 #' 
 #' These functions provide \pkg{quanteda} methods for \pkg{spacyr} objects, and
 #' also extend \link[spacyr]{spacy_parse} to work with \link{corpus} objects.
@@ -79,7 +79,7 @@ ntoken.spacyr_parsed <- function(x, ...) {
 #' @noRd
 #' @export
 ntype.spacyr_parsed <- function(x, ...) {
-    sapply(split(x$token, x$doc_id), function(y) length(unique(y)))
+    vapply(split(x$token, x$doc_id), function(y) length(unique(y)), numeric(1))
 }
 
 #' @export

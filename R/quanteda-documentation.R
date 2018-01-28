@@ -68,11 +68,11 @@
 #'   
 #' @section Source code and additional information:
 #' 
-#' \url{http://github.com/kbenoit/quanteda}
+#' \url{http://github.com/quanteda/quanteda}
 #' @useDynLib quanteda, .registration = TRUE  
 "_PACKAGE"
 
-#' pattern matching using valuetype
+#' Pattern matching using valuetype
 #' 
 #' Pattern matching in \pkg{quanteda} using the \code{valuetype} argument.
 #' @param valuetype the type of pattern matching: \code{"glob"} for 
@@ -105,7 +105,7 @@
 #' @keywords internal
 NULL
 
-#' pattern for feature, token and keyword matching
+#' Pattern for feature, token and keyword matching
 #' 
 #' Pattern(s) for use in matching Feature, tokens, and keywords through a
 #' \link{valuetype} pattern.
@@ -163,7 +163,7 @@ NULL
 #' @keywords internal
 NULL
 
-#' grouping variable(s) for various functions
+#' Grouping variable(s) for various functions
 #' 
 #' Groups for aggregation by various functions that take grouping options. 
 #' Groups can be the name(s) of document variables (as a character vector), or

@@ -1,4 +1,4 @@
-#' randomly sample documents or features from a dfm
+#' Randomly sample documents or features from a dfm
 #' 
 #' Sample randomly from a dfm object, from documents or features.
 #' @param x the dfm object whose documents or features will be sampled
@@ -24,7 +24,12 @@ dfm_sample <- function(x, size = ndoc(x), replace = FALSE, prob = NULL,
     UseMethod("dfm_sample")
 }
 
-#' @noRd
+#' @export
+dfm_sample.default <- function(x, size = ndoc(x), replace = FALSE, prob = NULL, 
+                               margin = c("documents", "features")) {
+    stop(friendly_class_undefined_message(class(x), "dfm_sample"))
+}
+    
 #' @export
 dfm_sample.dfm <- function(x, size = ndoc(x), replace = FALSE, prob = NULL, 
                            margin = c("documents", "features")) {
@@ -36,10 +41,9 @@ dfm_sample.dfm <- function(x, size = ndoc(x), replace = FALSE, prob = NULL,
             stop("size cannot exceed the number of documents (", ndoc(x), ")")
         x <- x[sample(ndoc(x), size, replace, prob), ]
     } else if (margin == "features") {
-        if (size > nfeature(x))
-            stop("size cannot exceed the number of features (", nfeature(x), ")")
-        x <- x[, sample(nfeature(x), size, replace, prob)]
+        if (size > nfeat(x))
+            stop("size cannot exceed the number of features (", nfeat(x), ")")
+        x <- x[, sample(nfeat(x), size, replace, prob)]
     } 
     x
 }
-

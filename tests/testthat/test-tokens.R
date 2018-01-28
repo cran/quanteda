@@ -97,28 +97,6 @@ test_that("test dfm with padded tokens, padding = TRUE", {
                                0, 0, 0, 0, 0, 0), nrow = 3, byrow = TRUE))
 })
 
-test_that("test verious functions with padded tokens, padding = FALSE", {
-    toks <- tokens(c(doc1 = 'A b c d E f g',
-                     doc2 = 'a b c g'))
-    toks3 <- tokens_remove(toks, c('b', 'e'), padding = FALSE)
-    expect_equivalent(nfeature(toks3), 6)
-    expect_equivalent(nfeature(tokens_tolower(toks3)), 5)
-    expect_equivalent(nfeature(tokens_toupper(toks3)), 5)
-    expect_equivalent(as.character(toks3),
-                      c("A", "c", "d", "f", "g", "a", "c", "g"))
-})
-
-test_that("test verious functions with padded tokens, padding = TRUE", {
-    toks <- tokens(c(doc1 = 'A b c d E f g',
-                     doc2 = 'a b c g'))
-    toks3 <- tokens_remove(toks, c('b', 'e'), padding = TRUE)
-    expect_equivalent(nfeature(toks3), 7)
-    expect_equivalent(nfeature(tokens_tolower(toks3)), 6)
-    expect_equivalent(nfeature(tokens_toupper(toks3)), 6)
-    expect_equivalent(as.character(toks3),
-                      c("A", "", "c", "d", "", "f", "g", "a", "", "c", "g"))
-})
-
 test_that("docnames works for tokens", {
     expect_equal(names(data_char_ukimmig2010),
                  docnames(tokens(data_char_ukimmig2010)))
@@ -174,7 +152,7 @@ test_that("types attribute is a character vector", {
 test_that("remove_url works as expected", {
     txt <- c("The URL was http://t.co/something.",
              "The URL was http://quanteda.io",
-             "https://github.com/kbenoit/quanteda/issue/1 is another URL")
+             "https://github.com/quanteda/quanteda/issue/1 is another URL")
     toks <- tokens(txt, remove_url = TRUE)
     expect_equal(
         as.list(toks),
@@ -202,7 +180,7 @@ test_that("remove_punct and remove_twitter interact correctly, #607", {
     )
     # remove_twitter should be inactive if remove_punct is FALSE
     expect_equal(
-        as.character(tokens(txt, what = "word", remove_punct = FALSE, remove_twitter = TRUE)),
+        suppressWarnings(as.character(tokens(txt, what = "word", remove_punct = FALSE, remove_twitter = TRUE))),
         as.character(tokens(txt, what = "word", remove_punct = FALSE, remove_twitter = FALSE))
     )
     expect_warning(
@@ -485,11 +463,4 @@ test_that("assignment operators are disabled for tokens object", {
     
     expect_error(toks[[1]] <- c(6, 100, 'z'), 'assignment to tokens objects is not allowed')
     expect_error(toks[1] <- list(c(6, 100, 'z')), 'assignment to tokens objects is not allowed')
-})
-
-test_that("test new as.tokens methods", {
-    expect_error(
-        as.tokens(c(1, 2, 3)),
-        "as.tokens\\(\\) only works on.*list"
-    )   
 })

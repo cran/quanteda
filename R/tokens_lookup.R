@@ -1,4 +1,4 @@
-#' apply a dictionary to a tokens object
+#' Apply a dictionary to a tokens object
 #' 
 #' Convert tokens into equivalence classes defined by values of a dictionary 
 #' object.
@@ -10,7 +10,7 @@
 #'   describe lower nesting levels.  Values may be combined, even if these 
 #'   levels are not contiguous, e.g. `levels = c(1:3)` will collapse the second 
 #'   level into the first, but record the third level (if present) collapsed
-#'   below the first.  (See examples.)
+#'   below the first (see examples).
 #' @inheritParams valuetype
 #' @param case_insensitive ignore the case of dictionary values if \code{TRUE} 
 #'   uppercase to distinguish them from other features
@@ -23,6 +23,8 @@
 #'   otherwise, replace values in dictionary with keys while leaving other 
 #'   features unaffected
 #' @param verbose print status messages if \code{TRUE}
+#' @keywords tokens
+#' @seealso tokens_replace
 #' @examples
 #' toks <- tokens(data_corpus_inaugural)
 #' dict <- dictionary(list(country = "united states", 
@@ -68,7 +70,17 @@ tokens_lookup <- function(x, dictionary, levels = 1:5,
     UseMethod("tokens_lookup")    
 }
 
-#' @noRd
+#' @export
+tokens_lookup.default <- function(x, dictionary, levels = 1:5,
+                                 valuetype = c("glob", "regex", "fixed"), 
+                                 case_insensitive = TRUE,
+                                 capkeys = !exclusive,
+                                 exclusive = TRUE,
+                                 nomatch = NULL,
+                                 verbose = quanteda_options("verbose")) {
+    stop(friendly_class_undefined_message(class(x), "tokens_lookup"))
+}
+
 #' @export
 tokens_lookup.tokens <- function(x, dictionary, levels = 1:5,
                           valuetype = c("glob", "regex", "fixed"), 
@@ -77,7 +89,6 @@ tokens_lookup.tokens <- function(x, dictionary, levels = 1:5,
                           exclusive = TRUE,
                           nomatch = NULL,
                           verbose = quanteda_options("verbose")) {
-
     if (!is.tokens(x))
         stop("x must be a tokens object")
     
@@ -90,9 +101,8 @@ tokens_lookup.tokens <- function(x, dictionary, levels = 1:5,
     
     # Generate all combinations of type IDs
     values_id <- list()
-    keys_id <- c()
+    keys_id <- integer()
     types <- types(x)
-    
     
     if (verbose) 
         catm("applying a dictionary consisting of ", length(dictionary), " key", 
@@ -105,6 +115,7 @@ tokens_lookup.tokens <- function(x, dictionary, levels = 1:5,
         values_id <- c(values_id, values_temp)
         keys_id <- c(keys_id, rep(h, length(values_temp)))
     }
+    
     if (capkeys) {
         keys <- char_toupper(names(dictionary))
     } else {

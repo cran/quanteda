@@ -2,7 +2,7 @@
 % Please edit documentation in R/dfm.R
 \name{dfm}
 \alias{dfm}
-\title{create a document-feature matrix}
+\title{Create a document-feature matrix}
 \usage{
 dfm(x, tolower = TRUE, stem = FALSE, select = NULL, remove = NULL,
   dictionary = NULL, thesaurus = NULL, valuetype = c("glob", "regex",
@@ -70,6 +70,9 @@ The default behavior for \code{remove}/\code{select} when
   the texts with ngrams, then remove the features to be ignored, and then 
   construct the dfm using this modified tokenization object.  See the code 
   examples for an illustration.
+  
+  To select on and match the features of a another \link{dfm}, \code{x} must
+  also be a \link{dfm}.
 }
 \note{
 When \code{x} is a \link{dfm}, \code{groups} provides a convenient and

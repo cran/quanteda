@@ -1,4 +1,4 @@
-#' bootstrap a dfm
+#' Bootstrap a dfm
 #' 
 #' Create an array of resampled dfms.
 #' @param x a character or \link{corpus} object
@@ -26,12 +26,18 @@ bootstrap_dfm <- function(x, n = 10, ..., verbose = quanteda_options("verbose"))
     UseMethod("bootstrap_dfm")
 }
 
+#' @export
+bootstrap_dfm.default <- function(x, n = 10, ..., verbose = quanteda_options("verbose")) {
+    stop(friendly_class_undefined_message(class(x), "bootstrap_dfm"))
+}
+
 #' @noRd
 #' @export
 bootstrap_dfm.corpus <- function(x, n = 10, ..., verbose = quanteda_options("verbose")) {
     if (verbose) 
         message("Segmenting the ", 
-                stringi::stri_replace_all_fixed(as.character(sys.calls()[2][[1]])[1], "bootstrap_dfm.", ""),
+                stri_replace_all_fixed(as.character(sys.calls()[2][[1]])[1], 
+                                       "bootstrap_dfm.", ""),
                 " into sentences...", appendLF = FALSE)
     corp_sentences <- corpus_reshape(x, to = "sentences")
     if (verbose) message("done.")

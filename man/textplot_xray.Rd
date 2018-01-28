@@ -2,7 +2,7 @@
 % Please edit documentation in R/textplot_xray.R
 \name{textplot_xray}
 \alias{textplot_xray}
-\title{plot the dispersion of key word(s)}
+\title{Plot the dispersion of key word(s)}
 \usage{
 textplot_xray(..., scale = c("absolute", "relative"), sort = FALSE)
 }
@@ -48,4 +48,4 @@ g + aes(color = keyword) + scale_color_manual(values = c('red', 'blue'))
 \author{
 Adam Obeng
 }
-\keyword{plot}
+\keyword{textplot}

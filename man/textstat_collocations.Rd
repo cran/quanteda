@@ -2,8 +2,9 @@
 % Please edit documentation in R/textstat_collocations.R
 \name{textstat_collocations}
 \alias{textstat_collocations}
+\alias{collocations}
 \alias{is.collocations}
-\title{identify and score multi-word expressions}
+\title{Identify and score multi-word expressions}
 \usage{
 textstat_collocations(x, method = "lambda", size = 2, min_count = 2,
   smoothing = 0.5, tolower = TRUE, ...)
@@ -36,8 +37,12 @@ to be scored}
 is not a \link{tokens} object already}
 }
 \value{
-\code{textstat_collocations} returns a data.frame of collocations and their
-  scores and statistics.
+\code{textstat_collocations} returns a data.frame of collocations and
+  their scores and statistics. This consists of the collocations, their
+  counts, length, and \eqn{\lambda} and \eqn{z} statistics.  When \code{size}
+  is a vector, then \code{count_nested} counts the lower-order collocations
+  that occur within a higher-order collocation (but this does not affect the
+  statistics).
 
 \code{is.collocation} returns \code{TRUE} if the object is of class
   \code{collocations}, \code{FALSE} otherwise.
@@ -79,7 +84,7 @@ smoothing constant \code{smoothing}. The \eqn{n_{i}} are the counts in a
 \eqn{\lambda}: The \eqn{K}-way interaction parameter in the saturated
 loglinear model fitted to the \eqn{n_{i}}. It can be calculated as
 
-\deqn{\lambda  = \sum_{i=1}^{M} (-1)^{K-b_{i}} \log n_{i}}
+\deqn{\lambda  = \sum_{i=1}^{M} (-1)^{K-b_{i}} * log n_{i}}
 
 where \eqn{b_{i}} is the number of the elements of \eqn{c_{i}} which are
 equal to 1.
@@ -104,6 +109,13 @@ toks2 <- tokens_select(toks2, "^([A-Z][a-z\\\\-]{2,})", valuetype = "regex",
                        case_insensitive = FALSE, padding = TRUE)
 seqs <- textstat_collocations(toks2, size = 3, tolower = FALSE)
 head(seqs, 10)
+
+# vectorized size
+txt <- c(". . . . a b c . . a b c . . . c d e",
+         "a b . . a b . . a b . . a b . a b",
+         "b c d . . b c . b c . . . b c")
+textstat_collocations(txt, size = 2:3)
+
 }
 \references{
 Blaheta, D., & Johnson, M. (2001). 
@@ -115,5 +127,4 @@ Blaheta, D., & Johnson, M. (2001).
 Kenneth Benoit, Jouni Kuha, Haiyan Wang, and Kohei Watanabe
 }
 \keyword{collocations}
-\keyword{experimental}
 \keyword{textstat}

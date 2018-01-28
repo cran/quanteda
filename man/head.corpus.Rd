@@ -3,7 +3,7 @@
 \name{head.corpus}
 \alias{head.corpus}
 \alias{tail.corpus}
-\title{return the first or last part of a corpus}
+\title{Return the first or last part of a corpus}
 \usage{
 \method{head}{corpus}(x, n = 6L, ...)
 
@@ -12,9 +12,9 @@
 \arguments{
 \item{x}{a dfm object}
 
-\item{n}{a single integer.  If positive, the number of documents for the resulting object: 
-number of first/last documents for the dfm.  If negative, all but the n 
-last/first number of documents of x.}
+\item{n}{a single integer.  If positive, the number of documents for the
+resulting object: number of first/last documents for the dfm.  If negative,
+all but the n last/first number of documents of x.}
 
 \item{...}{additional arguments passed to other functions}
 }

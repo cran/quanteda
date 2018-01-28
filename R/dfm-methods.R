@@ -4,7 +4,7 @@
 ## Ken Benoit
 ####################################################################
 
-#' get the feature labels from a dfm
+#' Get the feature labels from a dfm
 #' 
 #' Get the features from a document-feature matrix, which are stored as the
 #' column names of the \link{dfm} object.
@@ -60,8 +60,7 @@ docnames.dfm <- function(x) {
 docnames.NULL <- function(x) {
     NULL
 }
-
-#' coercion and checking functions for dfm objects
+#' Coercion and checking functions for dfm objects
 #' 
 #' Check for a dfm, or convert
 #' a matrix into a dfm.
@@ -81,6 +80,11 @@ is.dfm <- function(x) {
 #' @export
 as.dfm <- function(x) {
     UseMethod("as.dfm")
+}
+
+#' @export
+as.dfm.default <- function(x) {
+    stop(friendly_class_undefined_message(class(x), "as.dfm"))
 }
 
 #' @noRd
@@ -128,9 +132,9 @@ as_dfm_constructor <- function(x) {
     new("dfm", x)
 }
 
-#' identify the most frequent features in a dfm
+#' Identify the most frequent features in a dfm
 #' 
-#' List the most (or least) frequently occuring features in a \link{dfm}, either
+#' List the most (or least) frequently occurring features in a \link{dfm}, either
 #' as a whole or separated by document.
 #' @name topfeatures
 #' @param x the object whose features will be returned
@@ -144,7 +148,8 @@ as_dfm_constructor <- function(x) {
 #' @return A named numeric vector of feature counts, where the names are the 
 #'   feature labels, or a list of these if \code{groups} is given.
 #' @examples
-#' mydfm <- dfm(corpus_subset(data_corpus_inaugural, Year > 1980), remove_punct = TRUE)
+#' mydfm <- corpus_subset(data_corpus_inaugural, Year > 1980) %>%
+#'     dfm(remove_punct = TRUE)
 #' mydfm_nostopw <- dfm_remove(mydfm, stopwords("english"))
 #' 
 #' # most frequent features
@@ -163,16 +168,25 @@ as_dfm_constructor <- function(x) {
 #' # features by document frequencies
 #' tail(topfeatures(mydfm, scheme = "docfreq", n = 200))
 #' @export
-topfeatures <- function(x, n = 10, decreasing = TRUE, scheme = c("count", "docfreq"), groups = NULL) {
+topfeatures <- function(x, n = 10, decreasing = TRUE, 
+                        scheme = c("count", "docfreq"), groups = NULL) {
     UseMethod("topfeatures")
+}
+
+#' @export
+topfeatures.default <- function(x, n = 10, decreasing = TRUE, 
+                                scheme = c("count", "docfreq"), groups = NULL) {
+    stop(friendly_class_undefined_message(class(x), "topfeatures"))
 }
 
 #' @export
 #' @noRd
 #' @importFrom stats quantile
-topfeatures.dfm <- function(x, n = 10, decreasing = TRUE,  scheme = c("count", "docfreq"), groups = NULL) {
+topfeatures.dfm <- function(x, n = 10, decreasing = TRUE,  
+                            scheme = c("count", "docfreq"), groups = NULL) {
     
     x <- as.dfm(x)
+    if (!nfeat(x) || !ndoc(x)) return(numeric())
     scheme <- match.arg(scheme)
     
     if (!is.null(groups)) {
@@ -186,7 +200,7 @@ topfeatures.dfm <- function(x, n = 10, decreasing = TRUE,  scheme = c("count", "
         return(result)
     }
     
-    if (n > nfeature(x)) n <- nfeature(x)
+    if (n > nfeat(x)) n <- nfeat(x)
     
     if (scheme == "count") {
         wght <- colSums(x)
@@ -212,7 +226,7 @@ topfeatures.dfm <- function(x, n = 10, decreasing = TRUE,  scheme = c("count", "
 }
 
 
-#' compute the sparsity of a document-feature matrix
+#' Compute the sparsity of a document-feature matrix
 #'
 #' Return the proportion of sparseness of a document-feature matrix, equal
 #' to the proportion of cells that have zero counts.
@@ -223,12 +237,23 @@ topfeatures.dfm <- function(x, n = 10, decreasing = TRUE,  scheme = c("count", "
 #' sparsity(dfm_trim(inaug_dfm, min_count = 5))
 #' @export
 sparsity <- function(x) {
-    if (!is.dfm(x))
-        stop("sparsity is only defined for dfm objects")
+    UseMethod("sparsity")
+}
+
+#' @export
+sparsity.default <- function(x) {
+    stop(friendly_class_undefined_message(class(x), "sparsity"))
+}
+
+#' @export
+sparsity.dfm <- function(x) {
     (1 - length(x@x) / prod(dim(x)))
 }
 
-#' internal functions for dfm objects
+
+# ------------ Internal --------
+
+#' Internal functions for dfm objects
 #' 
 #' Internal function documentation for \link{dfm} objects.
 #' @name dfm-internal

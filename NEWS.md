@@ -1,17 +1,48 @@
 # quanteda 0.99
 
+## Changes since v0.99.22
+
+### New Features
+
+* Added `vertex_labelfont` to `textplot_network()`.
+* Added `textmodel_lsa()` for Latent Semantic Analysis models.  
+* Added `textmodel_affinity()` for the Perry and Benoit (2017) class affinity scaling model.
+* Added Chinese stopwords.
+* Added a pkgdown vignette for applications in the Chinese language.
+* Added `textplot_network()` function.
+* The `stopwords()` function and the associated internal data object `data_char_stopwords` have been removed from **quanteda**, and replaced by equivalent functionality in the **stopwords** package.
+* Added `tokens_subset()`, now consistent with other `*_subset()` functions (#1149).
+
+### Bug fixes and stability enhancements
+
+* Performance has been improved for `fcm()` and for `textmodel_wordfish()`.
+* `dfm()` now correctly passes through all `...` arguments to `tokens()`.  (#1121)
+* All `dfm_*()` functions now work correctly with empty dfm objects.  (#1133)
+* Fixed a bug in `dfm_weight()` for named weight vectors (#1150)
+* Fixed a bug preventing `textplot_influence()` from working (#1116).
+
+### Behaviour Changes
+
+* The convenience wrappers to `convert()` are simplified and no longer exported.  To convert a dfm, `convert()` is now the only official function.
+* `nfeat()` replaces `nfeature()`, which is now deprecated. (#1134)
+* `textmodel_wordshoal()` has been removed, and relocated to a new package (**wordshoal**).
+* The generic wrapper function `textmodel()`, which used to be a gateway to specific `textmodel_*()` functions, has been removed.
+* (Most of) the `textmodel_*()` have been reimplemented to make their behaviour consistent with the `lm/glm()` families of models, including especially how the `predict`, `summary`, and `coef` methods work (#1007, #108). 
+* The GitHub home for the repository has been moved to https://github.com/quanteda/quanteda.
+
+
 ## Changes since v0.99.12
 
 ### New Features
 
 * `tokens_segment()` has a new `window` argument, permitting selection within an asymmetric window around the `pattern` of selection. (#521)
 * `tokens_replace()` now allows token types to be substituted directly and quickly. 
+* `textmodel_affinity()` now adds functionality to fit the Perry and Benoit (2017) class affinity model.
 * Added a `spacy_parse` method for corpus objects.  Also restored quanteda methods for **spacyr** `spacy_parsed` objects.
 
 ### Bug fixes and stability enhancements
 
 * Improved documentation for `textmodel_nb()` (#1010), and made output quantities from the fitted NB model regular matrix objects instead of **Matrix** classes.
-
 
 ### Behaviour Changes
 
@@ -26,6 +57,7 @@
 ### New Features
 
 * Added methods for changing the docnames of tokens and dfm objects (#987).
+* Added new function `textmodel_lsa()` for Latent Semantic Analysis.
 
 ### Bug fixes and stability enhancements
 

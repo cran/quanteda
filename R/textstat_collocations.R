@@ -1,21 +1,4 @@
-#' deprecated function names for textstat_collocations
-#' 
-#' Use \code{\link{textstat_collocations}} instead.
-#' @param x a character, \link{corpus}, \link{tokens} object
-#' @param ... other arguments passed to  \code{\link{textstat_collocations}}
-#' @export
-#' @seealso \link{textstat_collocations}
-#' @keywords collocations internal deprecated
-collocations <- function(x, ...) {
-    .Deprecated("textstat_collocations")
-    UseMethod("textstat_collocations")
-}
-
-#' @rdname collocations
-#' @export
-sequences <- collocations
-
-#' identify and score multi-word expressions
+#' Identify and score multi-word expressions
 #' 
 #' Identify and score multi-word expressions, or adjacent fixed-length collocations, from text.  
 #' 
@@ -75,7 +58,7 @@ sequences <- collocations
 #' \eqn{\lambda}: The \eqn{K}-way interaction parameter in the saturated
 #' loglinear model fitted to the \eqn{n_{i}}. It can be calculated as
 #' 
-#' \deqn{\lambda  = \sum_{i=1}^{M} (-1)^{K-b_{i}} \log n_{i}}
+#' \deqn{\lambda  = \sum_{i=1}^{M} (-1)^{K-b_{i}} * log n_{i}}
 #' 
 #' where \eqn{b_{i}} is the number of the elements of \eqn{c_{i}} which are
 #' equal to 1.
@@ -83,11 +66,16 @@ sequences <- collocations
 #' Wald test \eqn{z}-statistic \eqn{z} is calculated as:
 #' 
 #' \deqn{z = \frac{\lambda}{[\sum_{i=1}^{M} n_{i}^{-1}]^{(1/2)}}}
-#' 
-#' @return \code{textstat_collocations} returns a data.frame of collocations and their
-#'   scores and statistics.
+#'
+#' @return \code{textstat_collocations} returns a data.frame of collocations and
+#'   their scores and statistics. This consists of the collocations, their
+#'   counts, length, and \eqn{\lambda} and \eqn{z} statistics.  When \code{size}
+#'   is a vector, then \code{count_nested} counts the lower-order collocations
+#'   that occur within a higher-order collocation (but this does not affect the
+#'   statistics).
 #' @export
-#' @keywords textstat collocations experimental
+#' @keywords textstat collocations
+#' @aliases collocations
 #' @author Kenneth Benoit, Jouni Kuha, Haiyan Wang, and Kohei Watanabe
 #' @examples
 #' txts <- data_corpus_inaugural[1:2]
@@ -101,134 +89,109 @@ sequences <- collocations
 #'                        case_insensitive = FALSE, padding = TRUE)
 #' seqs <- textstat_collocations(toks2, size = 3, tolower = FALSE)
 #' head(seqs, 10)
-textstat_collocations <- function(x, method = "lambda", size = 2, min_count = 2, smoothing = 0.5,  tolower = TRUE, ...) { #show_counts = FALSE, ...) {
+#' 
+#' # vectorized size
+#' txt <- c(". . . . a b c . . a b c . . . c d e",
+#'          "a b . . a b . . a b . . a b . a b",
+#'          "b c d . . b c . b c . . . b c")
+#' textstat_collocations(txt, size = 2:3)
+#' 
+textstat_collocations <- function(x, method = "lambda", 
+                                  size = 2, 
+                                  min_count = 2, 
+                                  smoothing = 0.5, 
+                                  tolower = TRUE, 
+                                  ...) { 
     UseMethod("textstat_collocations")
 }
 
-
-#' @noRd
 #' @export
-#' @importFrom stats na.omit
-textstat_collocations.tokens <- function(x, method = "lambda", size = 2, min_count = 2, smoothing = 0.5, tolower = TRUE, ...) { #show_counts = FALSE, ...) {
+textstat_collocations.default <- function(x, method = "lambda", 
+                                         size = 2, 
+                                         min_count = 2, 
+                                         smoothing = 0.5, 
+                                         tolower = TRUE, 
+                                         ...) {
+    stop(friendly_class_undefined_message(class(x), "textstat_collocations"))
+}
+    
 
-    #method <- match.arg(method, ("lambda", "lambda1", "lr", "chi2", "pmi") #, "dice", "gensim", "LFMD"))
+#' @importFrom stats na.omit
+#' @export
+textstat_collocations.tokens <- function(x, method = "lambda", 
+                                         size = 2, 
+                                         min_count = 2, 
+                                         smoothing = 0.5, 
+                                         tolower = TRUE, 
+                                         ...) {
+    check_dots(list(...), NULL)
+    
     method <- match.arg(method, c("lambda"))
     
     if (any(size == 1))
         stop("Collocation sizes must be larger than 1")
     if (any(size > 5))
-        warning("Computation for large collocations may take long time")
-
+        warning("Computation for large collocations may take long time", immediate. = TRUE)
+    
     # lower case if requested
     if (tolower) x <- tokens_tolower(x, keep_acronyms = TRUE)
     
     attrs <- attributes(x)
     types <- types(x)
     id_ignore <- unlist(regex2id("^\\p{P}+$", types, 'regex', FALSE), use.names = FALSE)
-    if (is.null(id_ignore)) id_ignore <- integer(0)
-    result <- qatd_cpp_sequences(x, types, id_ignore, min_count, size, 
-                                 if (method == "lambda1") "lambda1" else "lambda", 
-                                 smoothing)
-
+    if (is.null(id_ignore)) id_ignore <- integer()
+    result <- qatd_cpp_collocations(x, types, id_ignore, min_count, size, 
+                                    if (method == "lambda1") "lambda1" else "lambda", 
+                                    smoothing)
+    
     # compute z for lambda methods
-    lambda_index <- which(stri_startswith_fixed(names(result), "lambda"))
-    result["z"] <- result[lambda_index] / result[["sigma"]]
+    result$z <- result$lambda / result$sigma
+    result$sigma <- NULL
     # result$p <- 1 - stats::pnorm(result$z)
-    
-    # remove gensim and LFMD for now
-    result[c("gensim", "LFMD", "dice")] <- NULL
-    
-    # sort by decreasing z
-    result <- result[order(result[["z"]], decreasing = TRUE), ]
-
-    # # compute statistics that require expected counts
-    # if (method %in% c("all", "lr", "chi2", "pmi") | show_counts) {
-    #     # get observed counts and compute expected counts
-    #     # split the string into n00, n01, n10, etc
-    #     counts_n <- strsplit(result[, "observed_counts"], "_")
-    #     df_counts_n <- data.frame(t(sapply(counts_n, as.numeric)))
-    #     names(df_counts_n) <- make_count_names(size, "n")
-    #     # compute expected counts
-    #     df_counts_e <- get_expected_values(df_counts_n, size = size)
-    #     names(df_counts_e) <- make_count_names(size, "e")
-    #     # remove observed counts character
-    #     result <- result[, -which(names(result)=="observed_counts")]
-    #     
-    #     # "pmi_2", "chi2_2" and "G2_2" are verified, remove the result from cpp
-    #     result[c("pmi", "chi2", "G2")] <- NULL
-    #     
-    #     # recompute dice, pmi, G2, chi2
-    #     if (method %in% c("all", "lr"))
-    #         result["G2"] <- 2 * rowSums(df_counts_n * log(df_counts_n / df_counts_e))
-    #     if (method %in% c("all", "chi2"))
-    #         result["chi2"] <- rowSums((df_counts_n - df_counts_e)^2 / df_counts_e)
-    #     if (method %in% c("all", "pmi"))
-    #         result["pmi"] <- log(df_counts_n[[ncol(df_counts_n)]] / df_counts_e[[ncol(df_counts_e)]], base = 2)
-    # }
-
-    # remove other measures if not specified
-#    if (method == "lambda" | method == "lambda1")
-        result[c("pmi", "chi2", "G2", "sigma")] <- NULL
-    # if (!method %in% c("lambda", "lambda1", "all"))
-    #     result[c("lambda", "lambda1", "sigma", "z")] <- NULL
-    #if (method == "chi2") result[c("pmi", "G2")] <- NULL
-    #if (method == "lr") result[c("pmi", "chi2")] <- NULL
-    #if (method == "pmi") result[c("G2", "chi2")] <- NULL
-    
-    # reorder columns
-    result <- result[, stats::na.omit(match(c("collocation", "count", "length", "lambda", "lambda1", "sigma", "z", 
-                                              "G2", "G2_2", "chi2", "chi2_2", "pmi", "pmi_2"), 
-                                     names(result)))]
-    rownames(result) <- NULL
-    
-    # # add counts to output if requested
-    # if (show_counts) result <- cbind(result, df_counts_n, df_counts_e)
+    result <- result[order(result$z, decreasing = TRUE), ]
 
     # remove results whose counts are less than min_count
     result <- result[result$count >= min_count, ]
-    
     # tag attributes and class, and return
     attr(result, 'types') <- types
-    class(result) <- c("collocations", 'data.frame')
+    class(result) <- c('collocations', 'textstat', 'data.frame')
+    rownames(result) <- as.character(seq_len(nrow(result)))
     return(result)
 }
 
 
 #' @export
-textstat_collocations.corpus <- function(x, method = "lambda", size = 2, min_count = 2, smoothing = 0.5, tolower = TRUE, ...) {
-    textstat_collocations(tokens(x, ...), method = method, size = size, min_count = min_count, 
+textstat_collocations.corpus <- function(x, method = "lambda", 
+                                         size = 2, 
+                                         min_count = 2, 
+                                         smoothing = 0.5, 
+                                         tolower = TRUE, 
+                                         recursive = TRUE, ...) {
+    textstat_collocations(tokens(x, ...), method = method, size = size, 
+                          min_count = min_count, 
                           smoothing = smoothing, tolower = tolower)
 }
 
 #' @export
-textstat_collocations.character <- function(x, method = "lambda", size = 2, min_count = 2, smoothing = 0.5, tolower = TRUE, ...) {
-    textstat_collocations(corpus(x), method = method, size = size, min_count = min_count, 
+textstat_collocations.character <- function(x, method = "lambda", 
+                                            size = 2, 
+                                            min_count = 2, 
+                                            smoothing = 0.5, 
+                                            tolower = TRUE, 
+                                            recursive = TRUE, ...) {
+    textstat_collocations(corpus(x), method = method, size = size, 
+                          min_count = min_count, 
                           smoothing = smoothing, tolower = tolower, ...)
 }
 
 
 #' @rdname textstat_collocations
-#' @aliases is.collocations
 #' @export
 #' @return \code{is.collocation} returns \code{TRUE} if the object is of class
 #'   \code{collocations}, \code{FALSE} otherwise.
 is.collocations <- function(x) {
     "collocations" %in% class(x)
 }
-
-#  @method "[" collocations
-#  @export
-#  @noRd
-# "[.collocations" <- function(x, i = TRUE, j = TRUE, ...) {
-#     toks <- attr(x, 'tokens')
-#     x <- as.data.frame(x)[i, j, ...]
-#     attr(x, 'tokens') <- toks[i]
-#     class(x) <- c("collocations", 'data.frame')
-#     return(x)
-# }
- 
-# returns TRUE if the object is of class sequences, FALSE otherwise
-is.sequences <- function(x) "sequences" %in% class(x)
 
 # Internal Functions ------------------------------------------------------
 
@@ -271,7 +234,8 @@ get_expected_values <- function(df, size) {
         names(countsnum) <- names(counts)
         array_dimnames <- c(rep(list(c("0", "1")), size))
         names(array_dimnames) <- paste0("W", size:1)
-        counts_table <- array(countsnum, dim = rep(2, size), dimnames = array_dimnames)
+        counts_table <- array(countsnum, dim = rep(2, size), 
+                              dimnames = array_dimnames)
         counts_expected <- stats::loglin(counts_table,
                                          margin =  marginalfun(size),
                                          fit = TRUE, print = FALSE)$fit
@@ -282,6 +246,3 @@ get_expected_values <- function(df, size) {
     
     data.frame(t(expected_counts_list))
 }
-
-
-

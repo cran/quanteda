@@ -1,4 +1,4 @@
-#' create a document-feature matrix
+#' Create a document-feature matrix
 #' 
 #' Construct a sparse document-feature matrix, from a character, \link{corpus}, 
 #' \link{tokens}, or even other \link{dfm} object.
@@ -42,6 +42,9 @@
 #'   the texts with ngrams, then remove the features to be ignored, and then 
 #'   construct the dfm using this modified tokenization object.  See the code 
 #'   examples for an illustration.
+#'   
+#'   To select on and match the features of a another \link{dfm}, \code{x} must
+#'   also be a \link{dfm}.
 #' @return a \link{dfm-class} object
 #' @import Matrix
 #' @export
@@ -118,6 +121,11 @@ dfm <- function(x,
                 groups = NULL, 
                 verbose = quanteda_options("verbose"), 
                 ...) {
+
+    if (!is.dfm(x) && is.dfm(select)) {
+        stop("selection on a dfm is only available when x is a dfm")
+    }
+    
     dfm_env$START_TIME <- proc.time()
     object_class <- class(x)[1]
     if (object_class == "dfmSparse") object_class <- "dfm"
@@ -125,17 +133,16 @@ dfm <- function(x,
     UseMethod("dfm")
 }
 
+#' @rdname dfm
+#' @noRd
+#' @export
+dfm.default <- function(x, ...) {
+    stop(friendly_class_undefined_message(class(x), "dfm"))
+}
+
 # GLOBAL FOR dfm THAT FUNCTIONS CAN RESET AS NEEDED TO RECORD TIME ELAPSED
 dfm_env <- new.env()
 dfm_env$START_TIME <- NULL  
-
-# dfm function to check that any ellipsis arguments belong only to tokens formals
-# check_dfm_dots <-  function(dots, permissible_args = NULL) {
-#     if (length(dots) && any(!(names(dots)) %in% permissible_args))
-#         warning("Argument", ifelse(length(dots)>1, "s ", " "), names(dots), " not used.", 
-#                 noBreaks. = TRUE, call. = FALSE)
-# }
-
 
 
 #' @rdname dfm
@@ -152,15 +159,15 @@ dfm.character <- function(x,
                           groups = NULL,
                           verbose = quanteda_options("verbose"),
                           ...) {
-
-    dfm.tokens(tokens(corpus(x)),
+    
+    check_dots(list(...), names(formals('tokens')))
+    dfm.tokens(tokens(corpus(x), ...),
         tolower = tolower, 
         stem = stem, 
         select = select, remove = remove, 
         dictionary = dictionary, thesaurus = thesaurus, valuetype = valuetype, 
         groups = groups, 
-        verbose = verbose, 
-        ...)
+        verbose = verbose)
 }
 
 
@@ -178,14 +185,16 @@ dfm.corpus <- function(x,
                        groups = NULL, 
                        verbose = quanteda_options("verbose"),
                        ...) {
-    dfm.tokens(tokens(x),  
+    
+    check_dots(list(...), names(formals('tokens')))
+    dfm.tokens(tokens(x, ...),  
                tolower = tolower, 
                stem = stem, 
                select = select, remove = remove, 
-               dictionary = dictionary, thesaurus = thesaurus, valuetype = valuetype, 
+               dictionary = dictionary, thesaurus = thesaurus, 
+               valuetype = valuetype, 
                groups = groups, 
-               verbose = verbose,
-               ...)
+               verbose = verbose)
 }
     
 #' @noRd
@@ -202,7 +211,6 @@ dfm.tokens <- function(x,
                        groups = NULL, 
                        verbose = quanteda_options("verbose"), 
                        ...) {
-
     valuetype <- match.arg(valuetype)
     check_dots(list(...), names(formals('tokens')))
     
@@ -225,9 +233,9 @@ dfm.tokens <- function(x,
     if (verbose) {
         catm("   ... found ", 
              format(length(x), big.mark = ","), " document",
-             ifelse(length(x) > 1, "s", ""), ### replace with: ntoken()
+             ifelse(length(x) > 1, "s", ""), ### TODO: replace with: ntoken()
              ", ",
-             format(length(types(x)), big.mark = ","),  ### replace with: ntype()
+             format(length(types(x)), big.mark = ","),  # TODO: replace with: ntype()
              " feature",
              ifelse(length(types(x)) > 1, "s", ""),
              "\n", sep="")
@@ -251,7 +259,8 @@ dfm.tokens <- function(x,
     
     # use tokens_select for tokens objects
     if (!is.null(c(remove, select))) {
-        if (!is.null(remove) & !is.null(select)) stop("only one of select and remove may be supplied at once")
+        if (!is.null(remove) & !is.null(select)) 
+            stop("only one of select and remove may be supplied at once")
         if (verbose) catm("   ... ")
         x <- tokens_select(x, 
                            pattern = if (!is.null(remove)) remove else select,
@@ -320,10 +329,11 @@ dfm.dfm <- function(x,
     }
     
     if (!is.null(c(remove, select))) {
-        if (!is.null(remove) & !is.null(select)) stop("only one of select and remove may be supplied at once")
+        if (!is.null(remove) & !is.null(select)) 
+            stop("only one of select and remove may be supplied at once")
         if (verbose) catm("   ... ")
-        # if ngrams > 1 and remove or selct is specified, then convert these into a
-        # regex that will remove any ngram containing one of the words
+        # if ngrams > 1 and remove or selct is specified, then convert these 
+        # into a regex that will remove any ngram containing one of the words
         if (!identical(x@ngrams, 1L)) {
             remove <- make_ngram_pattern(remove, valuetype, x@concatenator)
             valuetype <- "regex"
@@ -337,13 +347,16 @@ dfm.dfm <- function(x,
     
     language <- quanteda_options("language_stemmer")
     if (stem) {
-        if (verbose) catm("   ... stemming features (", stri_trans_totitle(language), ")\n", sep="")
-        oldNfeature <- nfeature(x)
+        if (verbose) 
+            catm("   ... stemming features (", stri_trans_totitle(language), 
+                 ")\n", sep="")
+        oldNfeature <- nfeat(x)
         x <- dfm_wordstem(x, language)
         if (verbose) 
-            if (oldNfeature - nfeature(x) > 0) 
-                catm(", trimmed ", oldNfeature - nfeature(x), " feature variant",
-                     ifelse(oldNfeature - nfeature(x) != 1, "s", ""), "\n", sep = "")
+            if (oldNfeature - nfeat(x) > 0) 
+                catm(", trimmed ", oldNfeature - nfeat(x), " feature variant",
+                     ifelse(oldNfeature - nfeat(x) != 1, "s", ""), 
+                     "\n", sep = "")
     }
     
     # remove any NA named columns
@@ -351,8 +364,8 @@ dfm.dfm <- function(x,
         x <- x[, -which(naFeatures), drop = FALSE]
 
     if (verbose) 
-        catm("   ... created a", paste(format(dim(x), big.mark=",", trim = TRUE), 
-                                       collapse=" x "), 
+        catm("   ... created a", 
+             paste(format(dim(x), big.mark = ",", trim = TRUE), collapse = " x "), 
              "sparse dfm\n   ... complete. \nElapsed time:", 
              format((proc.time() - dfm_env$START_TIME)[3], digits = 3),
              "seconds.\n")

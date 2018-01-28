@@ -1,4 +1,4 @@
-#' combine documents in a dfm by a grouping variable
+#' Combine documents in a dfm by a grouping variable
 #' 
 #' Combine documents in a \link{dfm} by a grouping variable, which can also be 
 #' one of the \link{docvars} attached to the dfm. This is identical in 
@@ -35,19 +35,20 @@ dfm_group <- function(x, groups = NULL, fill = FALSE) {
     UseMethod("dfm_group")
 }
 
-#' @noRd
+#' @export
+dfm_group.default <- function(x, groups = NULL, fill = FALSE) {
+    stop(friendly_class_undefined_message(class(x), "dfm_group"))
+}
+    
 #' @export
 dfm_group.dfm <- function(x, groups = NULL, fill = FALSE) {
     
     x <- as.dfm(x)
-    if (is.character(groups) & all(groups %in% names(docvars(x)))) {
-        groups <- interaction(docvars(x)[, groups], drop = FALSE)
-    }
-    if (ndoc(x) != length(groups)) {
-        stop("groups must name docvars or provide data matching the documents in x\n")
-    }
-    if(!fill || !is.factor(groups))
-        groups <- factor(groups, levels = sort(unique(groups)))
+    if (!nfeat(x) || !ndoc(x)) return(x)
+    if (!is.factor(groups))
+        groups <- generate_groups(x, groups)
+    if (!fill)
+        groups <- droplevels(groups)
     x <- group_dfm(x, documents = groups, fill = fill)
     if (!is.null(groups))
         x <- x[as.character(levels(groups)),]
@@ -56,8 +57,8 @@ dfm_group.dfm <- function(x, groups = NULL, fill = FALSE) {
 }
 
 
+# ----- internal -------
 
-#
 # internal code to perform dfm compression and grouping
 # on features and/or documents
 group_dfm <- function(x, features = NULL, documents = NULL, fill = FALSE) {
@@ -82,8 +83,9 @@ group_dfm <- function(x, features = NULL, documents = NULL, fill = FALSE) {
             features <- factor(features, levels = features_unique)
         features_name <- as.character(features_unique)
         if (fill && !identical(levels(features), features_unique)) {
-            features_name <- c(features_name, setdiff(as.character(levels(features)), 
-                                                      as.character(features_unique)))
+            features_name <- 
+                c(features_name, setdiff(as.character(levels(features)), 
+                                         as.character(features_unique)))
         }
     }
     if (is.null(documents)) {
@@ -100,8 +102,9 @@ group_dfm <- function(x, features = NULL, documents = NULL, fill = FALSE) {
             documents <- factor(documents, levels = documents_unique)
         documents_name <- as.character(documents_unique)
         if (fill && !identical(levels(documents), documents_unique)) {
-            documents_name <- c(documents_name, setdiff(as.character(levels(documents)), 
-                                                        as.character(documents_unique)))
+            documents_name <- 
+                c(documents_name, setdiff(as.character(levels(documents)), 
+                                          as.character(documents_unique)))
         }
     }
     
@@ -110,7 +113,8 @@ group_dfm <- function(x, features = NULL, documents = NULL, fill = FALSE) {
     dimnames <- list(docs = documents_name, features = features_name)
     
     result <- new("dfm", 
-                  sparseMatrix(i = i_new, j = j_new, x = x_new, dims = dims, dimnames = dimnames),
+                  sparseMatrix(i = i_new, j = j_new, x = x_new, 
+                               dims = dims, dimnames = dimnames),
                   settings = x@settings,
                   weightTf = x@weightTf,
                   weightDf = x@weightDf,

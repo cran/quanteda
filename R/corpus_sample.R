@@ -1,4 +1,4 @@
-#' randomly sample documents from a corpus
+#' Randomly sample documents from a corpus
 #' 
 #' Take a random sample or documents of the specified size from a corpus or
 #' document-feature matrix, with or without replacement.  Works just as
@@ -34,9 +34,11 @@ corpus_sample <- function(x, size = ndoc(x), replace = FALSE, prob = NULL, by = 
     UseMethod("corpus_sample")
 }
 
+#' @export
+corpus_sample.default <- function(x, size = ndoc(x), replace = FALSE, prob = NULL, by = NULL, ...) {
+    stop(friendly_class_undefined_message(class(x), "corpus_sample"))
+}
 
-#' @rdname corpus_sample
-#' @noRd
 #' @import data.table data.table
 #' @export
 corpus_sample.corpus <- function(x, size = ndoc(x), replace = FALSE, prob = NULL, by = NULL, ...) {
@@ -60,7 +62,7 @@ corpus_sample.corpus <- function(x, size = ndoc(x), replace = FALSE, prob = NULL
     x
 }
 
-# internal functions from older resample.R
+# ---------- internal functions from older resample.R ---------
 
 is.resampled <- function(x) { FALSE }
 

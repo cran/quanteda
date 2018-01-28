@@ -1,4 +1,4 @@
-#' count the Scrabble letter values of text
+#' Count the Scrabble letter values of text
 #' 
 #' Tally the Scrabble letter values of text given a user-supplied function, such
 #' as the sum (default) or mean of the character values.
@@ -20,6 +20,11 @@
 #' @export
 nscrabble <- function(x, FUN = sum) {
     UseMethod("nscrabble")
+}
+
+#' @export
+nscrabble.default <- function(x, FUN = sum) {
+    stop(friendly_class_undefined_message(class(x), "nscrabble"))
 }
 
 #' @rdname nscrabble
@@ -45,7 +50,7 @@ nscrabble.character <- function(x, FUN = sum) {
     result
 }
 
-#' deprecated name for nscrabble
+#' Deprecated name for nscrabble
 #' 
 #' Use \code{\link{nscrabble}} instead.
 #' @export

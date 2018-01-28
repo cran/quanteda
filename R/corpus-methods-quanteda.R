@@ -1,6 +1,6 @@
 # metacorpus functions ---------------------
 
-#' get or set corpus metadata
+#' Get or set corpus metadata
 #' 
 #' Get or set the corpus-level metadata in a \link{corpus} object.
 #' @param x a \link{corpus} object
@@ -19,6 +19,11 @@
 metacorpus <- function(x, field = NULL)
     UseMethod("metacorpus")
 
+#' @export
+metacorpus.default <- function(x, field = NULL) {
+    stop(friendly_class_undefined_message(class(x), "metacorpus"))
+}
+
 #' @noRd
 #' @export
 metacorpus.corpus <- function(x, field = NULL) {
@@ -31,11 +36,21 @@ metacorpus.corpus <- function(x, field = NULL) {
     }
 }
 
-# replacement function for corpus-level data
+#' Replacement function for corpus-level data
 #' @param value new value of the corpus metadata field
 #' @export
 #' @rdname metacorpus
 "metacorpus<-" <- function(x, field, value) {
+    UseMethod("metacorpus<-")
+}
+
+#' @export
+"metacorpus<-.default" <- function(x, field, value) {
+    stop(friendly_class_undefined_message(class(x), "metacorpus<-"))
+}
+
+#' @export
+"metacorpus<-.corpus" <- function(x, field, value) {
     if (!is.null(field)) {
         stopifnot(TRUE)
         ## NEED TO CHECK HERE THAT FIELD LIST MATCHES METADATA FIELD NAMES
@@ -44,9 +59,10 @@ metacorpus.corpus <- function(x, field = NULL) {
     x
 }
 
+
 # texts() functions ----------------------------
 
-#' get or assign corpus texts
+#' Get or assign corpus texts
 #' 
 #' Get or replace the texts in a \link{corpus}, with grouping options. 
 #' Works for plain character vectors too, if \code{groups} is a factor.
@@ -117,9 +133,8 @@ texts.character <- function(x, groups = NULL, spacer = "  ") {
 #'   Rather, this sort of processing is better performed through downstream 
 #'   operations.  For instance, do not lowercase the texts in a corpus, or you 
 #'   will never be able to recover the original case.  Rather, apply 
-#'   \code{\link{tokens_tolower}} after applying 
-#'   \code{\link{tokens}} to a corpus, or use the option \code{tolower = TRUE} in 
-#'   \code{\link{dfm}}..
+#'   \code{\link{tokens_tolower}} after applying \code{\link{tokens}} to a
+#'   corpus, or use the option \code{tolower = TRUE} in \code{\link{dfm}}.
 #' @examples
 #' BritCorpus <- corpus(c("We must prioritise honour in our neighbourhood.", 
 #'                        "Aluminium is a valourous metal."))

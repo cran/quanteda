@@ -9,17 +9,17 @@
 \alias{show,fcm-method}
 \alias{head.fcm}
 \alias{tail.fcm}
-\title{print a dfm object}
+\title{Print a dfm object}
 \usage{
 \S4method{print}{dfm}(x, show.values = NULL, show.settings = FALSE,
   show.summary = TRUE, ndoc = quanteda_options("print_dfm_max_ndoc"),
-  nfeature = quanteda_options("print_dfm_max_nfeature"), ...)
+  nfeat = quanteda_options("print_dfm_max_nfeat"), ...)
 
 \S4method{show}{dfm}(object)
 
 \S4method{print}{fcm}(x, show.values = NULL, show.settings = FALSE,
   show.summary = TRUE, ndoc = quanteda_options("print_dfm_max_ndoc"),
-  nfeature = quanteda_options("print_dfm_max_nfeature"), ...)
+  nfeature = quanteda_options("print_dfm_max_nfeat"), ...)
 
 \S4method{show}{fcm}(object)
 
@@ -31,7 +31,7 @@
 \item{x}{the dfm to be printed}
 
 \item{show.values}{print the dfm values; if called explicitly this will print
-all values, overriding \code{ndoc} and \code{nfeature}.}
+all values.}
 
 \item{show.settings}{print the settings used to create the dfm. See 
 \link{settings}.}
@@ -42,15 +42,15 @@ and features}
 \item{ndoc}{max number of documents to print; default is from the
 \code{print_dfm_max_ndoc} setting of \code{\link{quanteda_options}}}
 
-\item{nfeature}{max number of features to print; default is from the
-\code{print_dfm_max_nfeature} setting of \code{\link{quanteda_options}}}
+\item{nfeat}{max number of features to print; default is from the
+\code{print_dfm_max_nfeat} setting of \code{\link{quanteda_options}}}
 
 \item{...}{further arguments passed to \code{Matrix::printSpMatrix2}}
 
 \item{object}{the item to be printed}
 }
 \description{
-print methods for document-feature matrices
+Print methods for document-feature matrices
 }
 \seealso{
 \code{\link{quanteda_options}}

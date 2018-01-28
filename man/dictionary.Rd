@@ -2,7 +2,7 @@
 % Please edit documentation in R/dictionaries.R
 \name{dictionary}
 \alias{dictionary}
-\title{create a dictionary}
+\title{Create a dictionary}
 \usage{
 dictionary(x, file = NULL, format = NULL, separator = " ",
   tolower = TRUE, encoding = "auto")
@@ -76,7 +76,8 @@ c(mydict["christmas"], mydict["country"])
 \dontrun{
 # import the Laver-Garry dictionary from Provalis Research
 dictfile <- tempfile()
-download.file("https://provalisresearch.com/Download/LaverGarry.zip", dictfile, mode = "wb")
+download.file("https://provalisresearch.com/Download/LaverGarry.zip", 
+              dictfile, mode = "wb")
 unzip(dictfile, exdir = (td <- tempdir()))
 lgdict <- dictionary(file = paste(td, "LaverGarry.cat", sep = "/"))
 head(dfm(data_corpus_inaugural, dictionary = lgdict))

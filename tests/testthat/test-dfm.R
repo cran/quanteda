@@ -11,7 +11,7 @@ test_that("oldest dfm test", {
     dictDfm <- dfm(mycorpus, dictionary = mydict, valuetype = "glob")
     dictDfm <- dictDfm[1:10, ]
     dictDfm <- thesDfm <- dfm(mycorpus, thesaurus = mydict, valuetype = "glob")
-    dictDfm <- thesDfm[1:10, (nfeature(thesDfm)-8) : nfeature(thesDfm)]
+    dictDfm <- thesDfm[1:10, (nfeat(thesDfm)-8) : nfeat(thesDfm)]
     
     preDictDfm <- dfm(mycorpus, remove_punct = TRUE, remove_numbers = TRUE)
     dfm_lookup(preDictDfm, mydict)
@@ -189,8 +189,8 @@ test_that("dfm keeps all types with > 10,000 documents (#438) (a)", {
     generate_testdfm <- function(n) {
         dfm(paste('X', 1:n, sep=''))
     }
-    expect_equal(nfeature(generate_testdfm(10000)), 10000)
-    expect_equal(nfeature(generate_testdfm(20000)), 20000)
+    expect_equal(nfeat(generate_testdfm(10000)), 10000)
+    expect_equal(nfeat(generate_testdfm(20000)), 20000)
 })
 
 test_that("dfm keeps all types with > 10,000 documents (#438) (b)", {
@@ -198,8 +198,8 @@ test_that("dfm keeps all types with > 10,000 documents (#438) (b)", {
     generate_testdfm <- function(n) {
         dfm(paste(sample(letters, n, replace = TRUE), 1:n))
     }
-    expect_equal(nfeature(generate_testdfm(10000)), 10026)
-    expect_equal(nfeature(generate_testdfm(10001)), 10027)
+    expect_equal(nfeat(generate_testdfm(10000)), 10026)
+    expect_equal(nfeat(generate_testdfm(10001)), 10027)
 })
 
 test_that("dfm print works as expected", {
@@ -209,11 +209,12 @@ test_that("dfm print works as expected", {
     expect_output(print(testdfm[1:5, 1:5]),
                   "^Document-feature matrix of: 5 documents, 5 features \\(28% sparse\\).*")
     
-    expect_equal(dim(head(testdfm, 2)), c(2, 6))
+    expect_equal(dim(head(testdfm[,1:100], 2)), c(2, 100))
     expect_is(head(testdfm, 2), "dfm")
     
     expect_equal(dim(tail(testdfm, 2, 8)), c(2, 8))
-    expect_is(tail(testdfm, 2), "dfm")
+    expect_equal(dim(tail(testdfm[, 1:100], 2)), c(2, 100))
+    expect_is(tail(testdfm[, 1:100], 2), "dfm")
 })
 
 
@@ -255,7 +256,7 @@ test_that("cbind.dfm works as expected",{
     dfm2 <- dfm("More words here")
     dfm12 <- cbind(dfm1, dfm2)
     
-    expect_equal(nfeature(dfm12), 8)
+    expect_equal(nfeat(dfm12), 8)
     expect_equal(names(dimnames(dfm12)),
                  c("docs", "features"))
 })
@@ -358,7 +359,7 @@ test_that("rbind.dfm works as expected",{
     dfm2 <- dfm("More words here")
     dfm12 <- rbind(dfm1, dfm2)
     
-    expect_equal(nfeature(dfm12), 8)
+    expect_equal(nfeat(dfm12), 8)
     expect_equal(ndoc(dfm12), 2)
     expect_equal(names(dimnames(dfm12)),
                  c("docs", "features"))
@@ -421,19 +422,19 @@ test_that("dfm's document counts in verbose message is correct", {
 })
 
 test_that("dfm head, tail work as expected", {
-    tmp <- head(data_dfm_lbgexample, 4, nfeature = 3)
+    tmp <- head(data_dfm_lbgexample, 4, nf = 3)
     expect_equal(featnames(tmp), LETTERS[1:3])
     expect_equal(docnames(tmp), paste0("R", 1:4))
     
-    tmp <- head(data_dfm_lbgexample, -4, nfeature = -30)
+    tmp <- head(data_dfm_lbgexample, -4, nf = -30)
     expect_equal(featnames(tmp), LETTERS[1:7])
     expect_equal(docnames(tmp), paste0("R", 1:2))
     
-    tmp <- tail(data_dfm_lbgexample, 4, nfeature = 3)
+    tmp <- tail(data_dfm_lbgexample, 4, nf = 3)
     expect_equal(featnames(tmp), c("ZI", "ZJ", "ZK"))
     expect_equal(docnames(tmp), c("R3", "R4", "R5", "V1"))
     
-    tmp <- tail(data_dfm_lbgexample, -4, nfeature = -34)
+    tmp <- tail(data_dfm_lbgexample, -4, nf = -34)
     expect_equal(featnames(tmp), c("ZI", "ZJ", "ZK"))
     expect_equal(docnames(tmp), c("R5", "V1"))
 })
@@ -449,11 +450,11 @@ test_that("dfm print works with options as expected", {
         "^Document-feature matrix of: 5 documents, 5 features \\(28% sparse\\)\\.$"
     )
     expect_output(
-        print(tmp[1:3, 1:3], ndoc = 2, nfeature = 2, show.values = TRUE),
+        print(tmp[1:3, 1:3], ndoc = 2, nfeat = 2, show.values = TRUE),
         "^Document-feature matrix of: 3 documents, 3 features.*3 x 3 sparse Matrix.*features"
     )
     expect_output(
-        print(tmp[1:3, 1:3], ndoc = 2, nfeature = 2),
+        print(tmp[1:3, 1:3], ndoc = 2, nfeat = 2),
         "^Document-feature matrix of: 3 documents, 3 features \\(22.2% sparse\\)\\.$"
     )
     expect_output(
@@ -463,7 +464,7 @@ test_that("dfm print works with options as expected", {
 
     # with options (#756)
     quanteda_options(print_dfm_max_ndoc = 22L)
-    quanteda_options(print_dfm_max_nfeature = 22L)
+    quanteda_options(print_dfm_max_nfeat = 22L)
     expect_output(
         print(tmp),
         "Document-feature matrix of: 14 documents, 5,\\d{3} features \\(8\\d\\.\\d% sparse\\)\\.$"
@@ -583,19 +584,19 @@ test_that("dfm works with purrr::map (#928)", {
     a <- "a b"
     b <- "a a a b b"
     expect_identical(
-        sapply(purrr::map(list(a, b), dfm), is.dfm),
+        vapply(purrr::map(list(a, b), dfm), is.dfm, logical(1)),
         c(TRUE, TRUE)
     )
     expect_identical(
-        sapply(purrr::map(list(corpus(a), corpus(b)), dfm), is.dfm),
+        vapply(purrr::map(list(corpus(a), corpus(b)), dfm), is.dfm, logical(1)),
         c(TRUE, TRUE)
     )
     expect_identical(
-        sapply(purrr::map(list(tokens(a), tokens(b)), dfm), is.dfm),
+        vapply(purrr::map(list(tokens(a), tokens(b)), dfm), is.dfm, logical(1)),
         c(TRUE, TRUE)
     )
     expect_identical(
-        sapply(purrr::map(list(dfm(a), dfm(b)), dfm), is.dfm),
+        vapply(purrr::map(list(dfm(a), dfm(b)), dfm), is.dfm, logical(1)),
         c(TRUE, TRUE)
     )
 })
@@ -635,8 +636,107 @@ test_that("dfm warns of argument not used", {
     
 })
 
+test_that("dfm pass arguments to tokens, issue #1121", {
+    
+    txt <- data_char_sampletext
+    corp <- corpus(txt)
+    
+    expect_equal(dfm(txt, what = 'character'),
+                 dfm(tokens(corp, what = 'character')))
+    
+    expect_equal(dfm(txt, what = 'character'),
+                 dfm(tokens(txt, what = 'character')))
+
+    expect_equal(dfm(txt, remove_punct = TRUE),
+                 dfm(tokens(corp, remove_punct = TRUE)))
+        
+    expect_equal(dfm(txt, remove_punct = TRUE),
+                 dfm(tokens(txt, remove_punct = TRUE)))
+    
+})
+
 test_that("as.dfm works for dfmSparse objects", {
     load("../data/old_dfmSparse.RData")
     expect_true(is.dfm(as.dfm(old_dfmSparse)))
 })
 
+test_that("dfm error when a dfm is given to for feature selection when x is not a dfm, #1067", {
+    txt <- c(d1 = "a b c d e", d2 = "a a b c c c")
+    corp <- corpus(txt)
+    toks <- tokens(txt)
+    mx <- dfm(toks)
+    mx2 <- dfm(c('a b', 'c'))
+    
+    expect_error(dfm(txt, select = mx2), 
+                'selection on a dfm is only available when x is a dfm')
+    expect_error(dfm(corp, select = mx2), 
+                'selection on a dfm is only available when x is a dfm')
+    expect_error(dfm(toks, select = mx2), 
+                'selection on a dfm is only available when x is a dfm')
+    expect_silent(dfm(mx, select = mx2))
+    expect_equal(
+        as.matrix(dfm(mx, select = mx2)),
+        matrix(c(1,2,1,1,1,3), nrow = 2, dimnames = list(docs = c("d1", "d2"), features = letters[1:3]))
+    )
+})
+
+test_that("test topfeatures", {
+    expect_equal(
+        topfeatures(dfm("a a a a b b b c c d"), "count"),
+        c(a = 4, b = 3, c = 2, d = 1)
+    )
+})
+
+test_that("test sparsity", {
+    expect_equal(
+        sparsity(dfm(c("a a a a  c c d", "b b b"))),
+        0.5
+    )
+})
+
+
+test_that("test empty dfm is handled properly", {
+    
+    mx <- quanteda:::make_null_dfm()
+    
+    # selection/grouping
+    expect_equal(dfm_select(mx), mx)
+    expect_equal(dfm_select(mx, 'a'), mx)
+    expect_equal(dfm_trim(mx), mx)
+    expect_equal(dfm_sample(mx), mx)
+    expect_equal(dfm_subset(mx), mx)
+    expect_equal(dfm_compress(mx, 'both'), mx)
+    expect_equal(dfm_compress(mx, 'features'), mx)
+    expect_equal(dfm_compress(mx, 'documents'), mx)
+    expect_equal(dfm_sort(mx, 'both'), mx)
+    expect_equal(dfm_sort(mx, 'features'), mx)
+    expect_equal(dfm_sort(mx, 'documents'), mx)
+    expect_equal(dfm_lookup(mx, dictionary(list(A ='a'))), mx)
+    expect_equal(dfm_group(mx), mx)
+    
+    # weighting
+    expect_equal(topfeatures(mx), numeric())
+    expect_equal(dfm_weight(mx, 'count'), mx)
+    expect_equal(dfm_weight(mx, 'prop'), mx)
+    expect_equal(dfm_weight(mx, 'propmax'), mx)
+    expect_equal(dfm_weight(mx, 'logcount'), mx)
+    expect_equal(dfm_weight(mx), mx)
+    expect_equal(dfm_weight(mx, 'augmented'), mx)
+    expect_equal(dfm_weight(mx, 'boolean'), mx)
+    expect_equal(dfm_weight(mx, 'logave'), mx)
+    expect_equal(dfm_tfidf(mx), mx)
+    expect_equal(docfreq(mx), numeric())
+    expect_equal(dfm_smooth(mx), mx)
+    
+    
+    expect_equal(dfm_tolower(mx), mx)
+    expect_equal(dfm_toupper(mx), mx)
+    
+    expect_equal(rbind(mx, mx), mx)
+    expect_equal(cbind(mx, mx), mx)
+    
+    expect_equal(head(mx), mx)
+    expect_equal(tail(mx), mx)
+    
+    expect_output(print(mx), 'Document-feature matrix of: 0 documents, 0 features.')
+})

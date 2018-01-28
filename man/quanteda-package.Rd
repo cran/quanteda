@@ -75,14 +75,14 @@ methods.
 \section{Source code and additional information}{
 
 
-\url{http://github.com/kbenoit/quanteda}
+\url{http://github.com/quanteda/quanteda}
 }
 
 \seealso{
 Useful links:
 \itemize{
   \item \url{http://quanteda.io}
-  \item Report bugs at \url{https://github.com/kbenoit/quanteda/issues}
+  \item Report bugs at \url{https://github.com/quanteda/quanteda/issues}
 }
 
 }
@@ -95,6 +95,7 @@ Other contributors:
   \item Paul Nulty \email{paul.nulty@gmail.com} [contributor]
   \item Adam Obeng \email{quanteda@binaryeagle.com} [contributor]
   \item Haiyan Wang \email{h.wang52@lse.ac.uk} [contributor]
+  \item Stefan Müller \email{mullers@tcd.ie} [contributor]
   \item Benjamin Lauderdale \email{B.E.lauderdale@lse.ac.uk} [contributor]
   \item Will Lowe \email{wlowe@princeton.edu} [contributor]
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/textplot_wordcloud.R
 \name{textplot_wordcloud}
 \alias{textplot_wordcloud}
-\title{plot features as a wordcloud}
+\title{Plot features as a wordcloud}
 \usage{
 textplot_wordcloud(x, comparison = FALSE, ...)
 }
@@ -13,7 +13,7 @@ textplot_wordcloud(x, comparison = FALSE, ...)
 \code{\link[wordcloud]{comparison.cloud}} instead of a simple wordcloud, 
 one grouping per document}
 
-\item{...}{additional parameters passed to to \link[wordcloud]{wordcloud} or 
+\item{...}{additional parameters passed to \link[wordcloud]{wordcloud} or 
 to \link{text} (and \link{strheight}, \link{strwidth})}
 }
 \description{
@@ -28,16 +28,16 @@ The default is to plot the word cloud of all features, summed across
   documents, you need to slice out the document(s) from the dfm or tokens
   object.
   
-  Comparison wordcloud plots may be plotted by setting \code{comparison = TRUE}, 
-  which plots a separate grouping for \emph{each document} in the dfm.
-  This means that you will need to slice out just a few documents from the 
-  dfm, or to create a dfm where the "documents" represent a subset or a 
+  Comparison wordcloud plots may be plotted by setting \code{comparison =
+  TRUE}, which plots a separate grouping for \emph{each document} in the dfm.
+  This means that you will need to slice out just a few documents from the
+  dfm, or to create a dfm where the "documents" represent a subset or a
   grouping of documents by some document variable.
 }
 \examples{
 # plot the features (without stopwords) from Obama's two inaugural addresses
-mydfm <- dfm(corpus_subset(data_corpus_inaugural, President=="Obama"), verbose = FALSE,
-             remove = stopwords("english"))
+mydfm <- dfm(corpus_subset(data_corpus_inaugural, President == "Obama"), 
+             remove = stopwords("english"), remove_punct = TRUE)
 textplot_wordcloud(mydfm)
 
 # plot in colors with some additional options passed to wordcloud
@@ -48,8 +48,8 @@ textplot_wordcloud(mydfm, random.color = TRUE, rot.per = .25,
 # comparison plot of Irish government vs opposition
 docvars(data_corpus_irishbudget2010, "govtopp") <- 
     factor(ifelse(data_corpus_irishbudget2010[, "party"] \%in\% c("FF", "Green"), "Govt", "Opp"))
-govtoppDfm <- dfm(data_corpus_irishbudget2010, groups = "govtopp", verbose = FALSE)
-textplot_wordcloud(tfidf(govtoppDfm), comparison = TRUE)
+govtoppDfm <- dfm(data_corpus_irishbudget2010, groups = "govtopp", remove_punct = TRUE)
+textplot_wordcloud(dfm_tfidf(govtoppDfm), comparison = TRUE)
 # compare to non-tf-idf version
 textplot_wordcloud(govtoppDfm, comparison = TRUE)
 }
@@ -58,4 +58,4 @@ textplot_wordcloud(govtoppDfm, comparison = TRUE)
 \code{\link[wordcloud]{wordcloud}}, 
   \code{\link[wordcloud]{comparison.cloud}}
 }
-\keyword{plot}
+\keyword{textplot}

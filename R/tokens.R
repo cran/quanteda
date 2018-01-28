@@ -1,4 +1,4 @@
-#' tokenize a set of texts
+#' Tokenize a set of texts
 #'
 #' Tokenize the texts from a character vector or from a corpus.
 #' @rdname tokens
@@ -171,6 +171,11 @@ tokens <-  function(x, what = c("word", "sentence", "character", "fastestword", 
     UseMethod("tokens")
 }
 
+#' @export
+tokens.default <- function(x, ...) {
+    stop(friendly_class_undefined_message(class(x), "tokens"))
+}
+
 #' @rdname tokens
 #' @noRd
 #' @export
@@ -221,15 +226,15 @@ tokens.tokens <-  function(x, what = c("word", "sentence", "character", "fastest
     
     regex <- c()
     if (remove_numbers)
-        regex = c(regex, "^[\\p{N}]+$")
+        regex <- c(regex, "^[\\p{N}]+$")
     if (remove_punct)
-        regex = c(regex, "^[\\p{P}\\p{S}]+$")
+        regex <- c(regex, "^[\\p{P}\\p{S}]+$")
     if (remove_symbols)
-        regex = c(regex, "^[\\p{S}]+$")
+        regex <- c(regex, "^[\\p{S}]+$")
     if (remove_separators)
-        regex = c(regex, "^[\uFE00-\uFE0F\\p{Z}\\p{C}]+$") 
+        regex <- c(regex, "^[\uFE00-\uFE0F\\p{Z}\\p{C}]+$") 
     if (remove_url)
-        regex = c(regex, "^https?")
+        regex <- c(regex, "^https?")
     
     if (length(regex))
         x <- tokens_remove(x, paste(regex, collapse = '|'), valuetype = 'regex', padding = FALSE)
@@ -241,7 +246,7 @@ tokens.tokens <-  function(x, what = c("word", "sentence", "character", "fastest
 }
 
 
-#' coercion, checking, and combining functions for tokens objects
+#' Coercion, checking, and combining functions for tokens objects
 #' 
 #' Coercion functions to and from \link{tokens} objects, checks for whether an 
 #' object is a \link{tokens} object, and functions to combine \link{tokens} 
@@ -277,18 +282,9 @@ as.tokens <- function(x, concatenator = "_", ...) {
     UseMethod("as.tokens")
 }
 
-#' @rdname as.tokens
-#' @noRd
 #' @export
 as.tokens.default <- function(x, concatenator = "", ...) {
-    valid_object_types <- 
-        utils::methods(as.tokens) %>% 
-        as.character() %>% 
-        stringi::stri_extract_last_regex("\\w+$")
-    valid_object_types <- valid_object_types[valid_object_types != "default"]
-    stop("as.tokens() only works on ", 
-         paste(valid_object_types, collapse = ", "),
-         " objects.")
+    stop(friendly_class_undefined_message(class(x), "as.tokens"))
 }
 
 #' @rdname as.tokens
@@ -626,14 +622,14 @@ tokens_internal <- function(x, what = c("word", "sentence", "character", "fastes
 
         regex <- c()
         if (remove_numbers)
-            regex = c(regex, "^[\\p{N}]+$")
+            regex <- c(regex, "^[\\p{N}]+$")
         if (remove_punct)
-            regex = c(regex, "^[\\p{P}\\p{S}]+$")
+            regex <- c(regex, "^[\\p{P}\\p{S}]+$")
         if (remove_symbols)
-            regex = c(regex, "^[\\p{S}]+$")
+            regex <- c(regex, "^[\\p{S}]+$")
         if (remove_separators)
-            regex = c(regex, "^[\\p{Z}\\p{C}]+$") 
-            #regex = c(regex, "^[\uFE00-\uFE0F\\p{Z}\\p{C}]+$") 
+            regex <- c(regex, "^[\\p{Z}\\p{C}]+$") 
+            #regex <- c(regex, "^[\uFE00-\uFE0F\\p{Z}\\p{C}]+$") 
         if (remove_punct & !remove_twitter)
             regex <- c(regex, "^#+$|^@+$") # remove @ # only if not part of Twitter names
         if (length(regex))
@@ -852,7 +848,7 @@ get_tokens.tokens <- function(x) {
     as.list(x)
 }
 
-#' get types of tokens from a tokens object
+#' Get word types from a tokens object
 #' 
 #' Get unique types of tokens from a \link{tokens} object. 
 #' @param x a tokens object
@@ -866,6 +862,11 @@ types <- function(x) {
 }
 
 #' @export
+types.default <- function(x) {
+    stop(friendly_class_undefined_message(class(x), "types"))
+}
+
+#' @export
 types.tokens <- function(x) {
     attr(x, "types")
 }
@@ -873,6 +874,10 @@ types.tokens <- function(x) {
 "types<-" <- function(x, value) {
     UseMethod("types<-")
 }
+
+# "types<-.default" <- function(x, value) {
+#     stop(friendly_class_undefined_message(class(x), "types<-"))
+# }
 
 "types<-.tokens" <- function(x, value) {
     if (!is.character(value))
@@ -921,5 +926,3 @@ c.tokens <- function(...) {
         result <- result + x[[i]]
     return(result)
 }
-
-
