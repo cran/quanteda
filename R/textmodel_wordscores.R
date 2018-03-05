@@ -19,16 +19,21 @@
 #'   LBG linear posterior weighted word class differences, or \code{"logit"}
 #'   for log posterior differences
 #' @details The \code{textmodel_wordscores()} function and the associated
-#'   \code{predict()} method are designed to function in the same manner as
-#'   \code{\link[stats]{predict.lm}}.  \code{coef()} can also be used to extract
-#'   the word coefficients from the fitted \code{textmodel_wordscore} object,
-#'   and \code{summary()} will print a nice summary of the fitted object.
+#'   \code{\link[=predict.textmodel_wordscores]{predict()}} method are designed
+#'   to function in the same manner as \code{\link[stats]{predict.lm}}.
+#'   \code{coef()} can also be used to extract the word coefficients from the
+#'   fitted \code{textmodel_wordscore} object, and \code{summary()} will print a
+#'   nice summary of the fitted object.
+#' @seealso \code{\link{predict.textmodel_wordscores}} for methods of applying a
+#'   fitted \link{textmodel_wordscores} model object to predict quantities from
+#'   (other) documents.
 #' @author Kenneth Benoit
 #' @examples 
 #' (ws <- textmodel_wordscores(data_dfm_lbgexample, c(seq(-1.5, 1.5, .75), NA)))
 #' summary(ws)
 #' coef(ws)
 #' predict(ws)
+#' predict(ws, include_reftexts = FALSE)
 #' predict(ws, rescaling = "mv")
 #' predict(ws, rescaling = "lbg")
 #' predict(ws, se.fit = TRUE)
@@ -117,6 +122,7 @@ textmodel_wordscores.dfm <- function(x, y, scale = c("linear", "logit"), smooth 
 #'   (2007).  See References.
 #' @param interval type of confidence interval calculation
 #' @param level tolerance/confidence level for intervals
+#' @param include_reftexts if \code{FALSE}, reference texts are removed from the prediction
 #' @param ... not used
 #' @return 
 #'   \code{textmodel_wordscores()} returns a list that is also classed as a
@@ -142,13 +148,14 @@ predict.textmodel_wordscores <- function(object,
                                          se.fit = FALSE,
                                          interval = c("none", "confidence"), level = 0.95, 
                                          rescaling = c("none", "lbg", "mv"),
+                                         include_reftexts = TRUE,
                                          ...) {
     
-    if (length(list(...)) > 0) stop("Arguments:", names(list(...)), "not supported.\n")
-        
+    if (length(list(...)) > 0) stop("Arguments: ", names(list(...)), " not supported.\n")
+    
     interval <- match.arg(interval)
     rescaling <- match.arg(rescaling)
-        
+    
     if (!is.null(newdata)) {
         data <- as.dfm(newdata)
     } else {
@@ -182,6 +189,7 @@ predict.textmodel_wordscores <- function(object,
     }
     
     if (!se.fit && interval == "none") {
+        if (!include_reftexts) fit <- fit[is.na(object$y)]
         class(fit) <- c("predict.textmodel_wordscores", "numeric")
         return(fit)
     }
@@ -203,6 +211,8 @@ predict.textmodel_wordscores <- function(object,
         } else {
             result$se.fit <- raw_se
         }
+        
+        if (!include_reftexts) result$se.fit <- result$se.fit[is.na(object$y)]
     } 
     
     if (interval == "confidence") {
@@ -229,7 +239,13 @@ predict.textmodel_wordscores <- function(object,
             result$fit[, "lwr"] <- raw - z * raw_se
             result$fit[, "upr"] <- raw + z * raw_se
         }
+    } 
+    
+    # drop the reference texts if needed - handles both vector and matrix case 
+    if (!include_reftexts) {
+        result$fit <- as.matrix(result$fit)[is.na(object$y), , drop = interval == "none"]
     }
+    
     class(result) <- c("predict.textmodel_wordscores", class(result))
     result
 }
@@ -245,10 +261,10 @@ rescaler <- function(x, scale.min = -1, scale.max = 1) {
 
 ## Internal function for MV rescaling
 mv_transform <- function(x, y, z) {
-    y <- y[!is.na(y)]
-    i_low <- which(y == min(y))
-    i_high <- which(y == max(y))
-    return((x - z[i_low]) * (max(y) - min(y)) / (z[i_high] - z[i_low]) + min(y))
+    i_low <- which(y == min(y, na.rm = TRUE))
+    i_high <- which(y == max(y, na.rm = TRUE))
+    return((x - z[i_low]) * (max(y, na.rm = TRUE) - min(y, na.rm = TRUE)) / 
+               (z[i_high] - z[i_low]) + min(y, na.rm = TRUE))
 }
 
 # redefined generic methods -----------

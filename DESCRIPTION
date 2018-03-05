@@ -1,5 +1,5 @@
 Package: quanteda
-Version: 1.0.0
+Version: 1.1.0
 Title: Quantitative Analysis of Textual Data
 Description: A fast, flexible, and comprehensive framework for 
     quantitative text analysis in R.  Provides functionality for corpus management,
@@ -18,12 +18,11 @@ Authors@R: c( person("Kenneth", "Benoit", email = "kbenoit@lse.ac.uk", role =
     person("Benjamin", "Lauderdale", email = "B.E.lauderdale@lse.ac.uk", role = "ctb"),
     person("Will", "Lowe", email = "wlowe@princeton.edu", role = "ctb") )
 License: GPL-3
-Depends: R (>= 3.4.0), methods
-Imports: utils, extrafont, digest, stats, Matrix (>= 1.2), data.table
-        (>= 1.9.6), SnowballC, wordcloud, sna, network, ggrepel, Rcpp
-        (>= 0.12.12), RcppParallel, RSpectra, stringi, fastmatch,
-        ggplot2 (>= 2.2.0), XML, yaml, lubridate, magrittr, spacyr,
-        stopwords
+Depends: R (>= 3.1.0), methods
+Imports: extrafont, Matrix (>= 1.2), data.table (>= 1.9.6), SnowballC,
+        sna, network, ggrepel, Rcpp (>= 0.12.12), RcppParallel,
+        RSpectra, stringi, fastmatch, ggplot2 (>= 2.2.0), XML, yaml,
+        lubridate, magrittr, spacyr, stopwords
 LinkingTo: Rcpp, RcppParallel, RcppArmadillo (>= 0.7.600.1.0)
 Suggests: knitr, rmarkdown, lda, proxy, topicmodels, tm (>= 0.6), slam,
         testthat, RColorBrewer, xtable, DT, ca, purrr
@@ -64,7 +63,7 @@ RcppModules: ngramMaker
 RoxygenNote: 6.0.1
 SystemRequirements: C++11
 NeedsCompilation: yes
-Packaged: 2018-01-19 08:56:52 UTC; kbenoit
+Packaged: 2018-03-05 17:45:47 UTC; kbenoit
 Author: Kenneth Benoit [aut, cre, cph],
   Kohei Watanabe [ctb],
   Paul Nulty [ctb],
@@ -75,4 +74,4 @@ Author: Kenneth Benoit [aut, cre, cph],
   Will Lowe [ctb]
 Maintainer: Kenneth Benoit <kbenoit@lse.ac.uk>
 Repository: CRAN
-Date/Publication: 2018-01-28 18:08:07 UTC
+Date/Publication: 2018-03-05 19:27:17 UTC

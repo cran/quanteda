@@ -10,8 +10,8 @@
 #'   counts (aka relative frequency), calculated as \eqn{tf_{ij} / \sum_j tf_{ij}}}
 #'   \item{\code{propmax}}{the proportion of the feature counts of the highest
 #'   feature count in a document, \eqn{tf_{ij} / \textrm{max}_j tf_{ij}}}
-#'   \item{\code{log}}{take the logarithm of 1 + each count, for base
-#'   \code{base}: \eqn{\textrm{log}_{base}(1 + tf_{ij})}}
+#'   \item{\code{logcount}}{take the logarithm of 1 + each count, for the given
+#'   base: \eqn{\textrm{log}_{base}(1 + tf_{ij})}}
 #'   \item{\code{boolean}}{recode all non-zero counts as 1}
 #'   \item{\code{augmented}}{equivalent to \eqn{K + (1 - K) *} \code{dfm_weight(x,
 #'   "propmax")}}
@@ -325,8 +325,8 @@ docfreq.dfm <- function(x, scheme = c("count", "inverse", "inversemax",
         warning("smoothing not used for this scheme")
     if (k < 0)
         stop("k must be >= 0")
-    if (x@weightDf[["scheme"]] != "unary")
-        stop("this dfm has already been term weighted as:", x@weightDf)
+    # if (x@weightDf[["scheme"]] != "unary")
+    #     stop("this dfm has already been term weighted as: ", x@weightDf[[1]])
     
     if (scheme == "unary") {
         result <- rep(1, nfeat(x))

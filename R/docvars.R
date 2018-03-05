@@ -314,7 +314,7 @@ check_docvars <- function(x, fields) {
     return(fields %in% names(dvars))
 }
 
-## internal function to select docvara fields
+## internal function to select docvar fields
 select_fields <- function(x, types = c('user', 'system')) {
 
     names <- names(x)
@@ -323,13 +323,13 @@ select_fields <- function(x, types = c('user', 'system')) {
     
     result <- data.frame(row.names = row.names(x))
     if ('text' %in% types) {
-        result <- cbind(result, x[,is_text, drop = FALSE])
+        result <- cbind(result, x[is_text])
     } 
     if ('system' %in% types) {
-        result <- cbind(result, x[,is_system & !is_text, drop = FALSE])
+        result <- cbind(result, x[is_system & !is_text])
     }
     if ('user' %in% types) {
-        result <- cbind(result, x[,!is_system & !is_text, drop = FALSE])
+        result <- cbind(result, x[!is_system & !is_text])
     } 
     return(result)
 }

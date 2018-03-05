@@ -1,5 +1,7 @@
 context('test plots.R')
 
+dev.new(width = 10, height = 10)
+
 test_that("test plot.kwic scale argument default", {
 
     sda <- kwic(texts(data_corpus_inaugural)[[1]], 'american')
@@ -85,11 +87,44 @@ test_that("test plot.kwic keeps order of keywords passed", {
 })
 
 test_that("test textplot_wordcloud works for dfm objects", {
-    expect_silent(textplot_wordcloud(dfm(data_corpus_inaugural[1:5]), min.freq = 10))
+    mt <- dfm(data_corpus_inaugural[1:5])
+    mt <- dfm_trim(mt, min_count = 10)
+    expect_silent(textplot_wordcloud(mt))
 })
 
-test_that("test textplot_wordcloud works for tokens objects", {
-    expect_silent(textplot_wordcloud(tokens(data_corpus_inaugural[1:5]), min.freq = 10))
+test_that("test textplot_wordcloud comparison works", {
+    skip_on_travis()
+    skip_on_cran()
+    testcorp <- corpus_reshape(corpus(data_char_sampletext))
+    set.seed(1)
+    docvars(testcorp, "label") <- sample(c("A", "B"), size = ndoc(testcorp), replace = TRUE)
+    docnames(testcorp) <- paste0("text", 1:ndoc(testcorp))
+    testdfm <- dfm(testcorp, remove = stopwords("english"))
+    testdfm_grouped <- dfm(testcorp, remove = stopwords("english"), groups = "label")
+    
+    dev.new(width = 10, height = 10)
+    expect_silent(
+        textplot_wordcloud(testdfm_grouped, comparison = TRUE)
+    )
+    expect_silent(
+        textplot_wordcloud(testdfm_grouped, random_order = FALSE)
+    )
+    expect_silent(
+        textplot_wordcloud(testdfm_grouped, ordered_color = FALSE)
+    )
+    dev.off()
+    expect_error(
+        textplot_wordcloud(testdfm, comparison = TRUE),
+        "Too many documents to plot comparison, use 8 or fewer documents\\."
+    )
+})
+
+test_that("test textplot_wordcloud raise deprecation message", {
+    
+    mt <- dfm(data_corpus_inaugural[1:5])
+    mt <- dfm_trim(mt, min_count = 10)
+    expect_warning(textplot_wordcloud(mt, min.freq = 10), 'min.freq is deprecated')
+    expect_warning(textplot_wordcloud(mt, use.r.layout = 10), 'use.r.layout is no longer use')
 })
 
 test_that("test textplot_scale1d wordfish in the most basic way", {
@@ -136,16 +171,16 @@ test_that("test textplot_scale1d wordscores in the most basic way", {
     )
 })
 
-test_that("test textplot_keyness ", {
-    prescorpus <- corpus_subset(data_corpus_inaugural, President %in% c("Obama", "Trump"))
-    presdfm <- dfm(prescorpus, groups = "President", remove = stopwords("english"),
-                   remove_punct = TRUE)
-    result <- textstat_keyness(presdfm, target = "Trump", measure = "chi2")
-    
-    # shows the correct statistic measure 
-    p3 <- textplot_keyness(result, show_reference = TRUE)
-    expect_equal(p3$labels$y, colnames(result)[2])
-})
+# test_that("test textplot_keyness ", {
+#     prescorpus <- corpus_subset(data_corpus_inaugural, President %in% c("Obama", "Trump"))
+#     presdfm <- dfm(prescorpus, groups = "President", remove = stopwords("english"),
+#                    remove_punct = TRUE)
+#     result <- textstat_keyness(presdfm, target = "Trump", measure = "chi2")
+#     
+#     # shows the correct statistic measure 
+#     p3 <- textplot_keyness(result, show_reference = TRUE)
+#     expect_equal(p3$labels$y, colnames(result)[2])
+# })
 
 test_that("test textplot_keyness: show_reference works correctly ", {
     prescorpus <- corpus_subset(data_corpus_inaugural, President %in% c("Obama", "Trump"))
@@ -157,14 +192,24 @@ test_that("test textplot_keyness: show_reference works correctly ", {
     p1 <- textplot_keyness(result, show_reference = FALSE, n = k)
     p2 <- textplot_keyness(result, show_reference = TRUE, n = k)
     
-    # Plot with two different fills when show_reference = TRUE
-    expect_equal(dim(table(ggplot2::ggplot_build(p1)$data[[1]]$fill)), 1)
-    expect_equal(dim(table(ggplot2::ggplot_build(p2)$data[[1]]$fill)), 2)
+    # raises error when min_count is too high
+    expect_error(textplot_keyness(result, show_reference = FALSE, min_count = 100),
+                 'Too few words in the documents')
+    
+    # plot with two different fills when show_reference = TRUE
+    expect_equal(dim(table(ggplot2::ggplot_build(p1)$data[[1]]$colour)), 1)
+    expect_equal(dim(table(ggplot2::ggplot_build(p2)$data[[1]]$colour)), 2)
 
     # number of words plotted doubled when show_reference = TRUE
     expect_equal(nrow(ggplot2::ggplot_build(p1)$data[[1]]), k)
     expect_equal(nrow(ggplot2::ggplot_build(p2)$data[[1]]), 2 * k)
+
+    # works with integer color 
+    expect_silent(textplot_keyness(result, color = 1:2))
     
+    # test that textplot_keyness works with pallette (vector > 2 colors)
+    expect_silent(textplot_keyness(result, show_reference = TRUE, 
+                                   color = RColorBrewer::brewer.pal(6,"Dark2")))
 
 })
 
@@ -176,6 +221,10 @@ test_that("test textplot_network", {
     expect_silent(textplot_network(testdfm, offset = 0.1))
     expect_error(textplot_network(testfcm, min_freq = 100), 
                  'There is no co-occurence higher than the threshold')
+    
+    # works with interger color
+    expect_silent(textplot_network(testfcm, vertex_color = 2))
+    expect_silent(textplot_network(testfcm, edge_color = 2))
 })
 
 test_that("test textplot_affinity", {
@@ -213,4 +262,5 @@ test_that("test textplot_network font-selection", {
                "not_a_real_font is not found on your system")
 })
 
+dev.off()
 

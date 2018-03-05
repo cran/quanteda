@@ -6,8 +6,8 @@
 \title{Plot a network of feature co-occurrences}
 \usage{
 textplot_network(x, min_freq = 0.5, omit_isolated = TRUE,
-  edge_color = "skyblue", edge_alpha = 0.5, edge_size = 2,
-  vertex_color = "gray40", vertex_size = 2, vertex_labelcolor = NULL,
+  edge_color = "#1F78B4", edge_alpha = 0.5, edge_size = 2,
+  vertex_color = "#4D4D4D", vertex_size = 2, vertex_labelcolor = NULL,
   offset = NULL, vertex_labelfont = NULL, ...)
 
 \method{as.network}{fcm}(x, min_freq = 0.5, omit_isolated = TRUE, ...)
@@ -54,19 +54,16 @@ Currently the size of the network is limited to 1000, because of the
   own plotting function using \code{\link[=as.network.fcm]{as.network}}.
 }
 \examples{
-\dontrun{
 toks <- corpus_subset(data_corpus_irishbudget2010) \%>\%
     tokens(remove_punct = TRUE) \%>\%
     tokens_tolower() \%>\%
     tokens_remove(stopwords("english"), padding = FALSE)
 myfcm <- fcm(toks, context = "window", tri = FALSE)
 feat <- names(topfeatures(myfcm, 30))
-textplot_network(myfcm, min_freq = 10)
 fcm_select(myfcm, feat, verbose = FALSE) \%>\% textplot_network(min_freq = 0.5)
 fcm_select(myfcm, feat, verbose = FALSE) \%>\% textplot_network(min_freq = 0.8)
 fcm_select(myfcm, feat, verbose = FALSE) \%>\%
         textplot_network(min_freq = 0.8, vertex_labelcolor = rep(c('gray40', NA), 15))
-}
 }
 \seealso{
 \code{\link{fcm}}
