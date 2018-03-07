@@ -1,5 +1,5 @@
 Package: quanteda
-Version: 1.1.0
+Version: 1.1.1
 Title: Quantitative Analysis of Textual Data
 Description: A fast, flexible, and comprehensive framework for 
     quantitative text analysis in R.  Provides functionality for corpus management,
@@ -63,7 +63,7 @@ RcppModules: ngramMaker
 RoxygenNote: 6.0.1
 SystemRequirements: C++11
 NeedsCompilation: yes
-Packaged: 2018-03-05 17:45:47 UTC; kbenoit
+Packaged: 2018-03-06 20:11:48 UTC; kbenoit
 Author: Kenneth Benoit [aut, cre, cph],
   Kohei Watanabe [ctb],
   Paul Nulty [ctb],
@@ -74,4 +74,4 @@ Author: Kenneth Benoit [aut, cre, cph],
   Will Lowe [ctb]
 Maintainer: Kenneth Benoit <kbenoit@lse.ac.uk>
 Repository: CRAN
-Date/Publication: 2018-03-05 19:27:17 UTC
+Date/Publication: 2018-03-07 10:03:16 UTC

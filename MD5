@@ -1,6 +1,6 @@
-01d27890b446b9613f098b5c77200a95 *DESCRIPTION
+0a9765accd6d6251cea3701bf67493aa *DESCRIPTION
 5b69932d9d8d942b33f71d9b2f8e6f6f *NAMESPACE
-c6c9e1f9d1625233a5472232546295ae *NEWS.md
+0473d9bbe0ebe7ff50573698d493c763 *NEWS.md
 d0f68b86527aaa83d8a1f3f4e05d37cd *R/RcppExports.R
 a8d5f6d168be0f44894cb686a0bdd862 *R/View.R
 d3ef18e97fe8cb0a6cb6e69b0417de71 *R/bootstrap_dfm.R
@@ -46,7 +46,7 @@ ebd76865093bfca9a8c0045ce8bae74e *R/dictionaries.R
 b181e8227d5d55a7f0fc9b9d85a446e3 *R/nsyllable.R
 dcb698b6e73d7296423236c4732acb02 *R/phrases.R
 a305cec4207d76ea47d43b0d3eb32172 *R/quanteda-documentation.R
-c7dcc2f090525d15fa411e6d5c96dfc5 *R/quanteda_options.R
+8eddf3a91c01afbd51664fed43ebb4e0 *R/quanteda_options.R
 725979d85cc0307d4d78b702a8245ed4 *R/readtext-methods.R
 ed6951688bf992cd776bc6585f64a674 *R/regex2fixed.R
 5c5dc43aa64cdb4c24e7bea713d72832 *R/settings.R
@@ -362,7 +362,7 @@ bffda7386d6a35a39d0bfd6234bc6333 *tests/testthat/test-dfm_trim.R
 a4bf39bed3e21f67d74be7739d422096 *tests/testthat/test-kwic.R
 b10f862ebd8ff490c63155c0408253e9 *tests/testthat/test-nfunctions.R
 41e1c3305b9381c82c69de95156c458b *tests/testthat/test-phrases.R
-6c8340c3d80f87a8292f4a6cfba27a04 *tests/testthat/test-quanteda_options.R
+ac6a65495f57183b9bf1362bcc98859d *tests/testthat/test-quanteda_options.R
 d7785a90953b18a3d8639a70ad2e9b02 *tests/testthat/test-regex2fixed.R
 d0b2fcc612e6b30e7bfc52f87d5b1745 *tests/testthat/test-spacyr-methods.R
 06522036075fa5b03128f8a39d638b80 *tests/testthat/test-stopwords.R
