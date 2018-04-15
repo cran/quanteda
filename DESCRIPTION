@@ -1,5 +1,5 @@
 Package: quanteda
-Version: 1.1.1
+Version: 1.2.0
 Title: Quantitative Analysis of Textual Data
 Description: A fast, flexible, and comprehensive framework for 
     quantitative text analysis in R.  Provides functionality for corpus management,
@@ -20,7 +20,7 @@ Authors@R: c( person("Kenneth", "Benoit", email = "kbenoit@lse.ac.uk", role =
 License: GPL-3
 Depends: R (>= 3.1.0), methods
 Imports: extrafont, Matrix (>= 1.2), data.table (>= 1.9.6), SnowballC,
-        sna, network, ggrepel, Rcpp (>= 0.12.12), RcppParallel,
+        sna, ggrepel, network, Rcpp (>= 0.12.12), RcppParallel,
         RSpectra, stringi, fastmatch, ggplot2 (>= 2.2.0), XML, yaml,
         lubridate, magrittr, spacyr, stopwords
 LinkingTo: Rcpp, RcppParallel, RcppArmadillo (>= 0.7.600.1.0)
@@ -42,10 +42,10 @@ Collate: 'RcppExports.R' 'View.R' 'bootstrap_dfm.R'
         'dfm_compress.R' 'dfm_group.R' 'dfm_lookup.R' 'dfm_replace.R'
         'dfm_sample.R' 'dfm_select.R' 'dfm_sort.R' 'dfm_subset.R'
         'dfm_trim.R' 'dfm_weight.R' 'dictionaries.R' 'docnames.R'
-        'docvars.R' 'fcm-methods.R' 'fcm.R' 'kwic.R' 'nfunctions.R'
-        'nscrabble.R' 'nsyllable.R' 'phrases.R'
-        'quanteda-documentation.R' 'quanteda_options.R'
-        'readtext-methods.R' 'regex2fixed.R' 'settings.R'
+        'docvars.R' 'fcm-classes.R' 'fcm-methods.R' 'fcm-subsetting.R'
+        'fcm.R' 'kwic.R' 'nfunctions.R' 'nscrabble.R' 'nsyllable.R'
+        'pattern2fixed.R' 'phrases.R' 'quanteda-documentation.R'
+        'quanteda_options.R' 'readtext-methods.R' 'settings.R'
         'spacyr-methods.R' 'stopwords.R' 'textmodel-methods.R'
         'textmodel_affinity.R' 'textmodel_ca.R' 'textmodel_lsa.R'
         'textmodel_nb.R' 'textmodel_wordfish.R'
@@ -59,11 +59,10 @@ Collate: 'RcppExports.R' 'View.R' 'bootstrap_dfm.R'
         'tokens_ngrams.R' 'tokens_replace.R' 'tokens_segment.R'
         'tokens_select.R' 'tokens_subset.R' 'utils.R' 'wordstem.R'
         'zzz.R'
-RcppModules: ngramMaker
 RoxygenNote: 6.0.1
 SystemRequirements: C++11
 NeedsCompilation: yes
-Packaged: 2018-03-06 20:11:48 UTC; kbenoit
+Packaged: 2018-04-15 17:51:45 UTC; kbenoit
 Author: Kenneth Benoit [aut, cre, cph],
   Kohei Watanabe [ctb],
   Paul Nulty [ctb],
@@ -74,4 +73,4 @@ Author: Kenneth Benoit [aut, cre, cph],
   Will Lowe [ctb]
 Maintainer: Kenneth Benoit <kbenoit@lse.ac.uk>
 Repository: CRAN
-Date/Publication: 2018-03-07 10:03:16 UTC
+Date/Publication: 2018-04-15 19:13:13 UTC

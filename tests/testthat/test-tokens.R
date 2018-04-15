@@ -1,20 +1,5 @@
 context("testing tokens")
 
-test_that("nsyllable works as expected", {
-    txt <- c(one = "super freakily yes",
-             two = "merrily all go aerodynamic")
-    toks <- tokens(txt)
-    expect_equivalent(nsyllable(toks), list(c(2, 3, 1), c(3, 1, 1, 5)))
-})
-
-test_that("nsyllable works as expected with padding = TRUE", {
-    txt <- c(one = "super freakily yes",
-             two = "merrily, all go aerodynamic")
-    toks <- tokens_remove(tokens(txt), c("yes", "merrily"), padding = TRUE)
-    expect_equivalent(nsyllable(toks), list(c(2, 3, NA), c(NA, NA, 1, 1, 5)))
-})
-
-
 test_that("as.tokens list version works as expected", {
     txt <- c(doc1 = "The first sentence is longer than the second.",
              doc2 = "Told you so.")
@@ -23,7 +8,6 @@ test_that("as.tokens list version works as expected", {
     expect_equal(as.tokens(tokslist), 
                  toks)
 })
-
 
 test_that("tokens indexing works as expected", {
     toks <- tokens(c(d1 = "one two three", d2 = "four five six", d3 = "seven eight"))
@@ -37,6 +21,12 @@ test_that("tokens indexing works as expected", {
     # issue #370
     expect_equal(attr(toks[1], "types"), c("one", "two", "three"))
     expect_equal(attr(toks[2], "types"), c("four", "five", "six"))
+    
+    # issue #1308
+    expect_error(toks[4], "Subscript out of bounds")
+    expect_error(toks[1:4], "Subscript out of bounds")
+    expect_error(toks["d4"], "Subscript out of bounds")
+    expect_error(toks[c("d1", "d4")], "Subscript out of bounds")
 })
 
 test_that("tokens_recompile combine duplicates is working", {

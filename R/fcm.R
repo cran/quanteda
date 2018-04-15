@@ -1,30 +1,3 @@
-#' @include dfm-classes.R
-
-#' @title Virtual class "fcm" for a feature co-occurrence matrix
-#' 
-#' @description The fcm class of object is a special type of \link{dfm}
-#'   object with additional slots, described below.  
-#'     
-#' @slot context the context definition
-#' @slot window the size of the window, if \code{context = "window"}
-#' @slot count how co-occurrences are counted
-#' @slot weights context weighting for distance from target feature, equal in length to \code{window}
-#' @slot tri whether the lower triangle of the symmetric \eqn{V \times V} matrix is recorded
-#' @slot ordered whether a term appears before or after the target feature 
-#'      are counted separately
-#' @seealso \link{fcm}
-#' @export
-#' @import methods
-#' @docType class
-#' @name fcm-class
-#' @keywords internal
-setClass("fcm",
-         slots = c(context = "character", window = "integer", 
-                   count = "character", weights = "numeric", 
-                   ordered = "logical", tri = "logical"),
-         # prototype = list(Dimnames = list(contexts = NULL, features = NULL)),
-         #contains = c("dfm", "dgCMatrix", "dtCMatrix"))
-         contains = c("dfm", "dgCMatrix"))
 
 #' Create a feature co-occurrence matrix
 #' 
@@ -169,10 +142,11 @@ fcm.dfm <- function(x, context = c("document", "window"),
     count <- match.arg(count)
     window <- as.integer(window)
     x <- as.dfm(x)
+    margin <- colSums(x)
     
     if (!nfeat(x)) {
         result <- new("fcm", as(make_null_dfm(), "dgCMatrix"), count = count,
-                      context = context, window = window, 
+                      context = context, window = window, margin = numeric(),
                       weights = weights, tri = tri)
         return(result)
     }
@@ -212,7 +186,7 @@ fcm.dfm <- function(x, context = c("document", "window"),
 
     # create a new feature context matrix
     result <- new("fcm", as(result, "dgCMatrix"), count = count,
-                  context = context, window = window, 
+                  context = context, window = window, margin = margin,
                   weights = weights, tri = tri)
     # set the names 
     names(result@Dimnames) <- c("features", "features")
@@ -262,7 +236,7 @@ fcm.tokens <- function(x, context = c("document", "window"),
     
     # create a new feature context matrix
     result <- new("fcm", as(result, "dgCMatrix"), count = count,
-                  context = context, window = window, 
+                  context = context, window = window, margin = colSums(dfm(x)),
                   weights = weights, tri = tri)
     # set the names 
     names(result@Dimnames) <- c("features", "features")

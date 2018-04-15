@@ -14,15 +14,12 @@ textstat_simil(x, selection = NULL, margin = c("documents", "features"),
 \arguments{
 \item{x}{a \link{dfm} object}
 
-\item{selection}{character vector of document names or feature labels from
-\code{x}; or, a numeric vector or matrix which is conforms to \code{x}. A
-\code{"dist"} object is returned if selection is \code{NULL}, otherwise, a
-matrix is returned matching distances to the documents or features identified
-in the selection.}
+\item{selection}{a valid index for document or feature names from \code{x},
+to be selected for comparison}
 
-\item{margin}{identifies the margin of the dfm on which similarity or 
+\item{margin}{identifies the margin of the dfm on which similarity or
 difference will be computed:  \code{"documents"} for documents or 
-\code{"features"} for word/term features.}
+\code{"features"} for word/term features}
 
 \item{method}{method the similarity or distance measure to be used; see
 Details}
@@ -35,7 +32,10 @@ matrix is recorded}
 \item{p}{The power of the Minkowski distance.}
 }
 \value{
-\code{textstat_simil} and \code{textstat_dist} return \code{dist} class objects.
+\code{textstat_simil} and \code{textstat_dist} return
+  \code{\link{dist}} class objects if selection is \code{NULL}, otherwise, a
+  matrix is returned matching distances to the documents or features
+  identified in the selection.
 }
 \description{
 These functions compute matrixes of distances and similarities between 
@@ -77,17 +77,18 @@ textstat_dist(presDfm, "2005-Bush", margin = "documents", method = "jaccard")
 as.list(d1)
 
 # similarities for documents
-(s1 <- textstat_simil(presDfm, method = "cosine", margin = "documents"))
+pres_dfm <- dfm(data_corpus_inaugural, remove_punct = TRUE, remove = stopwords("english"))
+(s1 <- textstat_simil(pres_dfm, method = "cosine", margin = "documents"))
 as.matrix(s1)
 as.list(s1)
 
 # similarities for for specific documents
-textstat_simil(presDfm, "2017-Trump", margin = "documents")
-textstat_simil(presDfm, "2017-Trump", method = "cosine", margin = "documents")
-textstat_simil(presDfm, c("2009-Obama" , "2013-Obama"), margin = "documents")
+textstat_simil(pres_dfm, "2017-Trump", margin = "documents")
+textstat_simil(pres_dfm, "2017-Trump", method = "cosine", margin = "documents")
+textstat_simil(pres_dfm, c("2009-Obama" , "2013-Obama"), margin = "documents")
 
 # compute some term similarities
-s2 <- textstat_simil(presDfm, c("fair", "health", "terror"), method = "cosine", 
+s2 <- textstat_simil(pres_dfm, c("fair", "health", "terror"), method = "cosine", 
                       margin = "features")
 head(as.matrix(s2), 10)
 as.list(s2, n = 8)

@@ -1,3 +1,4 @@
+context("test textstat_keyness()")
 
 test_that("keyness_textstat chi2 computation is correct", {
     mydfm <- dfm(c(d1 = "b b b b b b b a a a",
@@ -17,6 +18,34 @@ test_that("keyness_textstat chi2 computation is correct", {
     expect_equivalent(
         result$statistic,
         textstat_keyness(mydfm, sort = FALSE, correction = "none")[[1, 2]]
+    )
+})
+
+test_that("keyness_textstat chi2 computation is correct for three rows", {
+    txt <- c(d1 = "b b b b b b b a a a",
+             d2 = "a a a a a a a b b",
+             d3 = "a a a b b b")
+    mydfm <- dfm(txt)
+    mydfm_grouped <- dfm(txt, groups = c("target", "zref", "zref"))
+    suppressWarnings(
+        result <- stats::chisq.test(as.matrix(mydfm_grouped), correct = TRUE)
+    )
+    expect_equal(
+        as.numeric(result$statistic),
+        as.numeric(textstat_keyness(mydfm, sort = FALSE, correction = "default")[1, "chi2"])
+    )
+    expect_equal(
+        as.numeric(textstat_keyness(mydfm, sort = FALSE, correction = "default")[1, "chi2"]),
+        as.numeric(textstat_keyness(mydfm, sort = FALSE, correction = "yates")[1, "chi2"])
+    )
+    
+    # uncorrected
+    suppressWarnings(
+        result <- stats::chisq.test(as.matrix(mydfm_grouped), correct = FALSE)
+    )
+    expect_equal(
+        as.numeric(result$statistic),
+        as.numeric(textstat_keyness(mydfm, sort = FALSE, correction = "none")[1, "chi2"])
     )
 })
 
@@ -48,10 +77,17 @@ test_that("keyness_chi2 internal methods are equivalent", {
 test_that("basic textstat_keyness works on two rows", {
     mydfm <- dfm(c(d1 = "a a a b b c c c c c c d e f g h h",
                    d2 = "a a b c c d d d d e f h"))
-    expect_equal(textstat_keyness(mydfm)$feature,
+    key1 <- textstat_keyness(mydfm)
+    expect_equal(key1$feature,
                  c("g", "c", "b", "h", "a", "e", "f", "d"))
-    expect_equal(textstat_keyness(mydfm, target = 2)$feature,
+    expect_equal(attr(key1, 'groups'),
+                 c("d1", "d2"))
+    key2 <- textstat_keyness(mydfm, target = 2)
+    expect_equal(key2$feature,
                  c("d", "e", "f", "a", "b", "h", "c", "g"))
+    expect_equal(attr(key2, 'groups'),
+                 c("d2", "d1"))
+
 })
 
 test_that("textstat_keyness works with different targets", {
@@ -65,14 +101,6 @@ test_that("textstat_keyness works with different targets", {
                  textstat_keyness(mydfm, target = 2))
     expect_equal(textstat_keyness(mydfm, target = "d2"),
                  textstat_keyness(mydfm, target = c(FALSE, TRUE)))
-})
-
-test_that("textstat_keyness works with different targets", {
-    mydfm <- dfm(c(d1 = "a a a b b c c c c c c d e f g h h",
-                   d2 = "a a b c c d d d d e f h", 
-                   d3 = "a a a a b b c c d d d d d d"))
-    expect_equal(textstat_keyness(mydfm, 3),
-                 textstat_keyness(mydfm, target = "d3"))    
 })
 
 test_that("textstat_keyness combines non-target rows correctly", {
@@ -282,4 +310,22 @@ test_that("textstat_keyness correction warnings for pmi and exact", {
     )
 })
 
+
+test_that("group labels are correct, #1257", {
+  
+    mt <- dfm(c(d1 = 'a b c', d2 = 'a b f g', d3 = 'c h i j', d4 = 'i j'))
+
+    key1 <- textstat_keyness(mt, target = 'd1')
+    expect_identical(attr(key1, 'groups'), c("d1", "reference"))
+    
+    key2 <- textstat_keyness(mt, target = 'd4')
+    expect_identical(attr(key2, 'groups'), c("d4", "reference"))
+    
+    key3 <- textstat_keyness(mt, target = c('d1', 'd2'))
+    expect_identical(attr(key3, 'groups'), c("target", "reference"))
+    
+    key4 <- textstat_keyness(mt[1:2,], target = 'd1')
+    expect_identical(attr(key4, 'groups'), c("d1", "d2"))
+    
+})
 

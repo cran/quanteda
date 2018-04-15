@@ -124,19 +124,18 @@ test_that("test corpus constructors works for data.frame", {
     expect_error(corpus(mydf, text_field = "notfound"),
                  "column name notfound not found")
     
-    expect_error(corpus(mydf, text_field = "some_text", docid_field = "some_ints"),
-                 "docid_field must refer to a character mode column")
+    # expect_error(corpus(mydf, text_field = "some_text", docid_field = "some_ints"),
+    #              "docid_field must refer to a character mode column")
     expect_error(corpus(mydf, text_field = "some_text", docid_field = c(1,3)),
                  "docid_field must refer to a single column")
     expect_error(corpus(mydf, text_field = "some_text", docid_field = c("some_text", "letter_factor")),
                  "docid_field must refer to a single column")
     expect_error(corpus(mydf, text_field = "some_text", docid_field = 0),
-                 "docid_field index refers to an invalid column")
+                 "docid_field column not found or invalid")
     expect_error(corpus(mydf, text_field = "some_text", docid_field = -1),
-                 "docid_field index refers to an invalid column")
+                 "docid_field column not found or invalid")
     expect_error(corpus(mydf, text_field = "some_text", docid_field = "notfound"),
-                 "column name notfound not found")
-
+                 "docid_field column not found or invalid")
 })
 
 
@@ -219,10 +218,6 @@ test_that("corpus_subset works", {
 
 })
 
-test_that("summary method works for corpus", {
-    expect_output(summary(print(data_corpus_irishbudget2010)), regexp = "^Corpus consisting of 14 documents")
-})
-
 test_that("corpus works for texts with duplicate filenames", {
     txt <- c(one = "Text one.", two = "text two", one = "second first text")
     cor <- corpus(txt)
@@ -249,24 +244,6 @@ test_that("create a corpus on a corpus", {
                metacorpus = metacorpus(data_corpus_irishbudget2010),
                compress = TRUE)
     )
-})
-
-test_that("summary.corpus with verbose prints warning", {
-    expect_warning(
-        summary(data_corpus_irishbudget2010, verbose = FALSE),
-        "verbose argument is defunct"
-    )        
-})
-
-test_that("summary.corpus works with longer corpora n > default (#1242)", {
-    longcorp <- corpus(
-        rep(LETTERS, 4), 
-        docvars = data.frame(label = rep(paste("document", 1:26), 4),
-                             stringsAsFactors = FALSE)
-    )
-    expect_equal(ndoc(longcorp), 104)
-    expect_is(summary(longcorp, n = 101), "data.frame")
-    expect_equal(nrow(summary(longcorp, n = 101)), 101)
 })
 
 test_that("head, tail.corpus work as expected", {
@@ -312,22 +289,6 @@ test_that("corpus constructor works with tibbles", {
     )
 })
 
-test_that("print.summary.corpus work", {
-    summ1 <- summary(data_corpus_inaugural + data_corpus_inaugural)
-    expect_output(
-        print(summ1),
-        "Corpus consisting of 116 documents, showing 100 documents:"
-    )
-    expect_output(
-        print(summ1[1:5, ]),
-        "\\s+Text Types Tokens"
-    )
-    expect_output(
-        print(summ1[, c("Types", "Tokens")]),
-        "^\\s+Types Tokens\\n1\\s+625\\s+1538"
-    )
-})
-
 test_that("corpus works on dplyr grouped data.frames (#1232)", {
     skip_if_not_installed("dplyr")
     mydf_grouped <- 
@@ -339,7 +300,101 @@ test_that("corpus works on dplyr grouped data.frames (#1232)", {
         dplyr::group_by(letter_factor) %>% 
         dplyr::mutate(n_group = n())
     expect_output(
-        quanteda::print(corpus(mydf_grouped)),
+        print(corpus(mydf_grouped)),
         "^Corpus consisting of 6 documents and 3 docvars\\.$"
     )
+})
+
+test_that("corpus + operator works", {
+    corp1 <- corpus(LETTERS[1:3], docvars = data.frame(one = 1:3, two = 4:6))
+    corp2 <- corpus(LETTERS[1:3], docvars = data.frame(one = 7:9, three = 10:12))
+    sm <- summary(corp1 + corp2)
+    expect_identical(sm$one, c(1:3, 7:9))
+    expect_identical(sm$two, c(4:6, NA, NA, NA))
+    expect_identical(sm$three, c(NA, NA, NA, 10:12))
+    expect_identical(
+        texts(corpus(LETTERS[1:3]) + corpus(LETTERS[3:5])),
+        c(text1 = "A", text2 = "B", text3 = "C", text11 = "C", text21= "D", text31 = "E")
+    )
+})
+
+test_that("corpus.data.frame sets docnames correctly", {
+    txt <- c("Text one.", "Text two.  Sentence two.", "Third text is here.")
+    dnames <- paste(LETTERS[1:3], "dn", sep = "-")
+    rnames <- paste(LETTERS[1:3], "rn", sep = "-")
+    df_with_text_docid_rownames <- 
+        data.frame(text = txt,  doc_id = dnames, row.names = rnames, stringsAsFactors = FALSE)
+    df_with_NOtext_docid_rownames <- 
+        data.frame(other = txt, doc_id = dnames, row.names = rnames, stringsAsFactors = FALSE)
+    df_with_text_docid_NOrownames <- 
+        data.frame(text = txt,  doc_id = dnames, row.names = NULL, stringsAsFactors = FALSE)
+    df_with_NOtext_docid_NOrownames <- 
+        data.frame(other = txt, doc_id = dnames, row.names = NULL, stringsAsFactors = FALSE)
+    df_with_NOtext_NOdocid_NOrownames <- 
+        data.frame(other = txt,                  row.names = NULL, stringsAsFactors = FALSE)
+    df_with_text_NOdocid_rownames <- 
+        data.frame(text = txt,                   row.names = rnames, stringsAsFactors = FALSE)
+    df_with_text_NOdocid_NOrownames <- 
+        data.frame(text = txt,                   row.names = NULL, stringsAsFactors = FALSE)
+    df_with_NOtext_NOdocid_rownames <- 
+        data.frame(other = txt,                  row.names = rnames, stringsAsFactors = FALSE)
+
+    expect_identical(
+        docnames(corpus(df_with_text_docid_rownames)),
+        c("A-dn", "B-dn", "C-dn")
+    )
+    expect_error(
+        corpus(df_with_text_docid_rownames, docid_field = "notfound"),
+        "docid_field column not found or invalid"
+    )
+    expect_identical(
+        docnames(corpus(df_with_text_NOdocid_rownames)),
+        c("A-rn", "B-rn", "C-rn")
+    )
+    expect_identical(
+        docnames(corpus(df_with_text_NOdocid_NOrownames)),
+        paste0(quanteda_options("base_docname"), seq_len(nrow(df_with_text_NOdocid_NOrownames)))
+    )
+    
+    newdf <- data.frame(df_with_text_docid_rownames, new = c(99, 100, 101))
+    expect_identical(
+        docnames(corpus(newdf, docid_field = "new")),
+        c("99", "100", "101")
+    )
+    expect_identical(
+        docvars(corpus(newdf, docid_field = "new")),
+        data.frame(doc_id = c("A-dn", "B-dn", "C-dn"), row.names = as.character(99:101), 
+                   stringsAsFactors = FALSE)
+    )
+    expect_identical(
+        docvars(corpus(newdf)),
+        data.frame(new = as.numeric(99:101), row.names = c("A-dn", "B-dn", "C-dn"), 
+                   stringsAsFactors = FALSE)
+    )
+
+    newdf2 <- newdf
+    names(newdf2)[2] <- "notdoc_id"
+    row.names(newdf2) <- NULL
+    expect_identical(
+        docvars(corpus(newdf2)),
+        data.frame(
+            notdoc_id = c("A-dn", "B-dn", "C-dn"),
+            new = c(99, 100, 101),
+            row.names = paste0(quanteda_options("base_docname"), 
+                               seq_len(nrow(df_with_text_NOdocid_NOrownames))),
+            stringsAsFactors = FALSE
+        )
+    )
+
+    newdf <- data.frame(df_with_text_NOdocid_NOrownames, new = c(99, 100, 101))
+    expect_identical(
+        docnames(corpus(newdf, docid_field = "new")),
+        c("99", "100", "101")
+    )        
+
+    newdf <- data.frame(df_with_text_NOdocid_NOrownames, new = c(TRUE, FALSE, TRUE))
+    expect_identical(
+        docnames(corpus(newdf, docid_field = "new")),
+        c("TRUE", "FALSE", "TRUE.1")
+    )        
 })

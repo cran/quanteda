@@ -39,20 +39,21 @@ message_select <- function(selection, nfeats, ndocs, nfeatspad = 0, ndocspad = 0
     catm("", appendLF = TRUE)
 }
 
+
 ##
 ## reassign the slots to an S4 dfm-like object
 ## necessary when some operation from the Matrix class obliterates them
 ## Ken B
-reassign_slots <- function(x_new, x_org, exceptions = NULL) {
-    snames <- slotNames(class(x_org))
-    snames <- setdiff(snames, c("Dim", "Dimnames", "i", "p", "x", "factors", exceptions))
-    for (sname in snames) {
-        try({
-            slot(x_new, sname) <- slot(x_org, sname)
-        }, silent = TRUE)
-    }
-    x_new
-}
+# reassign_slots <- function(x_new, x_org, exceptions = NULL) {
+#     snames <- slotNames(class(x_org))
+#     snames <- setdiff(snames, c("Dim", "Dimnames", "i", "p", "x", "factors", exceptions))
+#     for (sname in snames) {
+#         try({
+#             slot(x_new, sname) <- slot(x_org, sname)
+#         }, silent = TRUE)
+#     }
+#     x_new
+# }
 
 
 #' Function extending base::attributes()
@@ -108,10 +109,10 @@ create <- function(x, what, attrs = NULL, overwrite_attributes = FALSE, ...) {
 #' @param case_insensitive ignore the case of dictionary values if \code{TRUE}
 #' @param concatenator concatenator that join multi-word expression in tokens object
 #' @param remove_unigram ignore single-word patterns if \code{TRUE}
-#' @seealso regex2id
+#' @seealso pattern2id
 #' @keywords internal
-pattern2id <- function(pattern, types, valuetype, case_insensitive, 
-                       concatenator = '_', remove_unigram = FALSE) {
+pattern2list <- function(pattern, types, valuetype, case_insensitive, 
+                         concatenator = '_', remove_unigram = FALSE) {
     
     if (is.dfm(pattern)) 
         stop('dfm cannot be used as pattern')
@@ -131,7 +132,7 @@ pattern2id <- function(pattern, types, valuetype, case_insensitive,
         }
         if (remove_unigram)
             pattern <- pattern[lengths(pattern) > 1] # drop single-word pattern
-        pattern_id <- regex2id(pattern, types, valuetype, case_insensitive)
+        pattern_id <- pattern2id(pattern, types, valuetype, case_insensitive)
     }
     attr(pattern_id, 'pattern') <- stri_c_list(pattern, sep = ' ')
     return(pattern_id)

@@ -35,7 +35,7 @@
 #' @param labeloffset  position of group labels. Only used when
 #'   \code{comparison=TRUE}.
 #' @param fixed_aspect if \code{TRUE}, the aspect ratio is fixed. Variable
-#'   aspect ratio only supported if rotation = 0
+#'   aspect ratio only supported if rotation = 0.
 #' @param comparison if \code{TRUE}, plot a wordclound that compares documents
 #'   in the same way as \code{\link[wordcloud]{comparison.cloud}}
 #' @param ... additional parameters. Only used to make it compatible with
@@ -46,7 +46,7 @@
 #' obama_dfm <- 
 #'     dfm(corpus_subset(data_corpus_inaugural, President == "Obama"),
 #'         remove = stopwords("english"), remove_punct = TRUE) %>%
-#'     dfm_trim(min_count = 3)
+#'     dfm_trim(min_termfreq = 3)
 #'     
 #' # basic wordcloud
 #' textplot_wordcloud(obama_dfm)
@@ -64,13 +64,14 @@
 #' obama_trump_dfm <- 
 #'     dfm(corpus_subset(data_corpus_inaugural, President %in% c("Obama", "Trump")),
 #'         remove = stopwords("english"), remove_punct = TRUE, groups = "President") %>%
-#'     dfm_trim(min_count = 3)
+#'     dfm_trim(min_termfreq = 3)
 #' 
 #' textplot_wordcloud(obama_trump_dfm, comparison = TRUE, max_words = 300,
 #'                    color = c("blue", "red"))
 #' @export
 #' @keywords textplot
-#' @author Kohei Watanabe, build on code from Ian Fellows's \pkg{wordcloud} package.
+#' @author Kohei Watanabe, building on code from Ian Fellows's \pkg{wordcloud}
+#'   package.
 #' @import ggplot2
 textplot_wordcloud <- function(x, 
                                min_size = 0.5, 
@@ -151,7 +152,7 @@ textplot_wordcloud.dfm <- function(x,
 #' @param use.r.layout deprecated argument
 #' @param fixed.asp deprecated argument
 #' @keywords internal
-#' @author Kohei Watanabe, built on code from Ian Fellows's \pkg{wordcloud} package.
+#' @author Kohei Watanabe, builting on code from Ian Fellows's \pkg{wordcloud} package.
 wordcloud <- function(x, min_size, max_size, min_count, max_words, 
                       color, font, adjust, rotation,
                       random_order, random_color, ordered_color,
@@ -211,7 +212,7 @@ wordcloud <- function(x, min_size, max_size, min_count, max_words,
     nc <- length(color)
     
     font <- check_font(font)
-    x <- dfm_trim(x, min_count = min_count)
+    x <- dfm_trim(x, min_termfreq = min_count)
     freq <- Matrix::colSums(x)
     word <- names(freq)
     freq <- unname(freq)
@@ -243,6 +244,7 @@ wordcloud <- function(x, min_size, max_size, min_count, max_words,
     op <- graphics::par(no.readonly = TRUE)
     graphics::par(mar = c(0, 0, 0, 0), usr = c(-1, 1, -1, 1), family = font)
     graphics::plot.new()
+    
     if (fixed_aspect) {
         graphics::plot.window(c(0, 1), c(0, 1), asp = 1)
     } else {
@@ -250,6 +252,7 @@ wordcloud <- function(x, min_size, max_size, min_count, max_words,
     }
     freq <- freq / max(freq)
     size <- (max_size - min_size) * freq + min_size
+    size <- size * (min(grDevices::dev.size("in")) / 7) # default window size is 7 in
     boxes <- list()
     for (i in seq_along(word)) {
         rot <- stats::runif(1) < rotation
@@ -260,6 +263,7 @@ wordcloud <- function(x, min_size, max_size, min_count, max_words,
 
         wd <- graphics::strwidth(word[i], cex = size[i])
         ht <- graphics::strheight(word[i], cex = size[i])
+        
         if (grepl(tails, word[i]))
             ht <- ht * 1.2 # extra height for g, j, p, q, y
         if (rot) {
@@ -365,7 +369,7 @@ wordcloud_comparison <- function(x, min_size, max_size, min_count, max_words,
     }
     
     font <- check_font(font)
-    x <- dfm_trim(x, min_count = min_count)
+    x <- dfm_trim(x, min_termfreq = min_count)
     x <- dfm_weight(x, 'prop')
     x <- t(x) - Matrix::colMeans(x)
     x <- as.matrix(x)
@@ -408,6 +412,7 @@ wordcloud_comparison <- function(x, min_size, max_size, min_count, max_words,
     }
     freq <- freq / max(freq)
     size <- (max_size - min_size) * freq + min_size
+    size <- size * (min(grDevices::dev.size("in")) / 7) # default window size is 7 in
     boxes <- list()
     
     docnames <- colnames(x)

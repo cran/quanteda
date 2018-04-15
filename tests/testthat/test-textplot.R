@@ -88,13 +88,14 @@ test_that("test plot.kwic keeps order of keywords passed", {
 
 test_that("test textplot_wordcloud works for dfm objects", {
     mt <- dfm(data_corpus_inaugural[1:5])
-    mt <- dfm_trim(mt, min_count = 10)
+    mt <- dfm_trim(mt, min_termfreq = 10)
     expect_silent(textplot_wordcloud(mt))
 })
 
 test_that("test textplot_wordcloud comparison works", {
     skip_on_travis()
     skip_on_cran()
+    skip_on_os('linux')
     testcorp <- corpus_reshape(corpus(data_char_sampletext))
     set.seed(1)
     docvars(testcorp, "label") <- sample(c("A", "B"), size = ndoc(testcorp), replace = TRUE)
@@ -122,7 +123,7 @@ test_that("test textplot_wordcloud comparison works", {
 test_that("test textplot_wordcloud raise deprecation message", {
     
     mt <- dfm(data_corpus_inaugural[1:5])
-    mt <- dfm_trim(mt, min_count = 10)
+    mt <- dfm_trim(mt, min_termfreq = 10)
     expect_warning(textplot_wordcloud(mt, min.freq = 10), 'min.freq is deprecated')
     expect_warning(textplot_wordcloud(mt, use.r.layout = 10), 'use.r.layout is no longer use')
 })

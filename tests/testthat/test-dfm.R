@@ -409,6 +409,110 @@ test_that("dfm works with relational operators", {
     expect_is(testdfm < -1, "lgCMatrix")
 })
 
+test_that("dfm addition (+) keeps attributes #1279", {
+    tmp <- head(data_dfm_lbgexample, 4, nf = 3)
+
+    # @settings slot
+    tmp@settings <- list(test = 1)
+    expect_equal(
+        (tmp + 1)@settings,
+        list(test = 1)
+    )
+    expect_equal(
+        (1 + tmp)@settings,
+        list(test = 1)
+    )
+
+    # @weightTf slot
+    tmp@weightTf <- list(scheme = "prop", base = exp(1), K = 2)
+    expect_equal(
+        (tmp + 1)@weightTf,
+        list(scheme = "prop", base = exp(1), K = 2)
+    )
+    expect_equal(
+        (1 + tmp)@weightTf,
+        list(scheme = "prop", base = exp(1), K = 2)
+    )
+
+    # @weightDf slot
+    weightDfTest <- list(scheme = "idf", base = NULL, c = NULL,
+                         smoothing = NULL, threshold = NULL)
+    tmp@weightDf <- weightDfTest
+    expect_equal(
+        (tmp + 1)@weightDf,
+        weightDfTest
+    )
+    expect_equal(
+        (1 + tmp)@weightDf,
+        weightDfTest
+    )
+
+    # @smooth slot
+    tmp@smooth <- 5.5
+    expect_equal(
+        (tmp + 1)@smooth,
+        5.5
+    )
+    expect_equal(
+        (1 + tmp)@smooth,
+        5.5
+    )
+
+    # @ngrams slot
+    tmp@ngrams <- 5L
+    expect_equal(
+        (tmp + 1)@ngrams,
+        5L
+    )
+    expect_equal(
+        (1 + tmp)@ngrams,
+        5L
+    )
+
+    # @skip slot
+    tmp@skip <- 5L
+    expect_equal(
+        (tmp + 1)@skip,
+        5L
+    )
+    expect_equal(
+        (1 + tmp)@skip,
+        5L
+    )
+
+    # @concatenator slot
+    tmp@concatenator <- "+-+"
+    expect_equal(
+        (tmp + 1)@concatenator,
+        "+-+"
+    )
+    expect_equal(
+        (1 + tmp)@concatenator,
+        "+-+"
+    )
+
+    # @version slot
+    tmp@version <- c(100L, 2L, 4L)
+    expect_equal(
+        (tmp + 1)@version,
+        c(100L, 2L, 4L)
+    )
+    expect_equal(
+        (1 + tmp)@version,
+        c(100L, 2L, 4L)
+    )
+
+    # @docvars slot
+    tmp@docvars <- data.frame(test = letters[1:ndoc(tmp)])
+    expect_equal(
+        (tmp + 1)@docvars,
+        data.frame(test = letters[1:ndoc(tmp)])
+    )
+    expect_equal(
+        (1 + tmp)@docvars,
+        data.frame(test = letters[1:ndoc(tmp)])
+    )
+})
 
 test_that("dfm's document counts in verbose message is correct", {
     txt <- c(d1 = "a b c d e f g x y z",
@@ -740,3 +844,64 @@ test_that("test empty dfm is handled properly", {
     
     expect_output(print(mx), 'Document-feature matrix of: 0 documents, 0 features.')
 })
+
+test_that("dfm raise nicer error message, #1267", {
+
+    txt <- c(d1 = "one two three", d2 = "two three four", d3 = "one three four")
+    mx <- dfm(txt)
+    expect_error(mx['d4',], 'Subscript out of bounds')
+    expect_error(mx[4,], 'Subscript out of bounds')
+    expect_error(mx['d4',,TRUE], 'Subscript out of bounds')
+    expect_error(mx[4,,TRUE], 'Subscript out of bounds')
+    expect_error(mx[1:4,,TRUE], 'Subscript out of bounds')
+    expect_error(mx[1:4,,TRUE], 'Subscript out of bounds')
+    
+    expect_error(mx[,'five'], 'Subscript out of bounds')
+    expect_error(mx[,5], 'Subscript out of bounds')
+    expect_error(mx[,1:5], 'Subscript out of bounds')
+    expect_error(mx['d4','five'], 'Subscript out of bounds')
+    expect_error(mx[,'five',TRUE], 'Subscript out of bounds')
+    expect_error(mx[,5,TRUE], 'Subscript out of bounds')
+    expect_error(mx[,1:5,TRUE], 'Subscript out of bounds')
+    expect_error(mx['d4','five',TRUE], 'Subscript out of bounds')
+    
+    expect_error(mx[4,5], 'Subscript out of bounds')
+    expect_error(mx[1:4,1:5], 'Subscript out of bounds')
+    expect_error(mx[4,5,TRUE], 'Subscript out of bounds')
+    expect_error(mx[1:4,1:5,TRUE], 'Subscript out of bounds')
+    
+})
+
+test_that("dfm keeps non-existent types, #1278", {
+    
+    toks <- tokens("a b c")
+    dict <- dictionary(list(A = "a", B = "b", Z = "z"))
+    
+    toks_key <- tokens_lookup(toks, dict)
+    expect_equal(types(toks_key), c('A', 'B', 'Z'))
+     
+    expect_equal(featnames(dfm(toks_key, tolower = TRUE)),
+                 c('a', 'b', 'z'))
+    
+    expect_equal(featnames(dfm(toks_key, tolower = FALSE)),
+                 c('A', 'B', 'Z'))
+    
+})
+
+test_that("arithmetic/linear operation works with dfm", {
+    
+    mt <- dfm(c(d1 = "a a b", d2 = "a b b c", d3 = "c c d"))
+    expect_true(is.dfm(mt + 2))
+    expect_true(is.dfm(mt - 2))
+    expect_true(is.dfm(mt * 2))
+    expect_true(is.dfm(mt / 2))
+    expect_true(is.dfm(mt ^ 2))
+    expect_true(is.dfm(2 + mt))
+    expect_true(is.dfm(2 - mt))
+    expect_true(is.dfm(2 * mt))
+    expect_true(is.dfm(2 / mt))
+    expect_true(is.dfm(2 ^ mt))
+    expect_true(is.dfm(t(mt)))
+    expect_equal(rowSums(mt), colSums(t(mt)))
+})
+
