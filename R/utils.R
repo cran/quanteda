@@ -177,7 +177,7 @@ check_dots <-  function(dots, permissible_args = NULL) {
 #' @keywords internal
 #' @examples 
 #' # as.tokens.default <- function(x, concatenator = "", ...) {
-#' #     stop(friendly_class_undefined_message(class(x), "as.tokens"))
+#' #     stop(quanteda:::friendly_class_undefined_message(class(x), "as.tokens"))
 #' # }
 friendly_class_undefined_message <- function(object_class, function_name) {
     valid_object_types <- 
@@ -205,11 +205,21 @@ check_font <- function(font) {
         msg <- paste0(font, ' is not found on your system.')
         if (.Platform$OS.type == 'windows') {
             if (!font %in% names(grDevices::windowsFonts()))
-                stop(msg, ' Run extrafont::import_font() and extrafont::loadfonts(device = "win") to use custom fonts.')
+                stop(msg, ' Run extrafont::font_import() and extrafont::loadfonts(device = "win") to use custom fonts.')
         } else {
             if (!font %in% c('sans', 'serif', 'mono', extrafont::fonts()))
-                stop(msg, ' Run extrafont::import_font() to use custom fonts.')
+                stop(msg, ' Run extrafont::font_import() to use custom fonts.')
         }
     }
     return(font)
+}
+
+#' Raise warning of unused dots
+#' @param fun_name name of the function in which dots are not used 
+#' @param ... dots to check
+#' @keywords internal
+unused_dots <- function(...) {
+    if (length(list(...))) {
+        warning(paste("... is not used in", paste0(sys.call(2)[1], "()")))
+    }
 }

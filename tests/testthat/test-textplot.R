@@ -52,14 +52,19 @@ test_that("test plot.kwic facet order parameter", {
 
     p <- textplot_xray(kwic(data_corpus_inaugural, 'american'), sort=TRUE)
     plot_docnames <- as.character(unique(ggplot2::ggplot_build(p)$layout$panel_layout$docname))
+    if(identical(plot_docnames, character(0))) {
+        plot_docnames <- as.character(unique(ggplot2::ggplot_build(p)$layout$layout$docname))
+    }
     expect_true(
         all(
             plot_docnames[order(plot_docnames)] == plot_docnames
         )
     )
-
     p <- textplot_xray(kwic(data_corpus_inaugural, 'american'), kwic(data_corpus_inaugural, 'people'), sort=TRUE)
     plot_docnames <- as.character(unique(ggplot2::ggplot_build(p)$layout$panel_layout$docname))
+    if(identical(plot_docnames, character(0))) {
+        plot_docnames <- as.character(unique(ggplot2::ggplot_build(p)$layout$layout$docname))
+    }
     expect_true(
         all(
             plot_docnames[order(plot_docnames)] == plot_docnames
@@ -70,6 +75,9 @@ test_that("test plot.kwic facet order parameter", {
     p <- textplot_xray(kwic(data_corpus_inaugural[c(53:54, 1:2)], 'american'), 
                        kwic(data_corpus_inaugural[c(53:54, 1:2)], 'people'))
     plot_docnames <- as.character(unique(ggplot2::ggplot_build(p)$layout$panel_layout$docname))
+    if(identical(plot_docnames, character(0))) {
+        plot_docnames <- as.character(unique(ggplot2::ggplot_build(p)$layout$layout$docname))
+    }
     expect_false(
         all(
             plot_docnames[order(plot_docnames)] == plot_docnames
@@ -80,8 +88,13 @@ test_that("test plot.kwic facet order parameter", {
 
 test_that("test plot.kwic keeps order of keywords passed", {
     p <- textplot_xray(kwic(data_corpus_inaugural, 'people'), kwic(data_corpus_inaugural, 'american'), sort=TRUE)
+    keywords <- as.character(unique(ggplot2::ggplot_build(p)$layout$panel_layout$keyword))
+    if(identical(keywords, character(0))) {
+        keywords <- as.character(unique(ggplot2::ggplot_build(p)$layout$layout$keyword))
+    }
+    
     expect_equal(
-        as.character(unique(ggplot2::ggplot_build(p)$layout$panel_layout$keyword)),
+        keywords,
         c('people', 'american')
     )
 })
@@ -129,25 +142,26 @@ test_that("test textplot_wordcloud raise deprecation message", {
 })
 
 test_that("test textplot_scale1d wordfish in the most basic way", {
-    wfm <- textmodel_wordfish(dfm(data_corpus_irishbudget2010), dir = c(6,5))
-    expect_false(identical(textplot_scale1d(wfm, sort = TRUE), 
-                           textplot_scale1d(wfm, sort = FALSE)))
-    expect_silent(textplot_scale1d(wfm, sort = TRUE, groups = docvars(data_corpus_irishbudget2010, "party")))
-    expect_silent(textplot_scale1d(wfm, sort = FALSE, groups = docvars(data_corpus_irishbudget2010, "party")))
+    wf <- textmodel_wordfish(dfm(data_corpus_irishbudget2010), dir = c(6,5))
+    expect_false(identical(textplot_scale1d(wf, sort = TRUE), 
+                           textplot_scale1d(wf, sort = FALSE)))
+    expect_silent(textplot_scale1d(wf, sort = TRUE, groups = docvars(data_corpus_irishbudget2010, "party")))
+    expect_silent(textplot_scale1d(wf, sort = FALSE, groups = docvars(data_corpus_irishbudget2010, "party")))
     
-    expect_silent(textplot_scale1d(wfm, doclabels = apply(docvars(data_corpus_irishbudget2010, c("name", "party")), 
+    expect_silent(textplot_scale1d(wf, doclabels = apply(docvars(data_corpus_irishbudget2010, c("name", "party")), 
                                                           1, paste, collapse = " ")))
     
-    p1 <- textplot_scale1d(wfm, margin = "features", sort = TRUE)
-    p2 <- textplot_scale1d(wfm, margin = "features", sort = FALSE)
+    p1 <- textplot_scale1d(wf, margin = "features", sort = TRUE)
+    p2 <- textplot_scale1d(wf, margin = "features", sort = FALSE)
     p1$plot_env <- NULL
     p2$plot_env <- NULL
     expect_equivalent(p1, p2)
 })
 
 test_that("test textplot_scale1d wordscores in the most basic way", {
-    ws <- textmodel_wordscores(dfm(data_corpus_irishbudget2010), c(rep(NA, 4), -1, 1, rep(NA, 8)))
-    pr <- predict(ws)
+    mt <- dfm(data_corpus_irishbudget2010)
+    ws <- textmodel_wordscores(mt, c(rep(NA, 4), -1, 1, rep(NA, 8)))
+    pr <- predict(ws, mt, force = TRUE)
     expect_false(identical(textplot_scale1d(pr, sort = TRUE), 
                            textplot_scale1d(pr, sort = FALSE)))
     expect_silent(textplot_scale1d(pr, sort = TRUE, groups = docvars(data_corpus_irishbudget2010, "party")))
@@ -196,7 +210,6 @@ test_that("test textplot_keyness: show_reference works correctly ", {
     # raises error when min_count is too high
     expect_error(textplot_keyness(result, show_reference = FALSE, min_count = 100),
                  'Too few words in the documents')
-    
     # plot with two different fills when show_reference = TRUE
     expect_equal(dim(table(ggplot2::ggplot_build(p1)$data[[1]]$colour)), 1)
     expect_equal(dim(table(ggplot2::ggplot_build(p2)$data[[1]]$colour)), 2)

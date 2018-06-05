@@ -1,5 +1,5 @@
 Package: quanteda
-Version: 1.2.0
+Version: 1.3.0
 Title: Quantitative Analysis of Textual Data
 Description: A fast, flexible, and comprehensive framework for 
     quantitative text analysis in R.  Provides functionality for corpus management,
@@ -8,42 +8,55 @@ Description: A fast, flexible, and comprehensive framework for
     of documents by features and feature co-occurrences, analyzing keywords, computing feature similarities and
     distances, applying content dictionaries, applying supervised and unsupervised machine learning, 
     visually representing text and text analyses, and more. 
-Authors@R: c( person("Kenneth", "Benoit", email = "kbenoit@lse.ac.uk", role =
-    c("aut", "cre", "cph")), 
-    person("Kohei", "Watanabe", email = "watanabe.kohei@gmail.com", role = "ctb"), 
-    person("Paul", "Nulty", email = "paul.nulty@gmail.com", role = "ctb"), 
-    person("Adam", "Obeng", email = "quanteda@binaryeagle.com", role = "ctb"),
-    person("Haiyan", "Wang", email = "h.wang52@lse.ac.uk", role = "ctb"),
-    person("Stefan", "Müller", email = "mullers@tcd.ie", role = "ctb"),
-    person("Benjamin", "Lauderdale", email = "B.E.lauderdale@lse.ac.uk", role = "ctb"),
-    person("Will", "Lowe", email = "wlowe@princeton.edu", role = "ctb") )
+Authors@R: c( 
+    person("Kenneth", "Benoit", email = "kbenoit@lse.ac.uk", role = c("cre", "aut", "cph"), comment = c(ORCID = "0000-0002-0797-564X")), 
+    person("Kohei", "Watanabe", email = "watanabe.kohei@gmail.com", role = "aut", comment = c(ORCID = "0000-0001-6519-5265")), 
+    person("Haiyan", "Wang", email = "whyinsa@yahoo.com", role = "aut", comment = c(ORCID = "0000-0003-4992-4311")),
+    person("Paul", "Nulty", email = "paul.nulty@gmail.com", role = "aut", comment = c(ORCID = "0000-0002-7214-4666")), 
+    person("Adam", "Obeng", email = "quanteda@binaryeagle.com", role = "aut", comment = c(ORCID = "0000-0002-2906-4775")),
+    person("Stefan", "Müller", email = "mullers@tcd.ie", role = "aut", comment = c(ORCID = "0000-0002-6315-4125")),
+    person("Akitaka", "Matsuo", email = "a.matsuo@lse.ac.uk", role = "aut", comment = c(ORCID = "0000-0002-3323-6330")),
+    person("Patrick O.", "Perry", email = "patperry@gmail.com", role = "aut", comment = c(ORCID = "0000-0001-7460-127X")),
+    person("Jouni", "Kuha", email = "j.kuha@lse.ac.uk", role = "aut", comment = c(ORCID = "0000-0002-1156-8465")),
+    person("Benjamin", "Lauderdale", email = "b.e.lauderdale@lse.ac.uk", role = "aut", comment = "0000-0003-3090-0969; wordfish C++ code"),    
+    person("William", "Lowe", email = "wlowe@princeton.edu", role = "aut", comment = c(ORCID = "0000-0002-1549-6163")),
+    person("Christian", "Müller", email = "C.Mueller@lse.ac.uk", role = "ctb"),
+    person("Lori", "Young", role = "dtc", comment = "Lexicoder Sentiment Dictionary 2015"),
+    person("Stuart", "Soroka", role = "dtc", comment = "Lexicoder Sentiment Dictionary 2015"),
+    person("Ian", "Fellows", email = "ian@fellstat.com", role = "cph", 
+           comment = "authored wordcloud C source code (modified)"),
+    person("European Research Council", role = "fnd", comment = "ERC-2011-StG 283794-QUANTESS")
+    )
 License: GPL-3
 Depends: R (>= 3.1.0), methods
-Imports: extrafont, Matrix (>= 1.2), data.table (>= 1.9.6), SnowballC,
-        sna, ggrepel, network, Rcpp (>= 0.12.12), RcppParallel,
-        RSpectra, stringi, fastmatch, ggplot2 (>= 2.2.0), XML, yaml,
-        lubridate, magrittr, spacyr, stopwords
+Imports: data.table (>= 1.9.6), extrafont, fastmatch, ggplot2 (>=
+        2.2.0), ggrepel, lubridate, magrittr, Matrix (>= 1.2), network,
+        RSpectra, Rcpp (>= 0.12.12), RcppParallel, sna, SnowballC,
+        spacyr, stopwords, stringi, xml2, yaml
 LinkingTo: Rcpp, RcppParallel, RcppArmadillo (>= 0.7.600.1.0)
-Suggests: knitr, rmarkdown, lda, proxy, topicmodels, tm (>= 0.6), slam,
-        testthat, RColorBrewer, xtable, DT, ca, purrr
+Suggests: ca, dplyr, DT, e1071, ExPosition, koRpus, lda, lsa, proxy,
+        purrr, RColorBrewer, rmarkdown, slam, stm, svs, testthat,
+        text2vec, tibble, tidytext, tm (>= 0.6), topicmodels, xtable,
+        knitr
 URL: http://quanteda.io
 Encoding: UTF-8
 BugReports: https://github.com/quanteda/quanteda/issues
 LazyData: TRUE
 VignetteBuilder: knitr
 Collate: 'RcppExports.R' 'View.R' 'bootstrap_dfm.R'
-        'casechange-functions.R' 'character-methods.R' 'convert.R'
-        'corpus-methods-base.R' 'corpus-methods-quanteda.R'
-        'corpus-methods-tm.R' 'corpus.R' 'corpus_reshape.R'
-        'corpus_sample.R' 'corpus_segment.R' 'corpus_subset.R'
-        'corpus_trim.R' 'corpuszip.R' 'data-deprecated.R'
-        'data-documentation.R' 'defunct-functions.R' 'dfm-classes.R'
-        'dfm-methods.R' 'dfm-print.R' 'dfm-subsetting.R' 'dfm.R'
-        'dfm_compress.R' 'dfm_group.R' 'dfm_lookup.R' 'dfm_replace.R'
-        'dfm_sample.R' 'dfm_select.R' 'dfm_sort.R' 'dfm_subset.R'
-        'dfm_trim.R' 'dfm_weight.R' 'dictionaries.R' 'docnames.R'
-        'docvars.R' 'fcm-classes.R' 'fcm-methods.R' 'fcm-subsetting.R'
-        'fcm.R' 'kwic.R' 'nfunctions.R' 'nscrabble.R' 'nsyllable.R'
+        'casechange-functions.R' 'directionchange-functions.R'
+        'character-methods.R' 'convert.R' 'corpus-methods-base.R'
+        'corpus-methods-quanteda.R' 'corpus-methods-tm.R' 'corpus.R'
+        'corpus_reshape.R' 'corpus_sample.R' 'corpus_segment.R'
+        'corpus_subset.R' 'corpus_trim.R' 'corpuszip.R'
+        'data-deprecated.R' 'data-documentation.R'
+        'defunct-functions.R' 'dfm-classes.R' 'dfm-methods.R'
+        'dfm-print.R' 'dfm-subsetting.R' 'dfm.R' 'dfm_compress.R'
+        'dfm_group.R' 'dfm_lookup.R' 'dfm_replace.R' 'dfm_sample.R'
+        'dfm_select.R' 'dfm_sort.R' 'dfm_subset.R' 'dfm_trim.R'
+        'dfm_weight.R' 'dictionaries.R' 'docnames.R' 'docvars.R'
+        'fcm-classes.R' 'fcm-methods.R' 'fcm-subsetting.R' 'fcm.R'
+        'kwic.R' 'nfunctions.R' 'nscrabble.R' 'nsyllable.R'
         'pattern2fixed.R' 'phrases.R' 'quanteda-documentation.R'
         'quanteda_options.R' 'readtext-methods.R' 'settings.R'
         'spacyr-methods.R' 'stopwords.R' 'textmodel-methods.R'
@@ -62,15 +75,24 @@ Collate: 'RcppExports.R' 'View.R' 'bootstrap_dfm.R'
 RoxygenNote: 6.0.1
 SystemRequirements: C++11
 NeedsCompilation: yes
-Packaged: 2018-04-15 17:51:45 UTC; kbenoit
-Author: Kenneth Benoit [aut, cre, cph],
-  Kohei Watanabe [ctb],
-  Paul Nulty [ctb],
-  Adam Obeng [ctb],
-  Haiyan Wang [ctb],
-  Stefan Müller [ctb],
-  Benjamin Lauderdale [ctb],
-  Will Lowe [ctb]
+Packaged: 2018-06-05 16:08:53 UTC; kbenoit
+Author: Kenneth Benoit [cre, aut, cph]
+    (<https://orcid.org/0000-0002-0797-564X>),
+  Kohei Watanabe [aut] (<https://orcid.org/0000-0001-6519-5265>),
+  Haiyan Wang [aut] (<https://orcid.org/0000-0003-4992-4311>),
+  Paul Nulty [aut] (<https://orcid.org/0000-0002-7214-4666>),
+  Adam Obeng [aut] (<https://orcid.org/0000-0002-2906-4775>),
+  Stefan Müller [aut] (<https://orcid.org/0000-0002-6315-4125>),
+  Akitaka Matsuo [aut] (<https://orcid.org/0000-0002-3323-6330>),
+  Patrick O. Perry [aut] (<https://orcid.org/0000-0001-7460-127X>),
+  Jouni Kuha [aut] (<https://orcid.org/0000-0002-1156-8465>),
+  Benjamin Lauderdale [aut] (0000-0003-3090-0969; wordfish C++ code),
+  William Lowe [aut] (<https://orcid.org/0000-0002-1549-6163>),
+  Christian Müller [ctb],
+  Lori Young [dtc] (Lexicoder Sentiment Dictionary 2015),
+  Stuart Soroka [dtc] (Lexicoder Sentiment Dictionary 2015),
+  Ian Fellows [cph] (authored wordcloud C source code (modified)),
+  European Research Council [fnd] (ERC-2011-StG 283794-QUANTESS)
 Maintainer: Kenneth Benoit <kbenoit@lse.ac.uk>
 Repository: CRAN
-Date/Publication: 2018-04-15 19:13:13 UTC
+Date/Publication: 2018-06-05 17:38:00 UTC
