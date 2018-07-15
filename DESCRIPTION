@@ -1,5 +1,5 @@
 Package: quanteda
-Version: 1.3.0
+Version: 1.3.4
 Title: Quantitative Analysis of Textual Data
 Description: A fast, flexible, and comprehensive framework for 
     quantitative text analysis in R.  Provides functionality for corpus management,
@@ -37,7 +37,7 @@ LinkingTo: Rcpp, RcppParallel, RcppArmadillo (>= 0.7.600.1.0)
 Suggests: ca, dplyr, DT, e1071, ExPosition, koRpus, lda, lsa, proxy,
         purrr, RColorBrewer, rmarkdown, slam, stm, svs, testthat,
         text2vec, tibble, tidytext, tm (>= 0.6), topicmodels, xtable,
-        knitr
+        knitr, igraph
 URL: http://quanteda.io
 Encoding: UTF-8
 BugReports: https://github.com/quanteda/quanteda/issues
@@ -75,7 +75,7 @@ Collate: 'RcppExports.R' 'View.R' 'bootstrap_dfm.R'
 RoxygenNote: 6.0.1
 SystemRequirements: C++11
 NeedsCompilation: yes
-Packaged: 2018-06-05 16:08:53 UTC; kbenoit
+Packaged: 2018-07-15 10:19:21 UTC; kbenoit
 Author: Kenneth Benoit [cre, aut, cph]
     (<https://orcid.org/0000-0002-0797-564X>),
   Kohei Watanabe [aut] (<https://orcid.org/0000-0001-6519-5265>),
@@ -95,4 +95,4 @@ Author: Kenneth Benoit [cre, aut, cph]
   European Research Council [fnd] (ERC-2011-StG 283794-QUANTESS)
 Maintainer: Kenneth Benoit <kbenoit@lse.ac.uk>
 Repository: CRAN
-Date/Publication: 2018-06-05 17:38:00 UTC
+Date/Publication: 2018-07-15 12:50:03 UTC
