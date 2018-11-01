@@ -4,10 +4,11 @@
 \alias{wordcloud_comparison}
 \title{Internal function for textplot_wordcloud}
 \usage{
-wordcloud_comparison(x, min_size, max_size, min_count, max_words, color, font,
-  adjust, rotation, random_order, random_color, ordered_color, labelcolor,
-  labelsize, labeloffset, fixed_aspect, colors, scale, min.freq, max.words,
-  random.order, rot.per, use.r.layout, title.size, ...)
+wordcloud_comparison(x, min_size, max_size, min_count, max_words, color,
+  font, adjust, rotation, random_order, random_color, ordered_color,
+  labelcolor, labelsize, labeloffset, fixed_aspect, colors, scale,
+  min.freq, max.words, random.order, rot.per, use.r.layout, title.size,
+  ...)
 }
 \arguments{
 \item{x}{a dfm object}
@@ -25,8 +26,8 @@ dropped.}
 
 \item{font}{font-family of words and labels. Use default font if \code{NULL}.}
 
-\item{adjust}{ajust sizes of words by a constant. Useful for non-Engish words
-for which R fails to obtain correct sizes.}
+\item{adjust}{adjust sizes of words by a constant. Useful for non-English
+words for which R fails to obtain correct sizes.}
 
 \item{rotation}{proportion of words with 90 degree rotation}
 
@@ -71,8 +72,8 @@ aspect ratio only supported if rotation = 0.}
 \item{ordered.colors}{deprecated argument}
 }
 \description{
-This function impliments wordcloud that compares documents. Code is adopted from
-\code{\link[wordcloud]{comparison.cloud}}.
+This function implements wordcloud that compares documents. Code is adopted
+from \code{\link[wordcloud]{comparison.cloud}}.
 }
 \author{
 Kohei Watanabe, build on code from Ian Fellows's \pkg{wordcloud} package.

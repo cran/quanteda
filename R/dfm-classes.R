@@ -66,29 +66,28 @@ setMethod("t",
 #' @export
 setMethod("colSums", 
           signature = (x = "dfm"),
-          function(x, na.rm = FALSE, dims = 1L, ...) callNextMethod())
+          function(x, ...) Matrix::colSums(as(x, "dgCMatrix"), ...))
 
 #' @method rowSums dfm
 #' @rdname dfm-class
 #' @export
 setMethod("rowSums", 
           signature = (x = "dfm"),
-          function(x, na.rm = FALSE, dims = 1L, ...) callNextMethod())
-
+          function(x, ...) Matrix::rowSums(as(x, "dgCMatrix"), ...))
 
 #' @method colMeans dfm
 #' @rdname dfm-class
 #' @export
 setMethod("colMeans", 
           signature = (x = "dfm"),
-          function(x, na.rm = FALSE, dims = 1L, ...) callNextMethod())
+          function(x, ...) Matrix::colMeans(as(x, "dgCMatrix"), ...))
 
 #' @method rowSums dfm
 #' @rdname dfm-class
 #' @export
 setMethod("rowMeans", 
           signature = (x = "dfm"),
-          function(x, na.rm = FALSE, dims = 1L, ...) callNextMethod())
+          function(x, ...) Matrix::rowMeans(as(x, "dgCMatrix"), ...))
 
 #' @param e1 first quantity in "+" operation for dfm
 #' @param e2 second quantity in "+" operation for dfm
@@ -149,7 +148,7 @@ as.matrix.dfm <- function(x, ...) {
 #' @export
 as.data.frame.dfm <- function(x, row.names = NULL, ..., document = docnames(x),
                               check.names = FALSE) {
-    .Deprecated("convert(x, to \"data.frame\")")
+    .Deprecated("convert(x, to = \"data.frame\")")
     if (!(is.character(document) || is.null(document)))
         stop("document must be character or NULL")
     df <- data.frame(as.matrix(x), row.names = row.names, 
@@ -242,10 +241,10 @@ cbind.dfm <- function(...) {
     # TODO could be removed after upgrading as.dfm()
     names(dimnames(result)) <- c("docs", "features") 
     slots(result) <- attrs
+    result@docvars <- data.frame(matrix(ncol = 0, nrow = nrow(result)))
     return(result)
 
 }
-
 
 #' @rdname cbind.dfm
 #' @details  \code{rbind(x, y, ...)} combines dfm objects by rows, returning a
@@ -272,13 +271,16 @@ rbind.dfm <- function(...) {
     x <- args[[1]]
     y <- args[[2]]
     attrs <- attributes(x)
-    
+
     if (!is.dfm(x) || !is.dfm(y)) stop("all arguments must be dfm objects")
     if (!ndoc(y)) return(x)
     
-    feature <- union(featnames(x), featnames(y))
-    result <- 
-        new("dfm", Matrix::rbind2(pad_dfm(x, feature), pad_dfm(y, feature)))
+    if (identical(featnames(x), featnames(y))) {
+        result <- new("dfm", Matrix::rbind2(x, y))
+    } else {
+        feature <- union(featnames(x), featnames(y))
+        result <- new("dfm", Matrix::rbind2(pad_dfm(x, feature), pad_dfm(y, feature)))
+    }
     if (length(args) > 2) {
         for (i in seq(3, length(args))) {
             result <- rbind(result, args[[i]])
@@ -288,5 +290,6 @@ rbind.dfm <- function(...) {
     # TODO could be removed after upgrading as.dfm()
     names(dimnames(result)) <- c("docs", "features") 
     slots(result) <- attrs
+    result@docvars <- data.frame(matrix(ncol = 0, nrow = nrow(result)))
     return(result)
 }

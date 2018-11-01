@@ -19,7 +19,7 @@
 #'   
 #'   Deerwester, S., Dumais, S. T., Furnas, G. W., Landauer, T. K., & Harshman, 
 #'   R. 1990. 
-#'   "\href{http://search.proquest.com/openview/a1907164bd88dfc38a4875b73a3f7b3d/1?pq-origsite=gscholar&cbl=1818555}{Indexing
+#'   "\href{https://search.proquest.com/docview/1301252034}{Indexing
 #'   by latent semantic analysis}". \emph{Journal of the American society for 
 #'   information science} 41(6), 391.
 #' @examples 
@@ -46,6 +46,8 @@ textmodel_lsa <- function(x, nd = 10, margin = c("both", "documents", "features"
 #' @export
 textmodel_lsa.dfm <- function(x, nd = 10, margin = c("both", "documents", "features")) {
     
+    x <- as.dfm(x)
+    if (!sum(x)) stop(message_error("dfm_empty"))
     margin <- match.arg(margin)
     
     if (nd > min(nrow(x), ncol(x))) nd <- min(nrow(x), ncol(x))
@@ -60,9 +62,8 @@ textmodel_lsa.dfm <- function(x, nd = 10, margin = c("both", "documents", "featu
         dec <- RSpectra::svds(x, nd)
     }
     
-    if (any(dec$d <= sqrt(.Machine$double.eps))) {
-        warning("[lsa] - there are singular values which are zero.")
-    }
+    if (any(dec$d <= sqrt(.Machine$double.eps)))
+        warning("[lsa] - there are singular values which are zero")
     
     result <- list(sk = dec$d, docs = NULL, features = NULL)
     

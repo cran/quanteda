@@ -1,8 +1,8 @@
-#' @rdname textstat_simil
+#' @rdname textstat_simil_old
 #' @export
 #' @param p The power of the Minkowski distance.
 #' @details \code{textstat_dist} options are: \code{"euclidean"} (default), 
-#'   \code{"chisquared"}, \code{"chisquared2"}, \code{"hamming"}, 
+#'   \code{"chisquared"}, \code{"chisquared2"}, 
 #'   \code{"kullback"}. \code{"manhattan"}, \code{"maximum"}, \code{"canberra"},
 #'   and \code{"minkowski"}.
 #' @references The \code{"chisquared"} metric is from Legendre, P., & Gallagher,
@@ -17,8 +17,6 @@
 #'   Quadratic-Chi Histogram Distance Family}". In \emph{Computer Vision – ECCV
 #'   2010} (Vol. 6312, pp. 749–762). Berlin, Heidelberg: Springer, Berlin,
 #'   Heidelberg. doi.org/10.1007/978-3-642-15552-9_54.
-#'   
-#'   \code{"hamming"} is \eqn{\sum{x \neq y)}}.
 #'
 #'   \code{"kullback"} is the Kullback-Leibler distance, which assumes that
 #'   \eqn{P(x_i) = 0} implies \eqn{P(y_i)=0}, and in case both \eqn{P(x_i)} and
@@ -28,31 +26,17 @@
 #'    
 #'   All other measures are described in the \pkg{proxy} package.
 #' @importFrom RcppParallel RcppParallelLibs
+#' @keywords internal textstat
 #' @author Kenneth Benoit, Haiyan Wang
-#' @examples
-#' # create a dfm from inaugural addresses from Reagan onwards
-#' presDfm <- dfm(corpus_subset(data_corpus_inaugural, Year > 1990), 
-#'                remove = stopwords("english"), stem = TRUE, remove_punct = TRUE)
-#'                
-#' # distances for documents 
-#' (d1 <- textstat_dist(presDfm, margin = "documents"))
-#' as.matrix(d1)
-#' 
-#' # distances for specific documents
-#' textstat_dist(presDfm, "2017-Trump", margin = "documents")
-#' textstat_dist(presDfm, "2005-Bush", margin = "documents", method = "jaccard")
-#' (d2 <- textstat_dist(presDfm, c("2009-Obama" , "2013-Obama"), margin = "documents"))
-#' as.list(d1)
-#' 
-textstat_dist <- function(x, selection = NULL, 
+textstat_dist_old <- function(x, selection = NULL, 
                           margin = c("documents", "features"),
                           method = "euclidean",
                           upper = FALSE, diag = FALSE, p = 2) {
-    UseMethod("textstat_dist")
+    UseMethod("textstat_dist_old")
 }
     
 #' @export
-textstat_dist.default <- function(x, selection = NULL, 
+textstat_dist_old.default <- function(x, selection = NULL, 
                                   margin = c("documents", "features"),
                                   method = "euclidean",
                                   upper = FALSE, diag = FALSE, p = 2) {
@@ -60,12 +44,13 @@ textstat_dist.default <- function(x, selection = NULL,
 }
     
 #' @export
-textstat_dist.dfm <- function(x, selection = NULL, 
+textstat_dist_old.dfm <- function(x, selection = NULL, 
                               margin = c("documents", "features"),
                               method = "euclidean",
                               upper = FALSE, diag = FALSE, p = 2) {
     
     x <- as.dfm(x)
+    if (!sum(x)) stop(message_error("dfm_empty"))
     margin <- match.arg(margin)
     method <- char_tolower(method)
     
@@ -76,7 +61,7 @@ textstat_dist.dfm <- function(x, selection = NULL,
     }
     
     m <- if (margin == "documents") 1 else 2
-    methods1 <- c("euclidean", "hamming", "chisquared", "chisquared2", "kullback", "manhattan", "maximum", "canberra")
+    methods1 <- c("euclidean", "chisquared", "chisquared2", "kullback", "manhattan", "maximum", "canberra")
     methods2 <- c("jaccard", "binary", "ejaccard", "simple matching")
     
     if (method %in% methods1) {
@@ -123,29 +108,6 @@ textstat_dist.dfm <- function(x, selection = NULL,
 #' @param ... unused
 #' @method as.list dist
 #' @export
-#' @examples 
-#' \dontrun{
-#' ## compare to tm
-#' 
-#' # tm version
-#' require(tm)
-#' data("crude")
-#' crude <- tm_map(crude, content_transformer(tolower))
-#' crude <- tm_map(crude, remove_punctuation)
-#' crude <- tm_map(crude, remove_numbers)
-#' crude <- tm_map(crude, stemDocument)
-#' tdm <- TermDocumentMatrix(crude)
-#' findAssocs(tdm, c("oil", "opec", "xyz"), c(0.75, 0.82, 0.1))
-#' 
-#' # in quanteda
-#' quantedaDfm <- as.dfm(t(as.matrix(tdm)))
-#' as.list(textstat_dist(quantedaDfm, c("oil", "opec", "xyz"), margin = "features"), n = 14)
-#' 
-#' # in base R
-#' corMat <- as.matrix(proxy::simil(as.matrix(quantedaDfm), by_rows = FALSE))
-#' round(head(sort(corMat[, "oil"], decreasing = TRUE), 14), 2)
-#' round(head(sort(corMat[, "opec"], decreasing = TRUE), 9), 2)
-#' } 
 as.list.dist <- function(x, sorted = TRUE, n = NULL, ...) {
     
     if (!is.null(attr(x, "Labels"))) label <- attr(x, "Labels")
@@ -237,8 +199,9 @@ print.dist_selection <- function(x, ...) {
 #' @method as.matrix dist_selection
 #' @keywords textstat internal
 as.matrix.dist_selection <- function(x, ...) {
-    attributes(x)[setdiff(names(attributes(x)), 
-                          c("dimnames", "dim"))] <- NULL
+    attrs <- attributes(x)
+    attrs <- attrs[names(attrs) %in% c("dimnames", "dim")]
+    attributes(x) <- attrs
     class(x) <- "matrix"
     x
 }
@@ -274,36 +237,36 @@ euclidean_dist <- function(x, y = NULL, margin = 1){
 
 # Hamming distance
 # formula: hamming = sum(x .!= y)
-hamming_dist <- function(x, y = NULL, margin = 1) {
-    
-    if (!(margin %in% 1:2)) stop("margin can only be 1 (rows) or 2 (columns)")
-    
-    # convert to binary matrix
-    x <- dfm_weight(x, "boolean") 
-    x0 <- 1 - x
-    func_cp <- if (margin == 2) Matrix::crossprod else Matrix::tcrossprod
-    func_sum <- if (margin == 2) nrow else ncol
-    func_name <- if (margin == 2) colnames else rownames
-    # union 
-    an <- func_sum(x)
-    if (!is.null(y)) {
-        y <- dfm_weight(y, "boolean")
-        y0 <- 1 - y
-        a <- func_cp(x, y)
-        a0 <- func_cp(x0, y0)
-        colname <- func_name(y)
-    } else {
-        a <- func_cp(x)
-        a0 <- func_cp(x0)
-        colname <- func_name(x)
-    }
-    rowname <- func_name(x)
-    # common values
-    a <- a + a0
-    hammat <- an - a
-    dimnames(hammat) <- list(rowname, colname)
-    hammat
-}
+# hamming_dist <- function(x, y = NULL, margin = 1) {
+#     
+#     if (!(margin %in% 1:2)) stop("margin can only be 1 (rows) or 2 (columns)")
+#     
+#     # convert to binary matrix
+#     x <- dfm_weight(x, "boolean") 
+#     x0 <- 1 - x
+#     func_cp <- if (margin == 2) Matrix::crossprod else Matrix::tcrossprod
+#     func_sum <- if (margin == 2) nrow else ncol
+#     func_name <- if (margin == 2) colnames else rownames
+#     # union 
+#     an <- func_sum(x)
+#     if (!is.null(y)) {
+#         y <- dfm_weight(y, "boolean")
+#         y0 <- 1 - y
+#         a <- func_cp(x, y)
+#         a0 <- func_cp(x0, y0)
+#         colname <- func_name(y)
+#     } else {
+#         a <- func_cp(x)
+#         a0 <- func_cp(x0)
+#         colname <- func_name(x)
+#     }
+#     rowname <- func_name(x)
+#     # common values
+#     a <- a + a0
+#     hammat <- an - a
+#     dimnames(hammat) <- list(rowname, colname)
+#     hammat
+# }
 
 # Chi-squared distance:divide by row sums and square root of column sums, 
 # and adjust for square root of matrix total (Legendre & Gallagher 2001, 
@@ -428,7 +391,11 @@ kullback_dist <- function(x, y = NULL, margin = 1) {
        colname <- func_name(y)
     } else {
         kullmat <- func_sum(x*logx) - func_cp(x, logx)
-       colname <- func_name(x)
+        # cat("func_sum(x*logx)\n")
+        # print(func_sum(x*logx))
+        # cat("func_cp(x, logx)\n")
+        # print(func_cp(x, logx))
+        colname <- func_name(x)
     }
     rowname <- func_name(x)
     dimnames(kullmat) <- list(rowname, colname)

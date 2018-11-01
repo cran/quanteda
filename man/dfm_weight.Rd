@@ -5,8 +5,9 @@
 \alias{dfm_smooth}
 \title{Weight the feature frequencies in a dfm}
 \usage{
-dfm_weight(x, scheme = c("count", "prop", "propmax", "logcount", "boolean",
-  "augmented", "logave"), weights = NULL, base = 10, K = 0.5)
+dfm_weight(x, scheme = c("count", "prop", "propmax", "logcount",
+  "boolean", "augmented", "logave"), weights = NULL, base = 10,
+  K = 0.5)
 
 dfm_smooth(x, smoothing = 1)
 }
@@ -92,7 +93,7 @@ for (w in  c("count", "prop", "propmax", "logcount", "boolean", "augmented", "lo
 dfm_smooth(my_dfm, 0.5)
 }
 \references{
-Manning, Christopher D., Prabhakar Raghavan, and Hinrich Schutze.
+Manning, Christopher D., Prabhakar Raghavan, and Hinrich Schütze.
   \emph{Introduction to Information Retrieval}. Vol. 1. Cambridge: Cambridge 
   University Press, 2008.
 }

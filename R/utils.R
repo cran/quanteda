@@ -109,7 +109,7 @@ create <- function(x, what, attrs = NULL, overwrite_attributes = FALSE, ...) {
 #' @param case_insensitive ignore the case of dictionary values if \code{TRUE}
 #' @param concatenator concatenator that join multi-word expression in tokens object
 #' @param remove_unigram ignore single-word patterns if \code{TRUE}
-#' @seealso pattern2id
+#' @seealso \code{\link{pattern2id}}
 #' @keywords internal
 pattern2list <- function(pattern, types, valuetype, case_insensitive, 
                          concatenator = '_', remove_unigram = FALSE) {
@@ -215,11 +215,30 @@ check_font <- function(font) {
 }
 
 #' Raise warning of unused dots
-#' @param fun_name name of the function in which dots are not used 
 #' @param ... dots to check
 #' @keywords internal
 unused_dots <- function(...) {
-    if (length(list(...))) {
-        warning(paste("... is not used in", paste0(sys.call(2)[1], "()")))
+    arg <- names(list(...))
+    if (length(arg) == 1) {
+        warning(arg[1], " argument is not used in ", 
+                sys.call(2)[1], "()", call. = FALSE)
+    } else if (length(arg) > 1) {
+        warning(paste0(arg, collapse = ", "), " arguments are not used in ", 
+                sys.call(2)[1], "()", call. = FALSE)
     }
 }
+
+
+#' Return an error message
+#' @param key type of error message
+#' @keywords internal
+message_error <- function(key = NULL) {
+    msg <- c("dfm_empty" = "dfm must have at least one non-zero value",
+             "fcm_empty" = "fcm must have at least one non-zero value",
+             "docvar_mismatch" = "data.frame must have the same number of rows as documents")
+    if (is.null(key) || !key %in% names(msg)) {
+        return("")
+    }
+    return(unname(msg[key]))
+}    
+

@@ -1,4 +1,3 @@
-# main methods --------------
 
 #' Naive Bayes classifier for texts
 #' 
@@ -59,9 +58,11 @@
 #'   to Information Retrieval. Cambridge University Press.
 #'   \url{https://nlp.stanford.edu/IR-book/pdf/irbookonlinereading.pdf}
 #'   
-#'   Jurafsky, Daniel and James H. Martin. (2016) \emph{Speech and Language
-#'   Processing.}  Draft of November 7, 2016.
-#'   \url{https://web.stanford.edu/~jurafsky/slp3/6.pdf}
+#'   Jurafsky, Daniel and James H. Martin. (2018). "Chapter 4, Naive Bayes and
+#'   Sentiment Classification." from \emph{Speech and Language Processing}.
+#'   Draft of September 23, 2018.
+#'   \url{https://web.stanford.edu/~jurafsky/slp3/4.pdf}
+#'   
 #' @seealso \code{\link{predict.textmodel_nb}}
 #' @author Kenneth Benoit
 #' @examples
@@ -108,6 +109,8 @@ textmodel_nb.dfm <- function(x, y, smooth = 1,
                              distribution = c("multinomial", "Bernoulli")) {
     
     x <- as.dfm(x)
+    if (!sum(x)) stop(message_error("dfm_empty"))
+    
     prior <- match.arg(prior)
     distribution <- match.arg(distribution)
     call <- match.call()

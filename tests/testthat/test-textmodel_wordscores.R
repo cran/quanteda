@@ -37,7 +37,7 @@ test_that("test wordscores on LBG data, LBG rescaling", {
 test_that("test wordscores fitted and predicted", {
     y <- c(seq(-1.5, 1.5, .75), NA)
     ws <- textmodel_wordscores(data_dfm_lbgexample, y)
-    expect_equal(ws$x, data_dfm_lbgexample)
+    expect_equal(ws$x, as.dfm(data_dfm_lbgexample))
     expect_equal(ws$y, y)
     expect_equal("textmodel_wordscores.dfm", as.character(ws$call)[1])
 })
@@ -206,7 +206,9 @@ test_that("Works with newdata with different features from the model (#1329)", {
 test_that("raise warning of unused dots", {
     ws <- textmodel_wordscores(data_dfm_lbgexample, c(seq(-1.5, 1.5, .75), NA))
     expect_warning(predict(ws, something = TRUE),
-                   "\\.\\.\\. is not used")
+                   "something argument is not used")
+    expect_warning(predict(ws, something = TRUE, whatever = TRUE),
+                   "something, whatever arguments are not used")
 })
 
 test_that("textmodel_wordscores does not use NA wordscores scores", {
@@ -225,5 +227,57 @@ test_that("textmodel_wordscores does not use NA wordscores scores", {
     expect_warning(
         predict(ws),
         "1 feature in newdata not used in prediction\\."
+    )
+})
+
+test_that("raises error when dfm is empty (#1419)",  {
+    
+    mx <- dfm_trim(data_dfm_lbgexample, 1000)
+    expect_error(textmodel_wordscores(mx, y = c(-1, NA, NA, NA, 1, NA)),
+                 quanteda:::message_error("dfm_empty"))
+    
+})
+
+test_that("works with different predicted object in different shapes (#1440)",  {
+    
+    ws <- textmodel_wordscores(data_dfm_lbgexample, c(seq(-1.5, 1.5, .75), NA))
+    expect_silent(textplot_scale1d(predict(ws)))
+    expect_silent(textplot_scale1d(predict(ws, se.fit = TRUE)))
+    expect_silent(textplot_scale1d(predict(ws, interval = "confidence")))
+    expect_silent(textplot_scale1d(predict(ws, se.fit = TRUE, interval = "confidence")))
+
+})
+
+test_that("textmodel_wordscores correctly implements smoothing (#1476)", {
+    ws_nosmooth <- textmodel_wordscores(data_dfm_lbgexample, smooth = 0,
+                                        c(seq(-1.5, 1.5, .75), NA), scale = "linear")
+    ws_smooth1 <- textmodel_wordscores(dfm_smooth(data_dfm_lbgexample, smoothing = 1),
+                                        c(seq(-1.5, 1.5, .75), NA), scale = "linear")
+    ws_smooth1a <- textmodel_wordscores(data_dfm_lbgexample + 1,
+                                        c(seq(-1.5, 1.5, .75), NA), scale = "linear")
+    expect_identical(coef(ws_smooth1), coef(ws_smooth1a))
+    expect_true(!any(coef(ws_nosmooth) ==  coef(ws_smooth1)))
+    
+    ws_smooth2 <- textmodel_wordscores(data_dfm_lbgexample, smooth = 0.5,
+                                        c(seq(-1.5, 1.5, .75), NA), scale = "linear")
+    ws_smooth2a <- textmodel_wordscores(data_dfm_lbgexample + 0.5,
+                                        c(seq(-1.5, 1.5, .75), NA), scale = "linear")
+    expect_identical(coef(ws_smooth2), coef(ws_smooth2a))
+})
+
+test_that("predict.textmodel_wordscores correctly implements smoothing (#1476)", {
+    ws_nosmooth <- textmodel_wordscores(data_dfm_lbgexample, smooth = 0,
+                                        c(seq(-1.5, 1.5, .75), NA), scale = "linear")
+    ws_smooth1 <- textmodel_wordscores(data_dfm_lbgexample, smooth = 1,
+                                        c(seq(-1.5, 1.5, .75), NA), scale = "linear")
+    ws_smooth1a <- textmodel_wordscores(dfm_smooth(data_dfm_lbgexample, smoothing = 1),
+                                        c(seq(-1.5, 1.5, .75), NA), scale = "linear")
+    expect_identical(
+        predict(ws_smooth1),
+        predict(ws_smooth1, newdata = data_dfm_lbgexample)
+    )
+    expect_identical(
+        predict(ws_smooth1a),
+        predict(ws_smooth1, newdata = dfm_smooth(data_dfm_lbgexample, smoothing = 1))
     )
 })

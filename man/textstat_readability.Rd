@@ -4,17 +4,19 @@
 \alias{textstat_readability}
 \title{Calculate readability}
 \usage{
-textstat_readability(x, measure = c("all", "ARI", "ARI.simple", "Bormuth",
-  "Bormuth.GP", "Coleman", "Coleman.C2", "Coleman.Liau", "Coleman.Liau.grade",
-  "Coleman.Liau.short", "Dale.Chall", "Dale.Chall.old", "Dale.Chall.PSK",
-  "Danielson.Bryan", "Danielson.Bryan.2", "Dickes.Steiwer", "DRP", "ELF",
+textstat_readability(x, measure = c("all", "ARI", "ARI.simple",
+  "Bormuth", "Bormuth.GP", "Coleman", "Coleman.C2", "Coleman.Liau",
+  "Coleman.Liau.grade", "Coleman.Liau.short", "Dale.Chall",
+  "Dale.Chall.old", "Dale.Chall.PSK", "Danielson.Bryan",
+  "Danielson.Bryan.2", "Dickes.Steiwer", "DRP", "ELF",
   "Farr.Jenkins.Paterson", "Flesch", "Flesch.PSK", "Flesch.Kincaid", "FOG",
   "FOG.PSK", "FOG.NRI", "FORCAST", "FORCAST.RGL", "Fucks", "Linsear.Write",
-  "LIW", "nWS", "nWS.2", "nWS.3", "nWS.4", "RIX", "Scrabble", "SMOG", "SMOG.C",
-  "SMOG.simple",      "SMOG.de", "Spache", "Spache.old", "Strain",
-  "Traenkle.Bailer", "Traenkle.Bailer.2", "Wheeler.Smith", "meanSentenceLength",
-  "meanWordSyllables"), remove_hyphens = TRUE, min_sentence_length = 1,
-  max_sentence_length = 10000, ...)
+  "LIW", "nWS", "nWS.2", "nWS.3", "nWS.4", "RIX", "Scrabble", "SMOG",
+  "SMOG.C", "SMOG.simple",      "SMOG.de", "Spache", "Spache.old",
+  "Strain", "Traenkle.Bailer", "Traenkle.Bailer.2", "Wheeler.Smith",
+  "meanSentenceLength", "meanWordSyllables"), remove_hyphens = TRUE,
+  min_sentence_length = 1, max_sentence_length = 10000,
+  intermediate = FALSE, ...)
 }
 \arguments{
 \item{x}{a character or \link{corpus} object containing the texts}
@@ -36,6 +38,8 @@ other cruft that might be in the texts following conversion.
 For finer-grained control, consider filtering sentences prior first, 
 including through pattern-matching, using \code{\link{corpus_trim}}.}
 
+\item{intermediate}{if \code{TRUE}, include intermediate quantities in the output}
+
 \item{...}{not used}
 }
 \value{
@@ -47,15 +51,13 @@ Calculate the readability of text(s) using one of a variety of computed
 indexes.
 }
 \examples{
-txt <- c("Readability zero one.  Ten, Eleven.", "The cat in a dilapidated tophat.")
-textstat_readability(txt, "Flesch.Kincaid")
+txt <- c(doc1 = "Readability zero one.  Ten, Eleven.", 
+         doc2 = "The cat in a dilapidated tophat.")
+textstat_readability(txt, "Flesch")
 textstat_readability(txt, c("FOG", "FOG.PSK", "FOG.NRI"))
-inaugReadability <- textstat_readability(data_corpus_inaugural, "all")
-cor(inaugReadability[,-1])
 
-textstat_readability(data_corpus_inaugural, measure = "Flesch.Kincaid")
-inaugReadability <- textstat_readability(data_corpus_inaugural, "all")
-cor(inaugReadability[,-1])
+textstat_readability(data_corpus_inaugural[48:58], 
+                     measure = c("Flesch.Kincaid", "Dale.Chall.old"))
 }
 \author{
 Kenneth Benoit, re-engineered from Meik Michalke's \pkg{koRpus}

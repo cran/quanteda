@@ -33,7 +33,8 @@
 #'   context = "window".
 #' @param span_sentence if \code{FALSE}, then word windows will not span
 #'   sentences
-#' @param tri if \code{TRUE} return only upper triangle (including diagonal)
+#' @param tri if \code{TRUE} return only upper triangle (including diagonal).
+#'   Ignored if \code{ordered = TRUE}
 #' @param ... not used here
 #' @author Kenneth Benoit (R), Haiyan Wang (R, C++), Kohei Watanabe (C++)
 #' @import Matrix
@@ -72,10 +73,9 @@
 #'   2010 Annual Conference of the North American Chapter of the ACL}, Los 
 #'   Angeles, California, June 2010, pp. 325-328.
 #'   
-#'   Daniel Jurafsky & James H. Martin. (2015) \emph{Speech and Language 
-#'   Processing}.  Draft of April 11, 2016. 
-#'   \href{https://web.stanford.edu/~jurafsky/slp3/16.pdf}{Chapter 16, Semantics
-#'   with Dense Vectors.}
+#'   Jurafsky, Daniel and James H. Martin (2018). "Chapter 6, Vector Semantics."
+#'   from \emph{Speech and Language Processing}.  Draft of September 23, 2018,
+#'   from \url{https://web.stanford.edu/~jurafsky/slp3/}.
 #'   
 #'   Church, K. W. & P. Hanks (1990) 
 #'   "\href{http://dl.acm.org/citation.cfm?id=89095}{Word association norms,
@@ -206,9 +206,10 @@ fcm.tokens <- function(x, context = c("document", "window"),
                        span_sentence = TRUE, tri = TRUE, ...) {
     context <- match.arg(context)
     count <- match.arg(count)
-    window <- as.integer(window) 
+    window <- as.integer(window)
     # TODO could add a warning if not roundly coerced to integer
     
+    if (ordered) tri <- FALSE
     if (!span_sentence) 
         warning("spanSentence = FALSE not yet implemented")
     
@@ -216,7 +217,7 @@ fcm.tokens <- function(x, context = c("document", "window"),
         result <- fcm(dfm(x, tolower = FALSE, verbose = FALSE), count = count, tri = tri)
         
     if (context == "window") { 
-        try (if (window < 2) stop("The window size is too small.")) 
+        if (any(window < 1L)) stop("The window size is too small.")
         if (count == "weighted") {
             if (!missing(weights) && length(weights) != window) {
                 warning ("weights length is not equal to the window size, weights are assigned by default!")

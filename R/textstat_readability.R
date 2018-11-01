@@ -17,6 +17,7 @@
 #'   
 #'   For finer-grained control, consider filtering sentences prior first, 
 #'   including through pattern-matching, using \code{\link{corpus_trim}}.
+#' @param intermediate if \code{TRUE}, include intermediate quantities in the output
 #' @param ... not used
 #' @author Kenneth Benoit, re-engineered from Meik Michalke's \pkg{koRpus}
 #'   package.
@@ -24,15 +25,13 @@
 #'   their readability scores.
 #' @export
 #' @examples
-#' txt <- c("Readability zero one.  Ten, Eleven.", "The cat in a dilapidated tophat.")
-#' textstat_readability(txt, "Flesch.Kincaid")
+#' txt <- c(doc1 = "Readability zero one.  Ten, Eleven.", 
+#'          doc2 = "The cat in a dilapidated tophat.")
+#' textstat_readability(txt, "Flesch")
 #' textstat_readability(txt, c("FOG", "FOG.PSK", "FOG.NRI"))
-#' inaugReadability <- textstat_readability(data_corpus_inaugural, "all")
-#' cor(inaugReadability[,-1])
 #' 
-#' textstat_readability(data_corpus_inaugural, measure = "Flesch.Kincaid")
-#' inaugReadability <- textstat_readability(data_corpus_inaugural, "all")
-#' cor(inaugReadability[,-1])
+#' textstat_readability(data_corpus_inaugural[48:58], 
+#'                      measure = c("Flesch.Kincaid", "Dale.Chall.old"))
 textstat_readability <- function(x,
                         measure = c("all", "ARI", "ARI.simple", "Bormuth", "Bormuth.GP",
                                     "Coleman", "Coleman.C2",
@@ -50,7 +49,8 @@ textstat_readability <- function(x,
                                     "Wheeler.Smith", "meanSentenceLength", "meanWordSyllables"),
                         remove_hyphens = TRUE,
                         min_sentence_length = 1, 
-                        max_sentence_length = 10000, ...) {
+                        max_sentence_length = 10000, 
+                        intermediate = FALSE, ...) {
     UseMethod("textstat_readability")
 }
 
@@ -72,10 +72,12 @@ textstat_readability.default <- function(x,
                                                     "Wheeler.Smith", "meanSentenceLength", "meanWordSyllables"),
                                         remove_hyphens = TRUE,
                                         min_sentence_length = 1, 
-                                        max_sentence_length = 10000, ...) {
+                                        max_sentence_length = 10000, 
+                                        intermediate = FALSE, ...) {
     stop(friendly_class_undefined_message(class(x), "textstat_readability"))
 }    
 
+#' @importFrom stringi stri_length
 #' @export
 textstat_readability.corpus <- function(x,
                                         measure = c("all", "ARI", "ARI.simple", "Bormuth", "Bormuth.GP",
@@ -94,12 +96,10 @@ textstat_readability.corpus <- function(x,
                                            "Wheeler.Smith", "meanSentenceLength", "meanWordSyllables"),
                                remove_hyphens = TRUE,
                                min_sentence_length = 1, 
-                               max_sentence_length = 10000, ...) {
+                               max_sentence_length = 10000, 
+                               intermediate = FALSE, ...) {
     
-    added_args <- names(list(...))
-    if (length(added_args))
-        warning("Argument", if (length(added_args) > 1L) "s " else " ", 
-                added_args, " not used.", sep = "", noBreaks. = TRUE)
+    unused_dots(...)
     
     measure_option <- c("ARI", "ARI.simple", "Bormuth", "Bormuth.GP",
                         "Coleman", "Coleman.C2",
@@ -147,7 +147,7 @@ textstat_readability.corpus <- function(x,
     n_syll <- lapply(n_syll, function(y) ifelse(is.na(y), 1, y))
     
     # lengths in characters of the words
-    len_token <- lapply(toks, stri_length)
+    len_token <- lapply(toks, stringi::stri_length)
     
     # to avoid "no visible binding for global variable" CHECK NOTE
     textID <- W <- St <- C <- Sy <- W3Sy <- W2Sy <- W_1Sy <- W6C <- W7C <- Wlt3Sy <- W_wl.Dale.Chall <-
@@ -157,7 +157,7 @@ textstat_readability.corpus <- function(x,
         Farr.Jenkins.Paterson <- Flesch <- Flesch.PSK <- Flesch.Kincaid <- FOG <- FOG.PSK <- FOG.NRI <-
         FORCAST <- FORCAST.RGL <- Fucks <- Linsear.Write <- LIW <- nWS <- nWS.2 <- nWS.3 <- nWS.4 <-
         RIX <- SMOG <- SMOG.C <- SMOG.simple <- SMOG.de <- Spache <- Spache.old <- Strain <- Wheeler.Smith <-
-        data_char_wordlists <- Bormuth.MC <- Bl <- Traenkle.Bailer <- Traenkle.Bailer.2 <- Bormuth <-
+        Bormuth.MC <- Bl <- Traenkle.Bailer <- Traenkle.Bailer.2 <- Bormuth <-
         Coleman.Liau <- meanSentenceLength <- meanWordSyllables <- NULL
     
     # common statistics required by (nearly all) indexes
@@ -172,8 +172,15 @@ textstat_readability.corpus <- function(x,
                        W6C = vapply(len_token, function(x) sum(x >= 6), numeric(1)), # number of words with at least 6 letters
                        W7C = vapply(len_token, function(x) sum(x >= 7), numeric(1))) # number of words with at least 7 letters
     
-    temp[, W_wl.Dale.Chall := vapply(toks, function(x) sum(!(x %in% data_char_wordlists$dalechall)), numeric(1))]
     temp[, Wlt3Sy := W - W3Sy]   # number of words with less than three syllables
+    
+    # look up D-C words if needed
+    if (any(c("Dale.Chall", "Dale.Chall.old", "Dale.Chall.PSK", "Bormuth", "Bormuth.GP") %in% measure)) {
+        temp[, W_wl.Dale.Chall := lengths(tokens_remove(toks, 
+                                                        pattern = quanteda::data_char_wordlists$dalechall,
+                                                        valuetype = "fixed", 
+                                                        case_insensitive = TRUE))]
+    }
     
     if ("ARI" %in% measure)
         temp[, ARI := 0.5 * W / St + 4.71 * C / W - 21.43]
@@ -218,12 +225,18 @@ textstat_readability.corpus <- function(x,
     if ("Coleman.Liau.short" %in% measure)
         temp[, Coleman.Liau.short := 5.88 * C / W - 29.6 * St / W - 15.8]
     
-    if ("Dale.Chall" %in% measure)
+    if ("Dale.Chall" %in% measure) {
         temp[, Dale.Chall := 64 - 0.95 * 100 * W_wl.Dale.Chall / W - 0.69 * W / St]
+    }
     
-    if ("Dale.Chall.old" %in% measure)
-        temp[, Dale.Chall.old := 0.1579 * 100 * W_wl.Dale.Chall / W + 0.0496 * W / St + 3.6365]
+    if ("Dale.Chall.old" %in% measure) {
+        DC_constant <- NULL
+        temp[, DC_constant := ((W_wl.Dale.Chall / W) > .05) * 3.6365]
+        temp[, Dale.Chall.old := 0.1579 * 100 * W_wl.Dale.Chall / W + 0.0496 * W / St + DC_constant]
+        temp[, DC_constant := NULL]
+    }
     
+    # Powers-Sumner-Kearl (1958) variation
     if ("Dale.Chall.PSK" %in% measure)
         temp[, Dale.Chall.PSK := 0.1155 * 100 * W_wl.Dale.Chall / W + 0.0596 * W / St + 3.2672]
     
@@ -326,20 +339,22 @@ textstat_readability.corpus <- function(x,
     if ("SMOG.de" %in% measure)
         temp[, SMOG.de := sqrt(W3Sy * 30 / St) - 2]
     
-    if ("Spache" %in% measure) {
+    if (any(c("Spache", "Spache.old") %in% measure)) {
         # number of words which are not in the Spache word list
-        temp[, W_wl.Spache := vapply(toks, function(x) sum(!(x %in% data_char_wordlists$spache)), numeric(1))]
+        temp[, W_wl.Spache := lengths(tokens_remove(toks, 
+                                                    pattern = quanteda::data_char_wordlists$spache,
+                                                    valuetype = "fixed", 
+                                                    case_insensitive = TRUE))]
+    }
+    
+    if ("Spache" %in% measure)
         temp[, Spache := 0.121 * W / St + 0.082 * (100 * W_wl.Spache / W) + 0.659]
-        temp[, W_wl.Spache := NULL]
-    }
-    
-    if ("Spache.old" %in% measure) {
-        # number of words which are not in the Spache word list
-        temp[, W_wl.Spache := vapply(toks, function(x) sum(!(x %in% data_char_wordlists$spache)), numeric(1))]
+
+    if ("Spache.old" %in% measure)
         temp[, Spache.old := 0.141 * W / St + 0.086 * (100 * W_wl.Spache / W) + 0.839]
-        temp[, W_wl.Spache := NULL]
-    }
-    
+
+    if (any(c("Spache", "Spache.old") %in% measure)) temp[, W_wl.Spache := NULL]
+        
     if ("Strain" %in% measure)
         temp[, Strain := Sy * 1 / (St/3) / 10]
     
@@ -369,11 +384,17 @@ textstat_readability.corpus <- function(x,
         temp[, Scrabble := nscrabble(x, mean)]
     
     result <- data.frame(document = names(x), stringsAsFactors = FALSE)
-    result <- cbind(result, as.data.frame(temp[,measure, with = FALSE]))
-    class(result) <- c('readability', 'textstat', 'data.frame')
+    
+    # if intermediate is desired, add intermediate quantities to output
+    if (intermediate)
+        measure <- c(measure, names(temp)[names(temp) %in% 
+                                              c(c("W", "St", "C", "Sy", "W3Sy", "W2Sy", "W_1Sy", 
+                                                  "W6C", "W7C", "Wlt3Sy", "W_wl.Dale.Chall", "W_wl.Spache"))])
+
+    result <- cbind(result, as.data.frame(temp[, measure, with = FALSE]))
+    class(result) <- c("readability", "textstat", "data.frame")
     rownames(result) <- as.character(seq_len(nrow(result)))
     return(result)
-
 }
 
 
@@ -430,6 +451,12 @@ prepositions <- c("a", "abaft", "abeam", "aboard", "about", "above", "absent", "
 #' }
 #' @references
 #' Chall, J. S., & Dale, E.  1995. \emph{Readability Revisited: The New Dale-Chall Readability Formula}. Brookline Books.
+#'
+#' Dale, Edgar, and Jeanne Sternlicht Chall. 1948. "A Formula for Predicting
+#' Readability". \emph{Educational Research Bulletin} 27(1): 11-20.
+#' 
+#' Dale, Edgar, and Jeanne S Chall. 1948. "A Formula for Predicting Readability:
+#' Instructions." \emph{Educational Research Bulletin} 27(2): 37–54.
 #'
 #' Klare, G. R. 1975. "Assessing readability." \emph{Reading Research Quarterly} 10(1): 62-102.
 #'

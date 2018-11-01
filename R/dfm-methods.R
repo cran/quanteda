@@ -87,7 +87,10 @@ as.dfm.default <- function(x) {
 #' @method as.dfm dfm
 #' @export
 as.dfm.dfm <- function(x) {
-    x
+    # for compatibility with older dfm objects
+    if (identical(dim(x@docvars), c(0L, 0L)))
+        x@docvars <- data.frame(matrix(ncol = 0, nrow = nrow(x)))
+    return(x)
 }
 
 #' @noRd
@@ -137,7 +140,7 @@ as.dfm.TermDocumentMatrix <- function(x){
                      dimnames = list(colnames(x), rownames(x))))
 }
 
-#' Conversts a Matrix to a dfm
+#' Converts a Matrix to a dfm
 #' @param x a Matrix
 #' @param slots slots a list of values to be assigned to slots
 #' @keywords internal

@@ -20,7 +20,7 @@
 <style type="text/css">
 a.sourceLine { display: inline-block; line-height: 1.25; }
 a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; position: absolute; }
+a.sourceLine:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode { white-space: pre; position: relative; }
 div.sourceCode { margin: 1em 0; }
@@ -33,13 +33,11 @@ code.sourceCode { white-space: pre-wrap; }
 a.sourceLine { text-indent: -1em; padding-left: 1em; }
 }
 pre.numberSource a.sourceLine
-  { position: relative; }
-pre.numberSource a.sourceLine:empty
-  { position: absolute; }
+  { position: relative; left: -4em; }
 pre.numberSource a.sourceLine::before
   { content: attr(data-line-number);
-    position: absolute; left: -5em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all;
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
@@ -322,7 +320,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 </ul>
 <div id="building-a-corpus-from-a-character-vector" class="section level3">
 <h3>Building a corpus from a character vector</h3>
-<p>The simplest case is to create a corpus from a vector of texts already in memory in R. This gives the advanced R user complete flexbility with his or her choice of text inputs, as there are almost endless ways to get a vector of texts into R.</p>
+<p>The simplest case is to create a corpus from a vector of texts already in memory in R. This gives the advanced R user complete flexibility with his or her choice of text inputs, as there are almost endless ways to get a vector of texts into R.</p>
 <p>If we already have the texts in this form, we can call the corpus constructor function directly. We can demonstrate this on the built-in character object of the texts about immigration policy extracted from the 2010 election manifestos of the UK political parties (called <code>data_char_ukimmig2010</code>).</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1">my_corpus &lt;-<span class="st"> </span><span class="kw">corpus</span>(data_char_ukimmig2010)  <span class="co"># build a new corpus from the texts</span></a>
 <a class="sourceLine" id="cb5-2" data-line-number="2"><span class="kw">summary</span>(my_corpus)</a></code></pre></div>
@@ -339,8 +337,8 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##           SNP    88    134         4
 ##          UKIP   346    723        27
 ## 
-## Source: /private/var/folders/46/zfn6gwj15d3_n6dhyy1cvwc00000gp/T/RtmpFNWVQO/Rbuild11c686d46fc98/quanteda/vignettes/* on x86_64 by kbenoit
-## Created: Sun Jul 15 11:19:05 2018
+## Source: /private/var/folders/1v/ps2x_tvd0yg0lypdlshg_vwc0000gp/T/RtmpaaW7Lz/Rbuild141534534b444/quanteda/vignettes/* on x86_64 by kbenoit
+## Created: Thu Nov  1 14:03:37 2018
 ## Notes:</code></pre>
 <p>If we wanted, we could add some document-level variables – what quanteda calls <em>docvars</em> – to this corpus.</p>
 <p>We can do this using the R’s <code>names()</code> function to get the names of the character vector <code>data_char_ukimmig2010</code>, and assign this to a document variable (<em>docvar</em>).</p>
@@ -360,8 +358,8 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##           SNP    88    134         4          SNP 2010
 ##          UKIP   346    723        27         UKIP 2010
 ## 
-## Source: /private/var/folders/46/zfn6gwj15d3_n6dhyy1cvwc00000gp/T/RtmpFNWVQO/Rbuild11c686d46fc98/quanteda/vignettes/* on x86_64 by kbenoit
-## Created: Sun Jul 15 11:19:05 2018
+## Source: /private/var/folders/1v/ps2x_tvd0yg0lypdlshg_vwc0000gp/T/RtmpaaW7Lz/Rbuild141534534b444/quanteda/vignettes/* on x86_64 by kbenoit
+## Created: Thu Nov  1 14:03:37 2018
 ## Notes:</code></pre>
 <p>If we wanted to tag each document with additional meta-data not considered a document variable of interest for analysis, but rather something that we need to know as an attribute of the document, we could also add those to our corpus.</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" data-line-number="1"><span class="kw">metadoc</span>(my_corpus, <span class="st">&quot;language&quot;</span>) &lt;-<span class="st"> &quot;english&quot;</span></a>
@@ -390,10 +388,10 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##           SNP 2010
 ##          UKIP 2010
 ## 
-## Source: /private/var/folders/46/zfn6gwj15d3_n6dhyy1cvwc00000gp/T/RtmpFNWVQO/Rbuild11c686d46fc98/quanteda/vignettes/* on x86_64 by kbenoit
-## Created: Sun Jul 15 11:19:05 2018
+## Source: /private/var/folders/1v/ps2x_tvd0yg0lypdlshg_vwc0000gp/T/RtmpaaW7Lz/Rbuild141534534b444/quanteda/vignettes/* on x86_64 by kbenoit
+## Created: Thu Nov  1 14:03:37 2018
 ## Notes:</code></pre>
-<p>The last command, <code>metadoc</code>, allows you to define your own document meta-data fields. Note that in assiging just the single value of <code>&quot;english&quot;</code>, R has recycled the value until it matches the number of documents in the corpus. In creating a simple tag for our custom metadoc field <code>docsource</code>, we used the quanteda function <code>ndoc()</code> to retrieve the number of documents in our corpus. This function is deliberately designed to work in a way similar to functions you may already use in R, such as <code>nrow()</code> and <code>ncol()</code>.</p>
+<p>The last command, <code>metadoc</code>, allows you to define your own document meta-data fields. Note that in assigning just the single value of <code>&quot;english&quot;</code>, R has recycled the value until it matches the number of documents in the corpus. In creating a simple tag for our custom metadoc field <code>docsource</code>, we used the quanteda function <code>ndoc()</code> to retrieve the number of documents in our corpus. This function is deliberately designed to work in a way similar to functions you may already use in R, such as <code>nrow()</code> and <code>ncol()</code>.</p>
 </div>
 <div id="loading-in-files-using-the-readtext-package" class="section level3">
 <h3>Loading in files using the readtext package</h3>
@@ -495,7 +493,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <h2>Tools for handling corpus objects</h2>
 <div id="adding-two-corpus-objects-together" class="section level3">
 <h3>Adding two corpus objects together</h3>
-<p>The <code>+</code> operator provides a simple method for concatenating two corpus objects. If they contain different sets of document-level variables, these will be stitched together in a fashion that guarantees that no information is lost. Corpus-level medata data is also concatenated.</p>
+<p>The <code>+</code> operator provides a simple method for concatenating two corpus objects. If they contain different sets of document-level variables, these will be stitched together in a fashion that guarantees that no information is lost. Corpus-level meta-data is also concatenated.</p>
 <div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" data-line-number="1"><span class="kw">library</span>(quanteda)</a>
 <a class="sourceLine" id="cb20-2" data-line-number="2">my_corpus1 &lt;-<span class="st"> </span><span class="kw">corpus</span>(data_corpus_inaugural[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>])</a>
 <a class="sourceLine" id="cb20-3" data-line-number="3">my_corpus2 &lt;-<span class="st"> </span><span class="kw">corpus</span>(data_corpus_inaugural[<span class="dv">53</span><span class="op">:</span><span class="dv">58</span>])</a>
@@ -517,7 +515,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##       2017-Trump   582   1660        88
 ## 
 ## Source: Combination of corpuses my_corpus1 and my_corpus2
-## Created: Sun Jul 15 11:19:06 2018
+## Created: Thu Nov  1 14:03:38 2018
 ## Notes:</code></pre>
 </div>
 <div id="subsetting-corpus-objects" class="section level3">
@@ -789,13 +787,13 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <div class="sourceCode" id="cb60"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb60-1" data-line-number="1"><span class="kw">head</span>(<span class="kw">stopwords</span>(<span class="st">&quot;russian&quot;</span>), <span class="dv">10</span>)</a></code></pre></div>
 <pre><code>##  [1] &quot;и&quot;   &quot;в&quot;   &quot;во&quot;  &quot;не&quot;  &quot;что&quot; &quot;он&quot;  &quot;на&quot;  &quot;я&quot;   &quot;с&quot;   &quot;со&quot;</code></pre>
 <div class="sourceCode" id="cb62"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb62-1" data-line-number="1"><span class="kw">head</span>(<span class="kw">stopwords</span>(<span class="st">&quot;arabic&quot;</span>), <span class="dv">10</span>)</a></code></pre></div>
-<pre><code>## Warning: 'stopwords(language = &quot;ar&quot;)' is deprecated.
-## Use 'stopwords(language = &quot;ar&quot;, source = &quot;misc&quot;)' instead.
+<pre><code>## Warning: &#39;stopwords(language = &quot;ar&quot;)&#39; is deprecated.
+## Use &#39;stopwords(language = &quot;ar&quot;, source = &quot;misc&quot;)&#39; instead.
 ## See help(&quot;Deprecated&quot;)</code></pre>
 <pre><code>##  [1] &quot;فى&quot;  &quot;في&quot;  &quot;كل&quot;  &quot;لم&quot;  &quot;لن&quot;  &quot;له&quot;  &quot;من&quot;  &quot;هو&quot;  &quot;هي&quot;  &quot;قوة&quot;</code></pre>
 <div id="viewing-the-document-feature-matrix" class="section level3">
 <h3>Viewing the document-feature matrix</h3>
-<p>The dfm can be inspected in the Enviroment pane in RStudio, or by calling R’s <code>View</code> function. Calling <code>plot</code> on a dfm will display a wordcloud.</p>
+<p>The dfm can be inspected in the Environment pane in RStudio, or by calling R’s <code>View</code> function. Calling <code>plot</code> on a dfm will display a wordcloud.</p>
 <div class="sourceCode" id="cb65"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb65-1" data-line-number="1">my_dfm &lt;-<span class="st"> </span><span class="kw">dfm</span>(data_char_ukimmig2010, <span class="dt">remove =</span> <span class="kw">stopwords</span>(<span class="st">&quot;english&quot;</span>), <span class="dt">remove_punct =</span> <span class="ot">TRUE</span>)</a>
 <a class="sourceLine" id="cb65-2" data-line-number="2">my_dfm</a></code></pre></div>
 <pre><code>## Document-feature matrix of: 9 documents, 1,547 features (83.8% sparse).</code></pre>
@@ -953,30 +951,30 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <a class="sourceLine" id="cb88-4" data-line-number="4">    <span class="kw">get_terms</span>(my_lda_fit20, <span class="dv">5</span>)</a>
 <a class="sourceLine" id="cb88-5" data-line-number="5">}</a></code></pre></div>
 <pre><code>## Loading required package: topicmodels</code></pre>
-<pre><code>##      Topic 1     Topic 2    Topic 3       Topic 4    Topic 5  
-## [1,] &quot;whatever&quot;  &quot;spending&quot; &quot;support&quot;     &quot;fianna&quot;   &quot;fáil&quot;   
-## [2,] &quot;taoiseach&quot; &quot;review&quot;   &quot;million&quot;     &quot;fáil&quot;     &quot;fianna&quot; 
-## [3,] &quot;stimulus&quot;  &quot;measures&quot; &quot;investment&quot;  &quot;national&quot; &quot;irish&quot;  
-## [4,] &quot;family&quot;    &quot;million&quot;  &quot;back&quot;        &quot;strategy&quot; &quot;support&quot;
-## [5,] &quot;problem&quot;   &quot;pension&quot;  &quot;development&quot; &quot;ted&quot;      &quot;benefit&quot;
-##      Topic 6       Topic 7    Topic 8     Topic 9      Topic 10 
-## [1,] &quot;kind&quot;        &quot;system&quot;   &quot;care&quot;      &quot;welfare&quot;    &quot;child&quot;  
-## [2,] &quot;imagination&quot; &quot;fianna&quot;   &quot;welfare&quot;   &quot;level&quot;      &quot;benefit&quot;
-## [3,] &quot;policies&quot;    &quot;taxation&quot; &quot;per&quot;       &quot;million&quot;    &quot;day&quot;    
-## [4,] &quot;wit&quot;         &quot;child&quot;    &quot;allowance&quot; &quot;measures&quot;   &quot;today&quot;  
-## [5,] &quot;create&quot;      &quot;high&quot;     &quot;hit&quot;       &quot;investment&quot; &quot;bank&quot;   
-##      Topic 11    Topic 12   Topic 13    Topic 14  Topic 15       Topic 16
-## [1,] &quot;scheme&quot;    &quot;welfare&quot;  &quot;failed&quot;    &quot;levy&quot;    &quot;society&quot;      &quot;fianna&quot;
-## [2,] &quot;energy&quot;    &quot;stimulus&quot; &quot;strategy&quot;  &quot;million&quot; &quot;enterprising&quot; &quot;fáil&quot;  
-## [3,] &quot;prices&quot;    &quot;per&quot;      &quot;needed&quot;    &quot;carbon&quot;  &quot;sense&quot;        &quot;person&quot;
-## [4,] &quot;providing&quot; &quot;package&quot;  &quot;ministers&quot; &quot;change&quot;  &quot;equal&quot;        &quot;choice&quot;
-## [5,] &quot;million&quot;   &quot;reduce&quot;   &quot;system&quot;    &quot;welfare&quot; &quot;nation&quot;       &quot;deal&quot;  
-##      Topic 17    Topic 18      Topic 19 Topic 20   
-## [1,] &quot;taoiseach&quot; &quot;alternative&quot; &quot;fianna&quot; &quot;taoiseach&quot;
-## [2,] &quot;employees&quot; &quot;citizenship&quot; &quot;fáil&quot;   &quot;fine&quot;     
-## [3,] &quot;rate&quot;      &quot;wealth&quot;      &quot;side&quot;   &quot;gael&quot;     
-## [4,] &quot;referred&quot;  &quot;adjustment&quot;  &quot;level&quot;  &quot;may&quot;      
-## [5,] &quot;debate&quot;    &quot;breaks&quot;      &quot;third&quot;  &quot;local&quot;</code></pre>
+<pre><code>##      Topic 1      Topic 2    Topic 3       Topic 4   Topic 5  Topic 6    
+## [1,] &quot;welfare&quot;    &quot;system&quot;   &quot;alternative&quot; &quot;fáil&quot;    &quot;fianna&quot; &quot;taoiseach&quot;
+## [2,] &quot;support&quot;    &quot;welfare&quot;  &quot;citizenship&quot; &quot;fianna&quot;  &quot;fáil&quot;   &quot;fine&quot;     
+## [3,] &quot;employment&quot; &quot;taxation&quot; &quot;wealth&quot;      &quot;welfare&quot; &quot;side&quot;   &quot;gael&quot;     
+## [4,] &quot;enterprise&quot; &quot;stimulus&quot; &quot;adjustment&quot;  &quot;per&quot;     &quot;level&quot;  &quot;may&quot;      
+## [5,] &quot;back&quot;       &quot;child&quot;    &quot;breaks&quot;      &quot;price&quot;   &quot;third&quot;  &quot;irish&quot;    
+##      Topic 7    Topic 8     Topic 9       Topic 10  Topic 11     
+## [1,] &quot;measures&quot; &quot;welfare&quot;   &quot;million&quot;     &quot;levy&quot;    &quot;created&quot;    
+## [2,] &quot;million&quot;  &quot;reduction&quot; &quot;investment&quot;  &quot;million&quot; &quot;national&quot;   
+## [3,] &quot;spending&quot; &quot;recent&quot;    &quot;support&quot;     &quot;carbon&quot;  &quot;opportunity&quot;
+## [4,] &quot;review&quot;   &quot;spending&quot;  &quot;development&quot; &quot;change&quot;  &quot;society&quot;    
+## [5,] &quot;scheme&quot;   &quot;reduced&quot;   &quot;confidence&quot;  &quot;welfare&quot; &quot;irish&quot;      
+##      Topic 12  Topic 13      Topic 14       Topic 15    Topic 16   
+## [1,] &quot;million&quot; &quot;kind&quot;        &quot;society&quot;      &quot;taoiseach&quot; &quot;care&quot;     
+## [2,] &quot;details&quot; &quot;imagination&quot; &quot;enterprising&quot; &quot;employees&quot; &quot;welfare&quot;  
+## [3,] &quot;reduce&quot;  &quot;policies&quot;    &quot;sense&quot;        &quot;rate&quot;      &quot;per&quot;      
+## [4,] &quot;changes&quot; &quot;wit&quot;         &quot;equal&quot;        &quot;referred&quot;  &quot;allowance&quot;
+## [5,] &quot;scheme&quot;  &quot;create&quot;      &quot;nation&quot;       &quot;debate&quot;    &quot;hit&quot;      
+##      Topic 17    Topic 18  Topic 19     Topic 20  
+## [1,] &quot;failed&quot;    &quot;child&quot;   &quot;welfare&quot;    &quot;fianna&quot;  
+## [2,] &quot;strategy&quot;  &quot;benefit&quot; &quot;spending&quot;   &quot;fáil&quot;    
+## [3,] &quot;needed&quot;    &quot;day&quot;     &quot;measures&quot;   &quot;irish&quot;   
+## [4,] &quot;ministers&quot; &quot;today&quot;   &quot;employment&quot; &quot;national&quot;
+## [5,] &quot;system&quot;    &quot;bank&quot;    &quot;taxes&quot;      &quot;support&quot;</code></pre>
 </div>
 </div>
 
