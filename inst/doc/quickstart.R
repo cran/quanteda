@@ -67,14 +67,14 @@ texts(data_corpus_inaugural)[2]
 summary(data_corpus_irishbudget2010)
 
 ## ---- fig.width = 8------------------------------------------------------
-tokenInfo <- summary(data_corpus_inaugural)
+tokeninfo <- summary(data_corpus_inaugural)
 if (require(ggplot2))
-    ggplot(data=tokenInfo, aes(x = Year, y = Tokens, group = 1)) + geom_line() + geom_point() +
+    ggplot(data = tokeninfo, aes(x = Year, y = Tokens, group = 1)) + geom_line() + geom_point() +
         scale_x_continuous(labels = c(seq(1789, 2017, 12)), breaks = seq(1789, 2017, 12)) +
     theme_bw()
 
 # Longest inaugural address: William Henry Harrison
-tokenInfo[which.max(tokenInfo$Tokens), ] 
+tokeninfo[which.max(tokeninfo$Tokens), ] 
 
 ## ------------------------------------------------------------------------
 library(quanteda)
@@ -88,13 +88,13 @@ summary(corpus_subset(data_corpus_inaugural, Year > 1990))
 summary(corpus_subset(data_corpus_inaugural, President == "Adams"))
 
 ## ---- tidy=TRUE----------------------------------------------------------
-kwic(data_corpus_inaugural, "terror")
+kwic(data_corpus_inaugural, pattern = "terror")
 
 ## ------------------------------------------------------------------------
-kwic(data_corpus_inaugural, "terror", valuetype = "regex")
+kwic(data_corpus_inaugural, pattern = "terror", valuetype = "regex")
 
 ## ------------------------------------------------------------------------
-kwic(data_corpus_inaugural, "communist*")
+kwic(data_corpus_inaugural, pattern = "communist*")
 
 ## ------------------------------------------------------------------------
 # inspect the document-level variables
@@ -195,7 +195,7 @@ obama_simil
 #  pres_dfm <- dfm_trim(pres_dfm, min_termfreq = 5, min_docfreq = 3)
 #  
 #  # hierarchical clustering - get distances on normalized dfm
-#  pres_dist_mat <- textstat_dist(dfm_weight(pres_dfm, "prop"))
+#  pres_dist_mat <- textstat_dist(dfm_weight(pres_dfm, scheme = "prop"))
 #  # hiarchical clustering the distance object
 #  pres_cluster <- hclust(pres_dist_mat)
 #  # label with document names
@@ -204,7 +204,7 @@ obama_simil
 #  plot(pres_cluster, xlab = "", sub = "", main = "Euclidean Distance on Normalized Token Frequency")
 
 ## ------------------------------------------------------------------------
-sim <- textstat_simil(pres_dfm, c("fair", "health", "terror"), method = "cosine", margin = "features")
+sim <- textstat_simil(pres_dfm, selection = c("fair", "health", "terror"), method = "cosine", margin = "features")
 lapply(as.list(sim), head, 10)
 
 ## ------------------------------------------------------------------------

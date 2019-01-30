@@ -28,31 +28,41 @@ below the other, with keywords shown side-by-side. Given that this returns a
 \pkg{ggplot2} object, you can modify the plot by adding \pkg{ggplot2} layers
 (see example).
 }
+\section{Known Issues}{
+
+These are known issues on which we are working to solve in future versions:
+\itemize{
+\item \code{textplot_xray()} will not display the patterns correctly when
+these are multi-token sequences.
+
+\item For dictionaries with keys that have overlapping value matches to
+tokens in the text, only the first match will be used in the plot.  The way
+around this is to produce one kwic per dictionary key, and send them as a
+list to \code{textplot_xray}.
+}
+}
+
 \examples{
 \dontrun{
-data_corpus_inauguralPost70 <- corpus_subset(data_corpus_inaugural, Year > 1970)
+corp <- corpus_subset(data_corpus_inaugural, Year > 1970)
 # compare multiple documents
-textplot_xray(kwic(data_corpus_inauguralPost70, "american"))
-textplot_xray(kwic(data_corpus_inauguralPost70, "american"), scale = "absolute")
+textplot_xray(kwic(corp, pattern = "american"))
+textplot_xray(kwic(corp, pattern = "american"), scale = "absolute")
+
 # compare multiple terms across multiple documents
-textplot_xray(kwic(data_corpus_inauguralPost70, "america*"), 
-              kwic(data_corpus_inauguralPost70, "people"))
+textplot_xray(kwic(corp, pattern = "america*"), 
+              kwic(corp, pattern = "people"))
 
 # how to modify the ggplot with different options
 library(ggplot2)
-g <- textplot_xray(kwic(data_corpus_inauguralPost70, "american"), 
-                   kwic(data_corpus_inauguralPost70, "people"))
-g + aes(color = keyword) + scale_color_manual(values = c('red', 'blue'))
+tplot <- textplot_xray(kwic(corp, pattern = "american"), 
+                   kwic(corp, pattern = "people"))
+tplot + aes(color = keyword) + scale_color_manual(values = c('red', 'blue'))
 
 # adjust the names of the document names
-docnames(data_corpus_inauguralPost70) <- apply(docvars(data_corpus_inauguralPost70, 
-                                                       c("Year", "President")), 
-                                              1, paste, collapse = ", ")
-textplot_xray(kwic(data_corpus_inauguralPost70, "america*"), 
-              kwic(data_corpus_inauguralPost70, "people"))
+docnames(corp) <- apply(docvars(corp, c("Year", "President")), 1, paste, collapse = ", ")
+textplot_xray(kwic(corp, pattern = "america*"), 
+              kwic(corp, pattern = "people"))
 }
-}
-\author{
-Adam Obeng
 }
 \keyword{textplot}

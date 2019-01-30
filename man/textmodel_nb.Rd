@@ -93,29 +93,29 @@ trainingset <- dfm(txt, tolower = FALSE)
 trainingclass <- factor(c("Y", "Y", "Y", "N", NA), ordered = TRUE)
  
 ## replicate IIR p261 prediction for test set (document 5)
-(nb <- textmodel_nb(trainingset, trainingclass, prior = "docfreq"))
-summary(nb)
-coef(nb)
-predict(nb)
+(tmod1 <- textmodel_nb(trainingset, y = trainingclass, prior = "docfreq"))
+summary(tmod1)
+coef(tmod1)
+predict(tmod1)
 
 # contrast with other priors
-predict(textmodel_nb(trainingset, trainingclass, prior = "uniform"))
-predict(textmodel_nb(trainingset, trainingclass, prior = "termfreq"))
+predict(textmodel_nb(trainingset, y = trainingclass, prior = "uniform"))
+predict(textmodel_nb(trainingset, y = trainingclass, prior = "termfreq"))
 
 ## replicate IIR p264 Bernoulli Naive Bayes
-nb_bern <- textmodel_nb(trainingset, trainingclass, distribution = "Bernoulli", 
+tmod2 <- textmodel_nb(trainingset, y = trainingclass, distribution = "Bernoulli", 
                         prior = "docfreq")
-predict(nb_bern, newdata = trainingset[5, ])
+predict(tmod2, newdata = trainingset[5, ])
 }
 \references{
-Manning, C. D., Raghavan, P., & Schütze, H. (2008). Introduction
-  to Information Retrieval. Cambridge University Press.
-  \url{https://nlp.stanford.edu/IR-book/pdf/irbookonlinereading.pdf}
+Manning, C.D., Raghavan, P., & Schütze, H. (2008).
+  \emph{An Introduction to Information Retrieval}. Cambridge: Cambridge University Press 
+  (Chapter 13). Available at \url{https://nlp.stanford.edu/IR-book/pdf/irbookonlinereading.pdf}.
   
-  Jurafsky, Daniel and James H. Martin. (2018). "Chapter 4, Naive Bayes and
-  Sentiment Classification." from \emph{Speech and Language Processing}.
-  Draft of September 23, 2018.
-  \url{https://web.stanford.edu/~jurafsky/slp3/4.pdf}
+  Jurafsky, D. & Martin, J.H. (2018).
+  From \emph{Speech and Language Processing: An Introduction to Natural Language 
+  Processing, Computational Linguistics, and Speech Recognition}. Draft of September 23, 2018 
+  (Chapter 6, Naive Bayes). Available at \url{https://web.stanford.edu/~jurafsky/slp3/}.
 }
 \seealso{
 \code{\link{predict.textmodel_nb}}

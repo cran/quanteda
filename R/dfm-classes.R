@@ -32,7 +32,7 @@ setClass("dfm",
                    docvars = "data.frame"),
          prototype = list(settings = list(),
                           Dim = integer(2), 
-                          Dimnames = list(docs = NULL, features = NULL),
+                          Dimnames = list(docs = character(), features = character()),
                           weightTf = list(scheme = "count", base = NULL, K = NULL),
                           weightDf = list(scheme = "unary", base = NULL, c = NULL,
                                           smoothing = NULL, threshold = NULL),
@@ -179,13 +179,13 @@ as.data.frame.dfm <- function(x, row.names = NULL, ..., document = docnames(x),
 #' @keywords internal dfm
 #' @examples 
 #' # cbind() for dfm objects
-#' (dfm1 <- dfm(c("a b c d", "c d e f")))
-#' (dfm2 <- dfm(c("a b", "x y z")))
-#' cbind(dfm1, dfm2)
-#' cbind(dfm1, 100)
-#' cbind(100, dfm1)
-#' cbind(dfm1, matrix(c(101, 102), ncol = 1))
-#' cbind(matrix(c(101, 102), ncol = 1), dfm1)
+#' (dfmat1 <- dfm(c("a b c d", "c d e f")))
+#' (dfmat2 <- dfm(c("a b", "x y z")))
+#' cbind(dfmat1, dfmat2)
+#' cbind(dfmat1, 100)
+#' cbind(100, dfmat1)
+#' cbind(dfmat1, matrix(c(101, 102), ncol = 1))
+#' cbind(matrix(c(101, 102), ncol = 1), dfmat1)
 #' 
 cbind.dfm <- function(...) {
     
@@ -228,10 +228,10 @@ cbind.dfm <- function(...) {
     }
     
     # make any added feature names unique
-    index_added <- stri_startswith_fixed(colnames(result), 
+    i_added <- stri_startswith_fixed(colnames(result), 
                                          quanteda_options("base_featname"))
-    colnames(result)[index_added] <- 
-        make.unique(colnames(result)[index_added], sep = "")
+    colnames(result)[i_added] <- 
+        make.unique(colnames(result)[i_added], sep = "")
     
     # only issue warning if these did not come from added feature names
     if (any(duplicated(colnames(result))))
@@ -239,7 +239,7 @@ cbind.dfm <- function(...) {
                 noBreaks. = TRUE, call. = FALSE)
     
     # TODO could be removed after upgrading as.dfm()
-    names(dimnames(result)) <- c("docs", "features") 
+    set_dfm_dimnames(result) <- dimnames(result)
     slots(result) <- attrs
     result@docvars <- data.frame(matrix(ncol = 0, nrow = nrow(result)))
     return(result)
@@ -258,11 +258,11 @@ cbind.dfm <- function(...) {
 #' @examples 
 #' 
 #' # rbind() for dfm objects
-#' (dfm1 <- dfm(c(doc1 = "This is one sample text sample."), verbose = FALSE))
-#' (dfm2 <- dfm(c(doc2 = "One two three text text."), verbose = FALSE))
-#' (dfm3 <- dfm(c(doc3 = "This is the fourth sample text."), verbose = FALSE))
-#' rbind(dfm1, dfm2)
-#' rbind(dfm1, dfm2, dfm3)
+#' (dfmat1 <- dfm(c(doc1 = "This is one sample text sample.")))
+#' (dfmat2 <- dfm(c(doc2 = "One two three text text.")))
+#' (dfmat3 <- dfm(c(doc3 = "This is the fourth sample text.")))
+#' rbind(dfmat1, dfmat2)
+#' rbind(dfmat1, dfmat2, dfmat3)
 rbind.dfm <- function(...) {
     
     args <- list(...)
@@ -278,8 +278,8 @@ rbind.dfm <- function(...) {
     if (identical(featnames(x), featnames(y))) {
         result <- new("dfm", Matrix::rbind2(x, y))
     } else {
-        feature <- union(featnames(x), featnames(y))
-        result <- new("dfm", Matrix::rbind2(pad_dfm(x, feature), pad_dfm(y, feature)))
+        featname <- union(featnames(x), featnames(y))
+        result <- new("dfm", Matrix::rbind2(pad_dfm(x, featname), pad_dfm(y, featname)))
     }
     if (length(args) > 2) {
         for (i in seq(3, length(args))) {
@@ -288,7 +288,7 @@ rbind.dfm <- function(...) {
     }
     
     # TODO could be removed after upgrading as.dfm()
-    names(dimnames(result)) <- c("docs", "features") 
+    set_dfm_dimnames(result) <- dimnames(result)
     slots(result) <- attrs
     result@docvars <- data.frame(matrix(ncol = 0, nrow = nrow(result)))
     return(result)

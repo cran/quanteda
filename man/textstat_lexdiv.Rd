@@ -4,31 +4,55 @@
 \alias{textstat_lexdiv}
 \title{Calculate lexical diversity}
 \usage{
-textstat_lexdiv(x, measure = c("all", "TTR", "C", "R", "CTTR", "U", "S",
-  "K", "D", "Vm", "Maas"), log.base = 10)
+textstat_lexdiv(x, measure = c("TTR", "C", "R", "CTTR", "U", "S", "K",
+  "D", "Vm", "Maas", "MATTR", "MSTTR", "all"), remove_numbers = TRUE,
+  remove_punct = TRUE, remove_symbols = TRUE, remove_hyphens = FALSE,
+  log.base = 10, MATTR_window = 100L, MSTTR_segment = 100L, ...)
 }
 \arguments{
-\item{x}{an input \link{dfm}}
+\item{x}{an \link{dfm} or \link{tokens} input object for whose documents
+lexical diversity will be computed}
 
-\item{measure}{a character vector defining the measure to calculate.}
+\item{measure}{a character vector defining the measure to compute}
+
+\item{remove_numbers}{logical; if \code{TRUE} remove features or tokens that
+consist only of numerals (the Unicode "Number" [N] class)}
+
+\item{remove_punct}{logical; if \code{TRUE} remove all features or tokens
+that consist only of the Unicode "Punctuation" [P] class)}
+
+\item{remove_symbols}{logical; if \code{TRUE} remove all features or tokens
+that consist only of the Unicode "Punctuation" [S] class)}
+
+\item{remove_hyphens}{logical; if \code{TRUE} split words that are connected
+by hyphenation and hyphenation-like characters in between words, e.g.
+"self-storage" becomes two features or tokens "self" and "storage". Default
+is FALSE to preserve such words as is, with the hyphens.}
 
 \item{log.base}{a numeric value defining the base of the logarithm (for
-measures using logs)}
+measures using logarithms)}
 
-\item{...}{not used}
+\item{MATTR_window}{a numeric value defining the size of the moving window 
+for computation of the Moving-Average Type-Token Ratio (Covington & McFall, 2010)}
+
+\item{MSTTR_segment}{a numeric value defining the size of the each segment
+for the computation of the the Mean Segmental Type-Token Ratio (Johnson, 1944)}
+
+\item{...}{for passing arguments to other methods}
 }
 \value{
-\code{textstat_lexdiv} returns a data.frame of documents and
-  their lexical diversity scores.
+A data.frame of documents and their lexical diversity scores.
 }
 \description{
-Calculate the lexical diversity or complexity of text(s).
+Calculate the lexical diversity of text(s).
 }
 \details{
-\code{textstat_lexdiv} calculates a variety of proposed indices for
-  lexical diversity. In the following formulas, \eqn{N} refers to the total
-  number of tokens, \eqn{V} to the number of types, and \eqn{f_v(i, N)} to the
-  numbers of types occurring \eqn{i} times in a sample of length \eqn{N}.
+\code{textstat_lexdiv} calculates the lexical diversity of documents
+  using a variety of indices.
+
+In the following formulas, \eqn{N} refers to the total number of
+  tokens, \eqn{V} to the number of types, and \eqn{f_v(i, N)} to the numbers
+  of types occurring \eqn{i} times in a sample of length \eqn{N}.
   \describe{
      
   \item{\code{"TTR"}:}{The ordinary \emph{Type-Token Ratio}: \deqn{TTR =
@@ -77,53 +101,68 @@ Calculate the lexical diversity or complexity of text(s).
   for the current method (for a dfm) there is no computation on separate
   halves of the text.}
   
+  \item{\code{"MATTR"}:}{The Moving-Average Type-Token Ratio (Covington &
+  McFall, 2010) calculates TTRs for a moving window of tokens from the first to the last token, computing a TTR for each window. 
+  The MATTR is the mean of the TTRs of each window.}
+  
+  \item{\code{"MSTTR"}:}{Mean Segmental Type-Token Ratio (sometimes referred
+  to as \emph{Split TTR}) splits the tokens into segments of the given size,
+  TTR for each segment is calculated and the mean of these values returned.
+  When this value is < 1.0, it splits the tokens into equal, non-overlapping
+  sections of that size.  When this value is > 1, it defines the segments as
+  windows of that size. Tokens at the end which do not make a full segment
+  are ignored.}
   }
 }
-\note{
-This implements only the static measures of lexical diversity, not more
-  complex measures based on windows of text such as the Mean Segmental
-  Type-Token Ratio, the Moving-Average Type-Token Ratio (Covington & McFall,
-  2010), the MLTD or MLTD-MA (Moving-Average Measure of Textual Lexical
-  Diversity) proposed by McCarthy & Jarvis (2010) or Jarvis (no year), or the
-  HD-D version of vocd-D (see McCarthy & Jarvis, 2007).  These are available
-  from the package \pkg{korRpus}.
-}
 \examples{
-mydfm <- dfm(corpus_subset(data_corpus_inaugural, Year > 1980), verbose = FALSE)
-(result <- textstat_lexdiv(mydfm, c("CTTR", "TTR", "U")))
-cor(textstat_lexdiv(mydfm, "all")[,-1])
-
+txt <- c("Anyway, like I was sayin', shrimp is the fruit of the sea. You can
+          barbecue it, boil it, broil it, bake it, saute it.",
+         "There's shrimp-kabobs,
+          shrimp creole, shrimp gumbo. Pan fried, deep fried, stir-fried. There's
+          pineapple shrimp, lemon shrimp, coconut shrimp, pepper shrimp, shrimp soup,
+          shrimp stew, shrimp salad, shrimp and potatoes, shrimp burger, shrimp
+          sandwich.")
+tokens(txt) \%>\% 
+    textstat_lexdiv(measure = c("TTR", "CTTR", "K"))
+dfm(txt) \%>\% 
+    textstat_lexdiv(measure = c("TTR", "CTTR", "K"))
+    
+toks <- tokens(corpus_subset(data_corpus_inaugural, Year > 2000))
+textstat_lexdiv(toks, c("CTTR", "TTR", "MATTR"), MATTR_window = 100)
 }
 \references{
-Covington, M.A. & McFall, J.D. (2010). "Cutting the Gordian Knot: 
-  The Moving-Average Type-Token Ratio (MATTR)". \emph{Journal of Quantitative 
-  Linguistics} 17(2), 94--100.
+Covington, M.A. & McFall, J.D. (2010). 
+  \href{https://doi.org/10.1080/09296171003643098}{Cutting the Gordian Knot: The 
+  Moving-Average Type-Token Ratio (MATTR)}. \emph{Journal of Quantitative 
+  Linguistics}, 17(2), 94--100.
   
-  Herdan, Gustav. 1955. "A New Derivation and Interpretation of Yule's
-  'Characteristic' \emph{K}." \emph{Zeitschrift für angewandte Mathematik und
-  Physik} 6(4): 332--34.
+  Herdan, G. (1955). \href{https://doi.org/10.1007/BF01587632}{A New Derivation 
+  and Interpretation of Yule's 'Characteristic' \emph{K}}. \emph{Zeitschrift für 
+  angewandte Mathematik und Physik}, 6(4): 332--334.
   
-  Maas, H.-D., (1972). "\"Uber den Zusammenhang zwischen Wortschatzumfang und 
-  L\"ange eines Textes". \emph{Zeitschrift f\"ur Literaturwissenschaft und 
-  Linguistik} 2(8), 73--96.
+  Maas, H.D. (1972). Über den Zusammenhang zwischen Wortschatzumfang und 
+  Länge eines Textes. \emph{Zeitschrift für Literaturwissenschaft und 
+  Linguistik}, 2(8), 73--96.
   
-  McCarthy, P.M. & Jarvis, S. (2007). "vocd: A theoretical and empirical 
-  evaluation". \emph{Language Testing} 24(4), 459--488.
+  McCarthy, P.M. &  Jarvis, S. (2007). \href{https://doi.org/10.1177/0265532207080767}{vocd: 
+  A Theoretical and Empirical Evaluation}. \emph{Language Testing}, 24(4), 459--488.
   
-  McCarthy, P.M. & Jarvis, S. (2010). "MTLD, vocd-D, and HD-D: A validation 
-  study of sophisticated approaches to lexical diversity assessment". 
-  \emph{Behaviour Research Methods} 42(2), 381--392.
+  McCarthy, P.M. & Jarvis, S. (2010). \href{https://doi.org/10.3758/BRM.42.2.381}{MTLD, 
+  vocd-D, and HD-D: A Validation Study of Sophisticated Approaches to Lexical Diversity 
+  Assessment}. \emph{Behaviour Research Methods}, 42(2), 381--392.
   
-  Michalke, Meik.  (2014) \emph{koRpus: An R Package for Text Analysis}. 
-  Version 0.05-5. \url{http://reaktanz.de/?c=hacking&s=koRpus}
+  Michalke, M. (2014) \emph{koRpus: An R Package for Text Analysis}. 
+  R package version 0.05-5. \url{http://reaktanz.de/?c=hacking&s=koRpus}
   
-  Simpson, Edward H. 1949. "Measurement of Diversity." \emph{Nature} 163: 688.
+  Simpson, E.H. (1949). \href{https://doi.org/10.1038/163688a0}{Measurement of Diversity}. 
+  \emph{Nature}, 163: 688.
   
-  Tweedie. F.J. & Baayen, R.H. (1998). "How Variable May a Constant Be? 
-  Measures of Lexical Richness in Perspective". \emph{Computers and the 
-  Humanities} 32(5), 323--352.
+  Tweedie. F.J. and Baayen, R.H. (1998). \href{https://doi.org/10.1023/A:1001749303137}{How 
+  Variable May a Constant Be? Measures of Lexical Richness in Perspective}. \emph{Computers and the 
+  Humanities}, 32(5), 323--352.
 }
 \author{
-Kenneth Benoit, adapted from the S4 class implementation written by 
-  Meik Michalke in the \pkg{koRpus} package.
+Kenneth Benoit and Jiong Wei Lua. Many of the formulas have been
+  reimplemented from functions written by Meik Michalke in the \pkg{koRpus}
+  package.
 }

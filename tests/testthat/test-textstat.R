@@ -7,8 +7,9 @@ mt <- dfm(toks)
 col <- textstat_collocations(toks, min_count = 1)
 key <- textstat_keyness(mt)
 frq <- textstat_frequency(mt)
-lex <- textstat_lexdiv(mt)
-red <- textstat_readability(txt)
+#Temporary  restrict measures to static measures
+lex <- textstat_lexdiv(mt, measure = c("TTR", "C", "R", "CTTR", "U", "S", "K", "D", "Vm", "Maas"))
+red <- textstat_readability(txt, measure = "all")
 
 
 test_that("test textstat_* have numbers in rownames", {

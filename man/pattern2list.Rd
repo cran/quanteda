@@ -6,11 +6,12 @@
 tokens_compound and kwic.}
 \usage{
 pattern2list(pattern, types, valuetype, case_insensitive,
-  concatenator = "_", remove_unigram = FALSE)
+  concatenator = "_", levels = 1, remove_unigram = FALSE,
+  keep_nomatch = FALSE)
 }
 \arguments{
 \item{pattern}{a character vector, list of character vectors, \link{dictionary},
-\link{collocations}, or \link{dfm}. See \link{pattern} for details.}
+or \link{collocations} object.  See \link{pattern} for details.}
 
 \item{valuetype}{the type of pattern matching: \code{"glob"} for 
 "glob"-style wildcard expressions; \code{"regex"} for regular expressions;
@@ -19,6 +20,8 @@ or \code{"fixed"} for exact matching. See \link{valuetype} for details.}
 \item{case_insensitive}{ignore the case of dictionary values if \code{TRUE}}
 
 \item{concatenator}{concatenator that join multi-word expression in tokens object}
+
+\item{levels}{only used when pattern is a dictionary}
 
 \item{remove_unigram}{ignore single-word patterns if \code{TRUE}}
 }

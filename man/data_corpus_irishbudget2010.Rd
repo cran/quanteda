@@ -10,7 +10,7 @@
 \source{
 Dáil Éireann Debate, 
 \href{http://oireachtasdebates.oireachtas.ie/debates\%20authoring/debateswebpack.nsf/takes/dail2009120900022?opendocument}{Budget Statement 2010.}
-9 December 2009.  vol. 697, no. 3.
+9 December 2009. vol. 697, no. 3.
 }
 \usage{
 data_corpus_irishbudget2010
@@ -19,12 +19,17 @@ data_corpus_irishbudget2010
 Speeches and document-level variables from the debate over the Irish budget
 of 2010.
 }
+\details{
+At the time of the debate, Fianna Fáil (FF) and the Greens formed the government
+  coalition, while Fine Gael (FG), Labour (LAB), and Sinn Féin (SF) were in opposition.
+}
 \examples{
 summary(data_corpus_irishbudget2010)
 }
 \references{
-Lowe, Will, and Kenneth R Benoit. 2013. "Validating Estimates of 
-  Latent Traits From Textual Data Using Human Judgment as a Benchmark." 
-  \emph{Political Analysis} 21: 298-313.
+Lowe, W. & Benoit, K.R. (2013). 
+  \href{https://doi.org/10.1093/pan/mpt002}{Validating Estimates of Latent Traits 
+  From Textual Data Using Human Judgment as a Benchmark}.
+  \emph{Political Analysis}, 21(3), 298--313.
 }
 \keyword{data}

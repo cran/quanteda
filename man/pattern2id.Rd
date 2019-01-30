@@ -6,17 +6,17 @@
 \alias{index_types}
 \title{Convert regex and glob patterns to type IDs or fixed patterns}
 \usage{
-pattern2id(pattern, types = NULL, valuetype = NULL,
-  case_insensitive = NULL, index = NULL)
+pattern2id(pattern, types, valuetype = c("glob", "fixed", "regex"),
+  case_insensitive = TRUE, keep_nomatch = FALSE)
 
-pattern2fixed(pattern, types = NULL, valuetype = NULL,
-  case_insensitive = NULL, index = NULL)
+pattern2fixed(pattern, types, valuetype = c("glob", "fixed", "regex"),
+  case_insensitive = TRUE, keep_nomatch = FALSE)
 
 index_types(types, valuetype, case_insensitive, max_len = NULL)
 }
 \arguments{
 \item{pattern}{a character vector, list of character vectors, \link{dictionary},
-\link{collocations}, or \link{dfm}. See \link{pattern} for details.}
+or \link{collocations} object.  See \link{pattern} for details.}
 
 \item{types}{unique types of tokens obtained by \code{\link{types}}}
 
@@ -26,9 +26,7 @@ or \code{"fixed"} for exact matching. See \link{valuetype} for details.}
 
 \item{case_insensitive}{if \code{TRUE}, ignores case when matching}
 
-\item{index}{If \code{NULL}, index is constructed automatically. It also
-accept index constructed by \code{index_types}. In that case, \code{types},
-\code{valuetype} and \code{case_insensitive} should be NULL.}
+\item{keep_nomatch}{keep patterns not found}
 
 \item{max_len}{maximum length of types to be indexed}
 }
@@ -68,8 +66,6 @@ pattern2id(pats_glob, types, "glob", case_insensitive = TRUE)
 pattern <- list(c("^a$", "^b"), c("c"), c("d"))
 types <- c("A", "AA", "B", "BB", "BBB", "C", "CC")
 pattern2fixed(pattern, types, "regex", case_insensitive = TRUE)
-index <- index_types(types, "regex", case_insensitive = TRUE)
-pattern2fixed(pattern, index = index)
 index <- index_types(c("xxx", "yyyy", "ZZZ"), "glob", FALSE, 3)
 quanteda:::search_glob("yy*", attr(index, "type_search"), index)
 }

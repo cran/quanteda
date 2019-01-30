@@ -72,9 +72,9 @@ tokens_toupper.tokens <- function(x, ...) {
 #' @import stringi
 #' @export
 #' @examples
-#' txt <- c(txt1 = "b A A", txt2 = "C C a b B")
-#' char_tolower(txt) 
-#' char_toupper(txt)
+#' txt1 <- c(txt1 = "b A A", txt2 = "C C a b B")
+#' char_tolower(txt1) 
+#' char_toupper(txt1)
 #' 
 #' # with acronym preservation
 #' txt2 <- c(text1 = "England and France are members of NATO and UNESCO", 
@@ -140,11 +140,10 @@ char_toupper.character <- function(x, ...) {
 #' @export
 #' @examples
 #' # for a document-feature matrix
-#' mydfm <- dfm(c("b A A", "C C a b B"), 
-#'              toLower = FALSE, verbose = FALSE)
-#' mydfm
-#' dfm_tolower(mydfm) 
-#' dfm_toupper(mydfm)
+#' dfmat <- dfm(c("b A A", "C C a b B"), tolower = FALSE)
+#' dfmat
+#' dfm_tolower(dfmat) 
+#' dfm_toupper(dfmat)
 #'    
 dfm_tolower <- function(x, keep_acronyms = FALSE, ...) {
     UseMethod("dfm_tolower")
@@ -159,7 +158,7 @@ dfm_tolower.default <- function(x, ...) {
 dfm_tolower.dfm <- function(x, keep_acronyms = FALSE, ...) {
     x <- as.dfm(x)
     if (!nfeat(x) || !ndoc(x)) return(x)
-    colnames(x) <- lowercase_types(featnames(x), keep_acronyms)
+    set_dfm_featnames(x) <- lowercase_types(featnames(x), keep_acronyms)
     dfm_compress(x, margin = "features")
 }
 
@@ -179,7 +178,7 @@ dfm_toupper.default <- function(x, ...) {
 dfm_toupper.dfm <- function(x, ...) {
     x <- as.dfm(x)
     if (!nfeat(x) || !ndoc(x)) return(x)
-    colnames(x) <- char_toupper(featnames(x), ...)
+    set_dfm_featnames(x) <- char_toupper(featnames(x), ...)
     dfm_compress(x, margin = "features")
 }
 
@@ -191,11 +190,11 @@ dfm_toupper.dfm <- function(x, ...) {
 #' @export
 #' @examples
 #' # for a feature co-occurrence matrix
-#' myfcm <- fcm(tokens(c("b A A d", "C C a b B e")), 
+#' fcmat <- fcm(tokens(c("b A A d", "C C a b B e")), 
 #'              context = "document")
-#' myfcm
-#' fcm_tolower(myfcm) 
-#' fcm_toupper(myfcm)   
+#' fcmat
+#' fcm_tolower(fcmat) 
+#' fcm_toupper(fcmat)   
 fcm_tolower <- function(x, keep_acronyms = FALSE, ...) {
     UseMethod("fcm_tolower")   
 }
@@ -207,7 +206,7 @@ fcm_tolower.default <- function(x, keep_acronyms = FALSE, ...) {
 
 #' @export
 fcm_tolower.fcm <- function(x, keep_acronyms = FALSE, ...) {
-    colnames(x) <- rownames(x) <- lowercase_types(featnames(x), keep_acronyms)
+    set_fcm_featnames(x) <- lowercase_types(featnames(x), keep_acronyms)
     fcm_compress(x)
 }
 
@@ -225,8 +224,7 @@ fcm_toupper.default <- function(x, ...) {
 
 #' @export
 fcm_toupper.fcm <- function(x, ...) {
-    colnames(x) <- rownames(x) <-
-        char_toupper(colnames(x), ...)
+    set_fcm_featnames(x) <- char_toupper(colnames(x), ...)
     fcm_compress(x)
 }
 

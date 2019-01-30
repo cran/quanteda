@@ -15,29 +15,29 @@ dfm(x, tolower = TRUE, stem = FALSE, select = NULL, remove = NULL,
 
 \item{stem}{if \code{TRUE}, stem words}
 
-\item{select}{a  \link{pattern}  of user-supplied features to keep, while 
-excluding all others.  This can be used in lieu of a dictionary if there 
-are only specific features that a user wishes to keep. To extract only 
-Twitter usernames, for example, set \code{select = "@*"} and make sure 
-that \code{remove_twitter = FALSE} as an additional argument passed to 
+\item{select}{a  \link{pattern}  of user-supplied features to keep, while
+excluding all others.  This can be used in lieu of a dictionary if there
+are only specific features that a user wishes to keep. To extract only
+Twitter usernames, for example, set \code{select = "@*"} and make sure
+that \code{remove_twitter = FALSE} as an additional argument passed to
 \link{tokens}.  Note: \code{select = "^@\\\w+\\\b"} would be the regular
-expression version of this matching pattern.  The pattern matching type 
+expression version of this matching pattern.  The pattern matching type
 will be set by \code{valuetype}.  See also \code{\link{tokens_remove}}.}
 
-\item{remove}{a \link{pattern} of user-supplied features to ignore, such as 
-"stop words".  To access one possible list (from any list you wish), use 
-\code{\link{stopwords}()}.  The pattern matching type will be set by 
+\item{remove}{a \link{pattern} of user-supplied features to ignore, such as
+"stop words".  To access one possible list (from any list you wish), use
+\code{\link{stopwords}()}.  The pattern matching type will be set by
 \code{valuetype}.  See also \code{\link{tokens_select}}.  For behaviour of
 \code{remove} with \code{ngrams > 1}, see Details.}
 
-\item{dictionary}{a \link{dictionary} object to apply to the tokens when 
+\item{dictionary}{a \link{dictionary} object to apply to the tokens when
 creating the dfm}
 
-\item{thesaurus}{a \link{dictionary} object that will be applied as if 
-\code{exclusive = FALSE}. See also \code{\link{tokens_lookup}}.  For more 
-fine-grained control over this and other aspects of converting features 
-into dictionary/thesaurus keys from pattern matches to values, consider 
-creating the dfm first, and then applying \code{\link{dfm_lookup}} 
+\item{thesaurus}{a \link{dictionary} object that will be applied as if
+\code{exclusive = FALSE}. See also \code{\link{tokens_lookup}}.  For more
+fine-grained control over this and other aspects of converting features
+into dictionary/thesaurus keys from pattern matches to values, consider
+creating the dfm first, and then applying \code{\link{dfm_lookup}}
 separately, or using \code{\link{tokens_lookup}} on the tokenized text
 before calling \code{dfm}.}
 
@@ -59,18 +59,18 @@ is a \link{dfm}}
 a \link{dfm-class} object
 }
 \description{
-Construct a sparse document-feature matrix, from a character, \link{corpus}, 
+Construct a sparse document-feature matrix, from a character, \link{corpus},
 \link{tokens}, or even other \link{dfm} object.
 }
 \details{
-The default behaviour for \code{remove}/\code{select} when 
-  constructing ngrams using \code{dfm(x, } \emph{ngrams > 1}\code{)} is to 
-  remove/select any ngram constructed from a matching feature.  If you wish 
+The default behaviour for \code{remove}/\code{select} when
+  constructing ngrams using \code{dfm(x, } \emph{ngrams > 1}\code{)} is to
+  remove/select any ngram constructed from a matching feature.  If you wish
   to remove these before constructing ngrams, you will need to first tokenize
-  the texts with ngrams, then remove the features to be ignored, and then 
-  construct the dfm using this modified tokenization object.  See the code 
+  the texts with ngrams, then remove the features to be ignored, and then
+  construct the dfm using this modified tokenization object.  See the code
   examples for an illustration.
-  
+
   To select on and match the features of a another \link{dfm}, \code{x} must
   also be a \link{dfm}.
 }
@@ -81,61 +81,61 @@ When \code{x} is a \link{dfm}, \code{groups} provides a convenient and
 }
 \examples{
 ## for a corpus
-corpus_post80inaug <- corpus_subset(data_corpus_inaugural, Year > 1980)
-dfm(corpus_post80inaug)
-dfm(corpus_post80inaug, tolower = FALSE)
+dfmat1 <- corpus_subset(data_corpus_inaugural, Year > 1980)
+dfm(dfmat1)
+dfm(dfmat1, tolower = FALSE)
 
 # grouping documents by docvars in a corpus
-dfm(corpus_post80inaug, groups = "President", verbose = TRUE)
+dfm(dfmat1, groups = "President", verbose = TRUE)
 
 # with English stopwords and stemming
-dfm(corpus_post80inaug, remove = stopwords("english"), stem = TRUE, verbose = TRUE)
+dfm(dfmat1, remove = stopwords("english"), stem = TRUE, verbose = TRUE)
 # works for both words in ngrams too
-dfm("Banking industry", stem = TRUE, ngrams = 2, verbose = FALSE)
+dfm("Banking industry", stem = TRUE, ngrams = 2)
 
 # with dictionaries
-corpus_post1900inaug <- corpus_subset(data_corpus_inaugural, Year > 1900)
-mydict <- dictionary(list(christmas = c("Christmas", "Santa", "holiday"),
+dfmat2 <- corpus_subset(data_corpus_inaugural, Year > 1900)
+dict <- dictionary(list(christmas = c("Christmas", "Santa", "holiday"),
                opposition = c("Opposition", "reject", "notincorpus"),
                taxing = "taxing",
                taxation = "taxation",
                taxregex = "tax*",
                country = "states"))
-dfm(corpus_post1900inaug, dictionary = mydict)
+dfm(dfmat2, dictionary = dict)
 
 
 # removing stopwords
-test_text <- "The quick brown fox named Seamus jumps over the lazy dog also named Seamus, with
+txt <- "The quick brown fox named Seamus jumps over the lazy dog also named Seamus, with
              the newspaper from a boy named Seamus, in his mouth."
-test_corpus <- corpus(test_text)
+corp <- corpus(txt)
 # note: "also" is not in the default stopwords("english")
-featnames(dfm(test_corpus, select = stopwords("english")))
+featnames(dfm(corp, select = stopwords("english")))
 # for ngrams
-featnames(dfm(test_corpus, ngrams = 2, select = stopwords("english"), remove_punct = TRUE))
-featnames(dfm(test_corpus, ngrams = 1:2, select = stopwords("english"), remove_punct = TRUE))
+featnames(dfm(corp, ngrams = 2, select = stopwords("english"), remove_punct = TRUE))
+featnames(dfm(corp, ngrams = 1:2, select = stopwords("english"), remove_punct = TRUE))
 
 # removing stopwords before constructing ngrams
-tokens_all <- tokens(char_tolower(test_text), remove_punct = TRUE)
-tokens_no_stopwords <- tokens_remove(tokens_all, stopwords("english"))
-tokens_ngrams_no_stopwords <- tokens_ngrams(tokens_no_stopwords, 2)
-featnames(dfm(tokens_ngrams_no_stopwords, verbose = FALSE))
+toks1 <- tokens(char_tolower(txt), remove_punct = TRUE)
+toks2 <- tokens_remove(toks1, stopwords("english"))
+toks3 <- tokens_ngrams(toks2, 2)
+featnames(dfm(toks3))
 
 # keep only certain words
-dfm(test_corpus, select = "*s", verbose = FALSE)  # keep only words ending in "s"
-dfm(test_corpus, select = "s$", valuetype = "regex", verbose = FALSE)
+dfm(corp, select = "*s")  # keep only words ending in "s"
+dfm(corp, select = "s$", valuetype = "regex")
 
 # testing Twitter functions
-test_tweets <- c("My homie @justinbieber #justinbieber shopping in #LA yesterday #beliebers",
+txttweets <- c("My homie @justinbieber #justinbieber shopping in #LA yesterday #beliebers",
                 "2all the ha8ers including my bro #justinbieber #emabiggestfansjustinbieber",
                 "Justin Bieber #justinbieber #belieber #fetusjustin #EMABiggestFansJustinBieber")
-dfm(test_tweets, select = "#*", remove_twitter = FALSE)  # keep only hashtags
-dfm(test_tweets, select = "^#.*$", valuetype = "regex", remove_twitter = FALSE)
+dfm(txttweets, select = "#*", remove_twitter = FALSE)  # keep only hashtags
+dfm(txttweets, select = "^#.*$", valuetype = "regex", remove_twitter = FALSE)
 
 # for a dfm
-dfm1 <- dfm(data_corpus_irishbudget2010)
-dfm2 <- dfm(dfm1, 
+dfmat3 <- dfm(data_corpus_irishbudget2010)
+dfmat4 <- dfm(dfmat3,
             groups = ifelse(docvars(data_corpus_irishbudget2010, "party") \%in\% c("FF", "Green"),
-                            "Govt", "Opposition"), 
+                            "Govt", "Opposition"),
             tolower = FALSE, verbose = TRUE)
 
 }

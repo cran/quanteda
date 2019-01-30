@@ -19,42 +19,41 @@
 #' @export
 #' @examples 
 #' # dfm_compress examples
-#' mat <- rbind(dfm(c("b A A", "C C a b B"), tolower = FALSE),
+#' dfmat <- rbind(dfm(c("b A A", "C C a b B"), tolower = FALSE),
 #'              dfm("A C C C C C", tolower = FALSE))
-#' colnames(mat) <- char_tolower(featnames(mat))
-#' mat
-#' dfm_compress(mat, margin = "documents")
-#' dfm_compress(mat, margin = "features")
-#' dfm_compress(mat)
+#' colnames(dfmat) <- char_tolower(featnames(dfmat))
+#' dfmat
+#' dfm_compress(dfmat, margin = "documents")
+#' dfm_compress(dfmat, margin = "features")
+#' dfm_compress(dfmat)
 #' 
 #' # no effect if no compression needed
-#' compactdfm <- dfm(data_corpus_inaugural[1:5])
-#' dim(compactdfm)
-#' dim(dfm_compress(compactdfm))
+#' dfmatsubset <- dfm(data_corpus_inaugural[1:5])
+#' dim(dfmatsubset)
+#' dim(dfm_compress(dfmatsubset))
 #' 
 dfm_compress <- function(x, margin = c("both", "documents", "features")) {
     UseMethod("dfm_compress")
 }
     
 #' @export
-dfm_compress.default <- function(x, 
+dfm_compress.default <- function(x,
                                  margin = c("both", "documents", "features")) {
     stop(friendly_class_undefined_message(class(x), "dfm_compress"))
 }
 
 #' @export
 dfm_compress.dfm <- function(x, margin = c("both", "documents", "features")) {
-    
+
     x <- as.dfm(x)
     if (!nfeat(x) || !ndoc(x)) return(x)
     margin <- match.arg(margin)
-    if (margin == 'documents') {
+    if (margin == "documents") {
         result <- group_dfm(x, NULL, docnames(x))
-    } else if (margin == 'features') {
+    } else if (margin == "features") {
         result <- group_dfm(x, featnames(x), NULL)
     } else {
         result <- group_dfm(x, featnames(x), docnames(x))
     }
     return(result)
 }
-

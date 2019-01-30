@@ -77,13 +77,13 @@ nfeat.dfm <- function(x) {
 #     }
 # }
 
-#' @rdname ndoc
-#' @details \code{nfeature} is the deprecated form of \code{nfeat}.
+#' Defunct form of nfeat
+#' 
+#' @details \code{nfeature} is the defunct form of \code{\link{nfeat}}.
+#' @keywords internal defunct
 #' @export
-nfeature <- function(x) {
-    .Deprecated("nfeat")
-    UseMethod("nfeat")
-}
+nfeature <- function(x) .Defunct("nfeat")
+
 
 #' Count the number of tokens or types
 #' 
@@ -112,10 +112,10 @@ nfeature <- function(x) {
 #' ntype(char_tolower(txt), remove_punct = TRUE)
 #' 
 #' # with some real texts
-#' ntoken(corpus_subset(data_corpus_inaugural, Year<1806), remove_punct = TRUE)
-#' ntype(corpus_subset(data_corpus_inaugural, Year<1806), remove_punct = TRUE)
-#' ntoken(dfm(corpus_subset(data_corpus_inaugural, Year<1800)))
-#' ntype(dfm(corpus_subset(data_corpus_inaugural, Year<1800)))
+#' ntoken(corpus_subset(data_corpus_inaugural, Year < 1806), remove_punct = TRUE)
+#' ntype(corpus_subset(data_corpus_inaugural, Year < 1806), remove_punct = TRUE)
+#' ntoken(dfm(corpus_subset(data_corpus_inaugural, Year < 1800)))
+#' ntype(dfm(corpus_subset(data_corpus_inaugural, Year < 1800)))
 #' @export
 ntoken <- function(x, ...) {
     UseMethod("ntoken")

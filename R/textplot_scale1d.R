@@ -35,36 +35,32 @@
 #' @keywords textplot
 #' @examples
 #' \dontrun{
-#' ie_dfm <- dfm(data_corpus_irishbudget2010)
-#' doclab <- apply(docvars(data_corpus_irishbudget2010, c("name", "party")), 
-#'                 1, paste, collapse = " ")
+#' dfmat <- dfm(data_corpus_irishbudget2010)
 #' 
 #' ## wordscores
 #' refscores <- c(rep(NA, 4), 1, -1, rep(NA, 8))
-#' ws <- textmodel_wordscores(ie_dfm, refscores, smooth = 1)
-#' # plot estimated word positions
-#' textplot_scale1d(ws, highlighted = c("minister", "have", "our", "budget"))
+#' tmod1 <- textmodel_wordscores(dfmat, y = refscores, smooth = 1)
 #' # plot estimated document positions
-#' textplot_scale1d(predict(ws, se.fit = TRUE), doclabels = doclab,
+#' textplot_scale1d(predict(tmod1, se.fit = TRUE), 
 #'                  groups = docvars(data_corpus_irishbudget2010, "party"))
-#'
+#' # plot estimated word positions
+#' textplot_scale1d(tmod1, highlighted = c("minister", "have", "our", "budget"))
+#' 
 #' ## wordfish
-#' wf <- textmodel_wordfish(dfm(data_corpus_irishbudget2010), dir = c(6,5))
+#' tmod2 <- textmodel_wordfish(dfmat, dir = c(6,5))
 #' # plot estimated document positions
-#' textplot_scale1d(wf, doclabels = doclab)
-#' textplot_scale1d(wf, doclabels = doclab,
-#'                  groups = docvars(data_corpus_irishbudget2010, "party"))
+#' textplot_scale1d(tmod2)
+#' textplot_scale1d(tmod2, groups = docvars(data_corpus_irishbudget2010, "party"))
 #' # plot estimated word positions
-#' textplot_scale1d(wf, margin = "features", 
+#' textplot_scale1d(tmod2, margin = "features", 
 #'                  highlighted = c("government", "global", "children", 
 #'                                  "bank", "economy", "the", "citizenship",
 #'                                  "productivity", "deficit"))
 #'
 #' ## correspondence analysis
-#' ca <- textmodel_ca(ie_dfm)
+#' tmod3 <- textmodel_ca(dfmat)
 #' # plot estimated document positions
-#' textplot_scale1d(ca, margin = "documents",
-#'                  doclabels = doclab,
+#' textplot_scale1d(tmod3, margin = "documents",
 #'                  groups = docvars(data_corpus_irishbudget2010, "party"))
 #' }
 textplot_scale1d <- function(x, 
