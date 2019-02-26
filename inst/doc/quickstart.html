@@ -359,8 +359,8 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##           SNP    88    134         4
 ##          UKIP   346    723        27
 ## 
-## Source: /private/var/folders/1v/ps2x_tvd0yg0lypdlshg_vwc0000gp/T/Rtmpo1fItH/Rbuild29ad43459105/quanteda/vignettes/* on x86_64 by kbenoit
-## Created: Thu Jan 31 03:27:27 2019
+## Source: /private/var/folders/1v/ps2x_tvd0yg0lypdlshg_vwc0000gp/T/RtmpAccS5l/Rbuild28356a178ca2/quanteda/vignettes/* on x86_64 by kbenoit
+## Created: Tue Feb 26 20:20:30 2019
 ## Notes:</code></pre>
 <p>If we wanted, we could add some document-level variables – what quanteda calls <em>docvars</em> – to this corpus.</p>
 <p>We can do this using the R’s <code>names()</code> function to get the names of the character vector <code>data_char_ukimmig2010</code>, and assign this to a document variable (<em>docvar</em>).</p>
@@ -380,8 +380,8 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##           SNP    88    134         4          SNP 2010
 ##          UKIP   346    723        27         UKIP 2010
 ## 
-## Source: /private/var/folders/1v/ps2x_tvd0yg0lypdlshg_vwc0000gp/T/Rtmpo1fItH/Rbuild29ad43459105/quanteda/vignettes/* on x86_64 by kbenoit
-## Created: Thu Jan 31 03:27:27 2019
+## Source: /private/var/folders/1v/ps2x_tvd0yg0lypdlshg_vwc0000gp/T/RtmpAccS5l/Rbuild28356a178ca2/quanteda/vignettes/* on x86_64 by kbenoit
+## Created: Tue Feb 26 20:20:30 2019
 ## Notes:</code></pre>
 <p>If we wanted to tag each document with additional meta-data not considered a document variable of interest for analysis, but rather something that we need to know as an attribute of the document, we could also add those to our corpus.</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1"><span class="kw">metadoc</span>(my_corpus, <span class="st">&quot;language&quot;</span>) &lt;-<span class="st"> &quot;english&quot;</span></a>
@@ -410,8 +410,8 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##           SNP 2010
 ##          UKIP 2010
 ## 
-## Source: /private/var/folders/1v/ps2x_tvd0yg0lypdlshg_vwc0000gp/T/Rtmpo1fItH/Rbuild29ad43459105/quanteda/vignettes/* on x86_64 by kbenoit
-## Created: Thu Jan 31 03:27:27 2019
+## Source: /private/var/folders/1v/ps2x_tvd0yg0lypdlshg_vwc0000gp/T/RtmpAccS5l/Rbuild28356a178ca2/quanteda/vignettes/* on x86_64 by kbenoit
+## Created: Tue Feb 26 20:20:30 2019
 ## Notes:</code></pre>
 <p>The last command, <code>metadoc</code>, allows you to define your own document meta-data fields. Note that in assigning just the single value of <code>&quot;english&quot;</code>, R has recycled the value until it matches the number of documents in the corpus. In creating a simple tag for our custom metadoc field <code>docsource</code>, we used the quanteda function <code>ndoc()</code> to retrieve the number of documents in our corpus. This function is deliberately designed to work in a way similar to functions you may already use in R, such as <code>nrow()</code> and <code>ncol()</code>.</p>
 </div>
@@ -537,7 +537,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##       2017-Trump   582   1660        88
 ## 
 ## Source: Combination of corpuses my_corpus1 and my_corpus2
-## Created: Thu Jan 31 03:27:28 2019
+## Created: Tue Feb 26 20:20:30 2019
 ## Notes:</code></pre>
 </div>
 <div id="subsetting-corpus-objects" class="section level3">
@@ -970,30 +970,30 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <a class="sourceLine" id="cb87-4" title="4">    <span class="kw">get_terms</span>(my_lda_fit20, <span class="dv">5</span>)</a>
 <a class="sourceLine" id="cb87-5" title="5">}</a></code></pre></div>
 <pre><code>## Loading required package: topicmodels</code></pre>
-<pre><code>##      Topic 1      Topic 2      Topic 3   Topic 4   Topic 5     Topic 6  
-## [1,] &quot;spending&quot;   &quot;million&quot;    &quot;credit&quot;  &quot;less&quot;    &quot;taoiseach&quot; &quot;child&quot;  
-## [2,] &quot;details&quot;    &quot;investment&quot; &quot;bank&quot;    &quot;welfare&quot; &quot;fine&quot;      &quot;benefit&quot;
-## [3,] &quot;reductions&quot; &quot;support&quot;    &quot;may&quot;     &quot;happen&quot;  &quot;irish&quot;     &quot;day&quot;    
-## [4,] &quot;reduction&quot;  &quot;welfare&quot;    &quot;real&quot;    &quot;may&quot;     &quot;gael&quot;      &quot;today&quot;  
-## [5,] &quot;deficit&quot;    &quot;future&quot;     &quot;benefit&quot; &quot;better&quot;  &quot;may&quot;       &quot;bank&quot;   
-##      Topic 7    Topic 8    Topic 9    Topic 10      Topic 11   
-## [1,] &quot;welfare&quot;  &quot;levy&quot;     &quot;fianna&quot;   &quot;continue&quot;    &quot;failed&quot;   
-## [2,] &quot;system&quot;   &quot;welfare&quot;  &quot;fáil&quot;     &quot;programme&quot;   &quot;strategy&quot; 
-## [3,] &quot;taxation&quot; &quot;million&quot;  &quot;national&quot; &quot;development&quot; &quot;needed&quot;   
-## [4,] &quot;fianna&quot;   &quot;continue&quot; &quot;irish&quot;    &quot;confidence&quot;  &quot;ministers&quot;
-## [5,] &quot;fáil&quot;     &quot;rate&quot;     &quot;support&quot;  &quot;support&quot;     &quot;system&quot;   
-##      Topic 12      Topic 13    Topic 14      Topic 15       Topic 16  
-## [1,] &quot;alternative&quot; &quot;taoiseach&quot; &quot;imagination&quot; &quot;society&quot;      &quot;million&quot; 
-## [2,] &quot;citizenship&quot; &quot;employees&quot; &quot;kind&quot;        &quot;enterprising&quot; &quot;measures&quot;
-## [3,] &quot;wealth&quot;      &quot;rate&quot;      &quot;policies&quot;    &quot;sense&quot;        &quot;scheme&quot;  
-## [4,] &quot;adjustment&quot;  &quot;referred&quot;  &quot;face&quot;        &quot;equal&quot;        &quot;welfare&quot; 
-## [5,] &quot;breaks&quot;      &quot;debate&quot;    &quot;authority&quot;   &quot;nation&quot;       &quot;level&quot;   
-##      Topic 17   Topic 18    Topic 19     Topic 20
-## [1,] &quot;kind&quot;     &quot;care&quot;      &quot;carbon&quot;     &quot;fianna&quot;
-## [2,] &quot;wit&quot;      &quot;welfare&quot;   &quot;placing&quot;    &quot;fáil&quot;  
-## [3,] &quot;rather&quot;   &quot;per&quot;       &quot;created&quot;    &quot;side&quot;  
-## [4,] &quot;national&quot; &quot;allowance&quot; &quot;colleagues&quot; &quot;level&quot; 
-## [5,] &quot;example&quot;  &quot;hit&quot;       &quot;paid&quot;       &quot;third&quot;</code></pre>
+<pre><code>##      Topic 1     Topic 2   Topic 3   Topic 4    Topic 5     Topic 6       
+## [1,] &quot;failed&quot;    &quot;system&quot;  &quot;child&quot;   &quot;scheme&quot;   &quot;fáil&quot;      &quot;society&quot;     
+## [2,] &quot;strategy&quot;  &quot;fianna&quot;  &quot;benefit&quot; &quot;measures&quot; &quot;fianna&quot;    &quot;enterprising&quot;
+## [3,] &quot;ministers&quot; &quot;welfare&quot; &quot;day&quot;     &quot;pension&quot;  &quot;side&quot;      &quot;sense&quot;       
+## [4,] &quot;needed&quot;    &quot;job&quot;     &quot;today&quot;   &quot;spending&quot; &quot;third&quot;     &quot;equal&quot;       
+## [5,] &quot;expected&quot;  &quot;sinn&quot;    &quot;bank&quot;    &quot;million&quot;  &quot;societies&quot; &quot;nation&quot;      
+##      Topic 7   Topic 8     Topic 9   Topic 10  Topic 11      Topic 12   
+## [1,] &quot;hard&quot;    &quot;taoiseach&quot; &quot;part&quot;    &quot;levy&quot;    &quot;alternative&quot; &quot;care&quot;     
+## [2,] &quot;equal&quot;   &quot;fine&quot;      &quot;cycle&quot;   &quot;million&quot; &quot;citizenship&quot; &quot;welfare&quot;  
+## [3,] &quot;various&quot; &quot;gael&quot;      &quot;vision&quot;  &quot;carbon&quot;  &quot;wealth&quot;      &quot;per&quot;      
+## [4,] &quot;start&quot;   &quot;may&quot;       &quot;welfare&quot; &quot;change&quot;  &quot;adjustment&quot;  &quot;allowance&quot;
+## [5,] &quot;sectors&quot; &quot;irish&quot;     &quot;per&quot;     &quot;welfare&quot; &quot;breaks&quot;      &quot;hit&quot;      
+##      Topic 13   Topic 14      Topic 15    Topic 16    Topic 17  
+## [1,] &quot;fianna&quot;   &quot;kind&quot;        &quot;taoiseach&quot; &quot;million&quot;   &quot;benefit&quot; 
+## [2,] &quot;fáil&quot;     &quot;imagination&quot; &quot;employees&quot; &quot;spending&quot;  &quot;million&quot; 
+## [3,] &quot;national&quot; &quot;policies&quot;    &quot;rate&quot;      &quot;bill&quot;      &quot;child&quot;   
+## [4,] &quot;irish&quot;    &quot;wit&quot;         &quot;referred&quot;  &quot;increases&quot; &quot;ever&quot;    
+## [5,] &quot;support&quot;  &quot;create&quot;      &quot;debate&quot;    &quot;savings&quot;   &quot;families&quot;
+##      Topic 18     Topic 19     Topic 20  
+## [1,] &quot;million&quot;    &quot;nama&quot;       &quot;welfare&quot; 
+## [2,] &quot;support&quot;    &quot;investment&quot; &quot;stimulus&quot;
+## [3,] &quot;welfare&quot;    &quot;welfare&quot;    &quot;fáil&quot;    
+## [4,] &quot;investment&quot; &quot;excise&quot;     &quot;high&quot;    
+## [5,] &quot;back&quot;       &quot;system&quot;     &quot;earners&quot;</code></pre>
 </div>
 </div>
 
