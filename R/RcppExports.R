@@ -41,28 +41,12 @@ qatd_cpp_minkowski2 <- function(A, B, margin = 1L, p = 2) {
     .Call(`_quanteda_qatd_cpp_minkowski2`, A, B, margin, p)
 }
 
-qatd_cpp_fcm <- function(texts_, n_types, count, window, weights, ordered, tri, nvec) {
-    .Call(`_quanteda_qatd_cpp_fcm`, texts_, n_types, count, window, weights, ordered, tri, nvec)
+qatd_cpp_fcm <- function(texts_, n_types, weights_, boolean, ordered) {
+    .Call(`_quanteda_qatd_cpp_fcm`, texts_, n_types, weights_, boolean, ordered)
 }
 
 qatd_cpp_kwic <- function(texts_, types_, words_, window, delim_) {
     .Call(`_quanteda_qatd_cpp_kwic`, texts_, types_, words_, window, delim_)
-}
-
-qatd_cpp_similarity_linear <- function(mt1, mt2, method, rank, limit = -1.0) {
-    .Call(`_quanteda_qatd_cpp_similarity_linear`, mt1, mt2, method, rank, limit)
-}
-
-qatd_cpp_similarity <- function(mt1, mt2, method, rank, limit = -1.0, weight = 1.0) {
-    .Call(`_quanteda_qatd_cpp_similarity`, mt1, mt2, method, rank, limit, weight)
-}
-
-qatd_cpp_sd <- function(mt) {
-    .Call(`_quanteda_qatd_cpp_sd`, mt)
-}
-
-qatd_cpp_nz <- function(mt) {
-    .Call(`_quanteda_qatd_cpp_nz`, mt)
 }
 
 qatd_cpp_tokens_chunk <- function(texts_, types_, size, overlap) {

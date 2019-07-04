@@ -1,6 +1,7 @@
-#include "quanteda.h"
-#include "recompile.h"
 //#include "dev.h"
+#include "lib.h"
+#include "recompile.h"
+
 using namespace quanteda;
 
 Text replace(Text tokens, 

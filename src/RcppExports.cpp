@@ -138,20 +138,17 @@ BEGIN_RCPP
 END_RCPP
 }
 // qatd_cpp_fcm
-S4 qatd_cpp_fcm(const Rcpp::List& texts_, const int n_types, const String& count, const unsigned int window, const NumericVector& weights, const bool ordered, const bool tri, const unsigned int nvec);
-RcppExport SEXP _quanteda_qatd_cpp_fcm(SEXP texts_SEXP, SEXP n_typesSEXP, SEXP countSEXP, SEXP windowSEXP, SEXP weightsSEXP, SEXP orderedSEXP, SEXP triSEXP, SEXP nvecSEXP) {
+S4 qatd_cpp_fcm(const Rcpp::List& texts_, const int n_types, const NumericVector& weights_, const bool boolean, const bool ordered);
+RcppExport SEXP _quanteda_qatd_cpp_fcm(SEXP texts_SEXP, SEXP n_typesSEXP, SEXP weights_SEXP, SEXP booleanSEXP, SEXP orderedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Rcpp::List& >::type texts_(texts_SEXP);
     Rcpp::traits::input_parameter< const int >::type n_types(n_typesSEXP);
-    Rcpp::traits::input_parameter< const String& >::type count(countSEXP);
-    Rcpp::traits::input_parameter< const unsigned int >::type window(windowSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type weights(weightsSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type weights_(weights_SEXP);
+    Rcpp::traits::input_parameter< const bool >::type boolean(booleanSEXP);
     Rcpp::traits::input_parameter< const bool >::type ordered(orderedSEXP);
-    Rcpp::traits::input_parameter< const bool >::type tri(triSEXP);
-    Rcpp::traits::input_parameter< const unsigned int >::type nvec(nvecSEXP);
-    rcpp_result_gen = Rcpp::wrap(qatd_cpp_fcm(texts_, n_types, count, window, weights, ordered, tri, nvec));
+    rcpp_result_gen = Rcpp::wrap(qatd_cpp_fcm(texts_, n_types, weights_, boolean, ordered));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -167,59 +164,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const unsigned int& >::type window(windowSEXP);
     Rcpp::traits::input_parameter< const String& >::type delim_(delim_SEXP);
     rcpp_result_gen = Rcpp::wrap(qatd_cpp_kwic(texts_, types_, words_, window, delim_));
-    return rcpp_result_gen;
-END_RCPP
-}
-// qatd_cpp_similarity_linear
-S4 qatd_cpp_similarity_linear(arma::sp_mat& mt1, arma::sp_mat& mt2, const int method, unsigned int rank, double limit);
-RcppExport SEXP _quanteda_qatd_cpp_similarity_linear(SEXP mt1SEXP, SEXP mt2SEXP, SEXP methodSEXP, SEXP rankSEXP, SEXP limitSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::sp_mat& >::type mt1(mt1SEXP);
-    Rcpp::traits::input_parameter< arma::sp_mat& >::type mt2(mt2SEXP);
-    Rcpp::traits::input_parameter< const int >::type method(methodSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type rank(rankSEXP);
-    Rcpp::traits::input_parameter< double >::type limit(limitSEXP);
-    rcpp_result_gen = Rcpp::wrap(qatd_cpp_similarity_linear(mt1, mt2, method, rank, limit));
-    return rcpp_result_gen;
-END_RCPP
-}
-// qatd_cpp_similarity
-S4 qatd_cpp_similarity(arma::sp_mat& mt1, arma::sp_mat& mt2, const int method, unsigned int rank, double limit, double weight);
-RcppExport SEXP _quanteda_qatd_cpp_similarity(SEXP mt1SEXP, SEXP mt2SEXP, SEXP methodSEXP, SEXP rankSEXP, SEXP limitSEXP, SEXP weightSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::sp_mat& >::type mt1(mt1SEXP);
-    Rcpp::traits::input_parameter< arma::sp_mat& >::type mt2(mt2SEXP);
-    Rcpp::traits::input_parameter< const int >::type method(methodSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type rank(rankSEXP);
-    Rcpp::traits::input_parameter< double >::type limit(limitSEXP);
-    Rcpp::traits::input_parameter< double >::type weight(weightSEXP);
-    rcpp_result_gen = Rcpp::wrap(qatd_cpp_similarity(mt1, mt2, method, rank, limit, weight));
-    return rcpp_result_gen;
-END_RCPP
-}
-// qatd_cpp_sd
-NumericVector qatd_cpp_sd(arma::sp_mat& mt);
-RcppExport SEXP _quanteda_qatd_cpp_sd(SEXP mtSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::sp_mat& >::type mt(mtSEXP);
-    rcpp_result_gen = Rcpp::wrap(qatd_cpp_sd(mt));
-    return rcpp_result_gen;
-END_RCPP
-}
-// qatd_cpp_nz
-NumericVector qatd_cpp_nz(arma::sp_mat& mt);
-RcppExport SEXP _quanteda_qatd_cpp_nz(SEXP mtSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::sp_mat& >::type mt(mtSEXP);
-    rcpp_result_gen = Rcpp::wrap(qatd_cpp_nz(mt));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -253,7 +197,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // qatd_cpp_tokens_lookup
-List qatd_cpp_tokens_lookup(const List& texts_, const CharacterVector types_, const List& words_, const IntegerVector& keys_, const bool overlap, const int nomatch);
+List qatd_cpp_tokens_lookup(const List& texts_, const CharacterVector types_, const List& words_, const IntegerVector& keys_, const int overlap, const int nomatch);
 RcppExport SEXP _quanteda_qatd_cpp_tokens_lookup(SEXP texts_SEXP, SEXP types_SEXP, SEXP words_SEXP, SEXP keys_SEXP, SEXP overlapSEXP, SEXP nomatchSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -262,7 +206,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const CharacterVector >::type types_(types_SEXP);
     Rcpp::traits::input_parameter< const List& >::type words_(words_SEXP);
     Rcpp::traits::input_parameter< const IntegerVector& >::type keys_(keys_SEXP);
-    Rcpp::traits::input_parameter< const bool >::type overlap(overlapSEXP);
+    Rcpp::traits::input_parameter< const int >::type overlap(overlapSEXP);
     Rcpp::traits::input_parameter< const int >::type nomatch(nomatchSEXP);
     rcpp_result_gen = Rcpp::wrap(qatd_cpp_tokens_lookup(texts_, types_, words_, keys_, overlap, nomatch));
     return rcpp_result_gen;
@@ -440,12 +384,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_quanteda_qatd_cpp_canberra2", (DL_FUNC) &_quanteda_qatd_cpp_canberra2, 3},
     {"_quanteda_qatd_cpp_minkowski", (DL_FUNC) &_quanteda_qatd_cpp_minkowski, 3},
     {"_quanteda_qatd_cpp_minkowski2", (DL_FUNC) &_quanteda_qatd_cpp_minkowski2, 4},
-    {"_quanteda_qatd_cpp_fcm", (DL_FUNC) &_quanteda_qatd_cpp_fcm, 8},
+    {"_quanteda_qatd_cpp_fcm", (DL_FUNC) &_quanteda_qatd_cpp_fcm, 5},
     {"_quanteda_qatd_cpp_kwic", (DL_FUNC) &_quanteda_qatd_cpp_kwic, 5},
-    {"_quanteda_qatd_cpp_similarity_linear", (DL_FUNC) &_quanteda_qatd_cpp_similarity_linear, 5},
-    {"_quanteda_qatd_cpp_similarity", (DL_FUNC) &_quanteda_qatd_cpp_similarity, 6},
-    {"_quanteda_qatd_cpp_sd", (DL_FUNC) &_quanteda_qatd_cpp_sd, 1},
-    {"_quanteda_qatd_cpp_nz", (DL_FUNC) &_quanteda_qatd_cpp_nz, 1},
     {"_quanteda_qatd_cpp_tokens_chunk", (DL_FUNC) &_quanteda_qatd_cpp_tokens_chunk, 4},
     {"_quanteda_qatd_cpp_tokens_compound", (DL_FUNC) &_quanteda_qatd_cpp_tokens_compound, 5},
     {"_quanteda_qatd_cpp_tokens_lookup", (DL_FUNC) &_quanteda_qatd_cpp_tokens_lookup, 6},
