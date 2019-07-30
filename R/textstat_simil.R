@@ -242,8 +242,8 @@ textstat_simil.dfm <- function(x, y = NULL, selection = NULL,
                            min_proxy = min_simil, use_na = TRUE)
 
     if (is.null(min_simil)) {
-        if (is.null(y)) {
-            temp <- as(forceSymmetric(temp), "dsyMatrix")
+        if (is(temp, "dsTMatrix")) {
+            temp <- as(temp, "dsyMatrix")
             return(new("textstat_simil_symm", as(temp, "dspMatrix"),
                        method = method, margin = margin,
                        type = "textstat_simil"))
@@ -253,7 +253,7 @@ textstat_simil.dfm <- function(x, y = NULL, selection = NULL,
                        type = "textstat_simil"))
         }
     } else {
-        if (is.null(y)) {
+        if (is(temp, "dsTMatrix")) {
             return(new("textstat_simil_symm_sparse", temp,
                        method = method, margin = margin,
                        type = "textstat_simil",
@@ -355,8 +355,8 @@ textstat_dist.dfm <- function(x, y = NULL, selection = NULL,
     temp <- textstat_proxy(x, y, margin, method,
                            p = p, use_na = TRUE)
 
-    if (is.null(y)) {
-        temp <- as(forceSymmetric(temp), "dsyMatrix")
+    if (is(temp, "dsTMatrix")) {
+        temp <- as(temp, "dsyMatrix")
         return(new("textstat_dist_symm", as(temp, "dspMatrix"),
                    method = method, margin = margin,
                    type = "textstat_dist"))
@@ -571,10 +571,24 @@ textstat_proxy <- function(x, y = NULL,
             na1 <- proxyC::colZeros(x) == nrow(x)
             na2 <- proxyC::colZeros(y) == nrow(y)
         }
-        if (any(na1))
-            result[na1, , drop = FALSE] <- NA
-        if (any(na2))
-            result[, na2, drop = FALSE] <- NA
+        if (any(na1) || any(na2))
+            result <- result + make_na_matrix(dim(result), which(na1), which(na2))
     }
     return(result)
+}
+
+make_na_matrix <- function(dims, row = NULL, col = NULL) {
+    i <- j <- integer()
+    if (is.integer(row)) {
+        i <- c(i, rep(row, dims[2]))
+        j <- c(j, rep(seq_len(dims[2]), each = length(row)))
+    }
+    if (is.integer(col)) {
+        i <- c(i, rep(seq_len(dims[1]), each = length(col)))
+        j <- c(j, rep(col, dims[1]))
+    }
+    Matrix::sparseMatrix(
+        i = i, j = j, x = as.double(NA),
+        dims = dims, giveCsparse = FALSE
+    )
 }

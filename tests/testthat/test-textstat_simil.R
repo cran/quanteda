@@ -112,7 +112,7 @@ test_that("textstat_simil() returns NA for zero-variance documents", {
     mt[3:4, ] <- 1
     mt <- as.dfm(mt)
     mt_na_all <- matrix(NA, nrow = 5, ncol = 5,
-                    dimnames = list(paste0("R", 1:5), paste0("R", 1:5)))
+                        dimnames = list(paste0("R", 1:5), paste0("R", 1:5)))
     mt_na_some <- mt_na_all
     mt_na_some[3:4,3:4] <- 1
     
@@ -516,3 +516,70 @@ test_that("diag2na is working", {
                         dimnames = list(c("a", "b", "c"), c("b", "c", "d"))))
 
 })
+
+test_that("make_na_matrix is working", {
+    
+    expect_equal(
+        as.matrix(quanteda:::make_na_matrix(c(5, 4), row = 2L:3L)),
+        matrix(c(c(0, NA, NA, 0, 0),
+                 c(0, NA, NA, 0, 0),
+                 c(0, NA, NA, 0, 0),
+                 c(0, NA, NA, 0, 0)), nrow = 5)
+    )
+    
+    expect_equal(
+        as.matrix(quanteda:::make_na_matrix(c(5, 4), col = 3L)),
+        matrix(c(c(0, 0, 0, 0, 0),
+                 c(0, 0, 0, 0, 0),
+                 rep(NA, 5),
+                 c(0, 0, 0, 0, 0)), nrow = 5)
+    )
+    
+    expect_equal(
+        as.matrix(quanteda:::make_na_matrix(c(5, 4), col = 1L:2L, row = 2L:3L)),
+        matrix(c(rep(NA, 5), rep(NA, 5),
+                 c(0, NA, NA, 0, 0),
+                 c(0, NA, NA, 0, 0)), nrow = 5)
+    )
+    
+    expect_equal(
+        as.matrix(quanteda:::make_na_matrix(c(5, 4), 2L:3L, c(1L:2L))),
+        matrix(c(rep(NA, 5), rep(NA, 5),
+               c(0, NA, NA, 0, 0),
+               c(0, NA, NA, 0, 0)), nrow = 5)
+    )
+    
+    expect_equal(
+        as.matrix(quanteda:::make_na_matrix(c(5,4), 1L, 3L)),
+        matrix(c(c(NA, 0, 0, 0, 0),
+                 c(NA, 0, 0, 0, 0),
+                 rep(NA, 5),
+                 c(NA, 0, 0, 0, 0)), nrow = 5)
+    )
+
+})
+
+test_that("symmetric class is correctly given", {
+    
+    dist1 <- textstat_dist(mt)
+    expect_identical(
+        Matrix::tril(dist1),
+        t(Matrix::triu(dist1))
+    )
+    dist2 <- textstat_dist(mt, mt)
+    expect_identical(
+        Matrix::tril(dist2),
+        t(Matrix::triu(dist2))
+    )
+    siml1 <- textstat_simil(mt)
+    expect_identical(
+        Matrix::tril(siml1),
+        t(Matrix::triu(siml1))
+    )
+    siml2 <- textstat_simil(mt, mt)
+    expect_identical(
+        Matrix::tril(siml2),
+        t(Matrix::triu(siml2))
+    )
+})
+
