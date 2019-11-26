@@ -79,7 +79,11 @@ Text lookup(Text tokens,
             // return shifted tokens in exclusive mode
             Text keys_flat(tokens.size());
             for (std::size_t i = 0; i < tokens.size(); i++) {
-                keys_flat[i] = id_max + tokens[i];
+                if (tokens[i] == 0) {
+                    keys_flat[i] = 0;
+                } else {
+                    keys_flat[i] = id_max + tokens[i];
+                }
             }
             return keys_flat;
         }
@@ -103,7 +107,11 @@ Text lookup(Text tokens,
             if (nomatch == 1) {
                 keys_flat.push_back(id_max); // pad with no-match
             } else if (nomatch == 2) {
-                keys_flat.push_back(id_max + tokens[i]); // keep original token
+                if (tokens[i] == 0) {
+                    keys_flat.push_back(0);
+                } else {
+                    keys_flat.push_back(id_max + tokens[i]); // keep original token
+                }
             }
         }
     }

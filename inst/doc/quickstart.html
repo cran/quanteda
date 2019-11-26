@@ -363,8 +363,8 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##           SNP    88    134         4
 ##          UKIP   346    723        27
 ## 
-## Source: /private/var/folders/1v/ps2x_tvd0yg0lypdlshg_vwc0000gp/T/RtmpJwgJ3b/Rbuild117357d3cca8c/quanteda/vignettes/* on x86_64 by kbenoit
-## Created: Mon Jul 29 15:32:46 2019
+## Source: /private/var/folders/1v/ps2x_tvd0yg0lypdlshg_vwc0000gp/T/Rtmp8xZr2u/Rbuild379740758268/quanteda/vignettes/* on x86_64 by kbenoit
+## Created: Mon Nov 25 20:30:44 2019
 ## Notes:</code></pre>
 <p>If we wanted, we could add some document-level variables – what quanteda calls <em>docvars</em> – to this corpus.</p>
 <p>We can do this using the R’s <code>names()</code> function to get the names of the character vector <code>data_char_ukimmig2010</code>, and assign this to a document variable (<em>docvar</em>).</p>
@@ -384,8 +384,8 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##           SNP    88    134         4          SNP 2010
 ##          UKIP   346    723        27         UKIP 2010
 ## 
-## Source: /private/var/folders/1v/ps2x_tvd0yg0lypdlshg_vwc0000gp/T/RtmpJwgJ3b/Rbuild117357d3cca8c/quanteda/vignettes/* on x86_64 by kbenoit
-## Created: Mon Jul 29 15:32:46 2019
+## Source: /private/var/folders/1v/ps2x_tvd0yg0lypdlshg_vwc0000gp/T/Rtmp8xZr2u/Rbuild379740758268/quanteda/vignettes/* on x86_64 by kbenoit
+## Created: Mon Nov 25 20:30:44 2019
 ## Notes:</code></pre>
 <p>If we wanted to tag each document with additional meta-data not considered a document variable of interest for analysis, but rather something that we need to know as an attribute of the document, we could also add those to our corpus.</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1"><span class="kw">metadoc</span>(corp_uk, <span class="st">&quot;language&quot;</span>) &lt;-<span class="st"> &quot;english&quot;</span></a>
@@ -414,8 +414,8 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##           SNP 2010
 ##          UKIP 2010
 ## 
-## Source: /private/var/folders/1v/ps2x_tvd0yg0lypdlshg_vwc0000gp/T/RtmpJwgJ3b/Rbuild117357d3cca8c/quanteda/vignettes/* on x86_64 by kbenoit
-## Created: Mon Jul 29 15:32:46 2019
+## Source: /private/var/folders/1v/ps2x_tvd0yg0lypdlshg_vwc0000gp/T/Rtmp8xZr2u/Rbuild379740758268/quanteda/vignettes/* on x86_64 by kbenoit
+## Created: Mon Nov 25 20:30:44 2019
 ## Notes:</code></pre>
 <p>The last command, <code>metadoc</code>, allows you to define your own document meta-data fields. Note that in assigning just the single value of <code>&quot;english&quot;</code>, R has recycled the value until it matches the number of documents in the corpus. In creating a simple tag for our custom metadoc field <code>docsource</code>, we used the quanteda function <code>ndoc()</code> to retrieve the number of documents in our corpus. This function is deliberately designed to work in a way similar to functions you may already use in R, such as <code>nrow()</code> and <code>ncol()</code>.</p>
 </div>
@@ -468,36 +468,36 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" title="1"><span class="kw">summary</span>(data_corpus_irishbudget2010)</a></code></pre></div>
 <pre><code>## Corpus consisting of 14 documents:
 ## 
-##                       Text Types Tokens Sentences year debate number
-##        Lenihan, Brian (FF)  1953   8641       374 2010 BUDGET     01
-##       Bruton, Richard (FG)  1040   4446       217 2010 BUDGET     02
-##         Burton, Joan (LAB)  1624   6393       307 2010 BUDGET     03
-##        Morgan, Arthur (SF)  1595   7107       343 2010 BUDGET     04
-##          Cowen, Brian (FF)  1629   6599       250 2010 BUDGET     05
-##           Kenny, Enda (FG)  1148   4232       153 2010 BUDGET     06
-##      ODonnell, Kieran (FG)   678   2297       133 2010 BUDGET     07
-##       Gilmore, Eamon (LAB)  1181   4177       201 2010 BUDGET     08
-##     Higgins, Michael (LAB)   488   1286        44 2010 BUDGET     09
-##        Quinn, Ruairi (LAB)   439   1284        59 2010 BUDGET     10
-##      Gormley, John (Green)   401   1030        49 2010 BUDGET     11
-##        Ryan, Eamon (Green)   510   1643        90 2010 BUDGET     12
-##      Cuffe, Ciaran (Green)   442   1240        45 2010 BUDGET     13
-##  OCaolain, Caoimhghin (SF)  1188   4044       176 2010 BUDGET     14
-##       foren     name party
-##       Brian  Lenihan    FF
-##     Richard   Bruton    FG
-##        Joan   Burton   LAB
-##      Arthur   Morgan    SF
-##       Brian    Cowen    FF
-##        Enda    Kenny    FG
-##      Kieran ODonnell    FG
-##       Eamon  Gilmore   LAB
-##     Michael  Higgins   LAB
-##      Ruairi    Quinn   LAB
-##        John  Gormley Green
-##       Eamon     Ryan Green
-##      Ciaran    Cuffe Green
-##  Caoimhghin OCaolain    SF
+##                       Text Types Tokens Sentences year debate number      foren
+##        Lenihan, Brian (FF)  1953   8641       374 2010 BUDGET     01      Brian
+##       Bruton, Richard (FG)  1040   4446       217 2010 BUDGET     02    Richard
+##         Burton, Joan (LAB)  1624   6393       307 2010 BUDGET     03       Joan
+##        Morgan, Arthur (SF)  1595   7107       343 2010 BUDGET     04     Arthur
+##          Cowen, Brian (FF)  1629   6599       250 2010 BUDGET     05      Brian
+##           Kenny, Enda (FG)  1148   4232       153 2010 BUDGET     06       Enda
+##      ODonnell, Kieran (FG)   678   2297       133 2010 BUDGET     07     Kieran
+##       Gilmore, Eamon (LAB)  1181   4177       201 2010 BUDGET     08      Eamon
+##     Higgins, Michael (LAB)   488   1286        44 2010 BUDGET     09    Michael
+##        Quinn, Ruairi (LAB)   439   1284        59 2010 BUDGET     10     Ruairi
+##      Gormley, John (Green)   401   1030        49 2010 BUDGET     11       John
+##        Ryan, Eamon (Green)   510   1643        90 2010 BUDGET     12      Eamon
+##      Cuffe, Ciaran (Green)   442   1240        45 2010 BUDGET     13     Ciaran
+##  OCaolain, Caoimhghin (SF)  1188   4044       176 2010 BUDGET     14 Caoimhghin
+##      name party
+##   Lenihan    FF
+##    Bruton    FG
+##    Burton   LAB
+##    Morgan    SF
+##     Cowen    FF
+##     Kenny    FG
+##  ODonnell    FG
+##   Gilmore   LAB
+##   Higgins   LAB
+##     Quinn   LAB
+##   Gormley Green
+##      Ryan Green
+##     Cuffe Green
+##  OCaolain    SF
 ## 
 ## Source: /Users/kbenoit/Dropbox (Personal)/GitHub/quanteda/* on x86_64 by kbenoit
 ## Created: Wed Jun 28 22:04:18 2017
@@ -543,7 +543,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##       2017-Trump   582   1660        88
 ## 
 ## Source: Combination of corpuses corp1 and corp2
-## Created: Mon Jul 29 15:32:46 2019
+## Created: Mon Nov 25 20:30:45 2019
 ## Notes:</code></pre>
 </div>
 <div id="subsetting-corpus-objects" class="section level3">
@@ -599,30 +599,30 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##  and destruction. Our children    
 ##  and slaughtering innocents, we</code></pre>
 <div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb28-1" title="1"><span class="kw">kwic</span>(data_corpus_inaugural, <span class="dt">pattern =</span> <span class="st">&quot;terror&quot;</span>, <span class="dt">valuetype =</span> <span class="st">&quot;regex&quot;</span>)</a></code></pre></div>
-<pre><code>##                                                                           
-##     [1797-Adams, 1325]                   fraud or violence, by |  terror  
-##  [1933-Roosevelt, 112]      nameless, unreasoning, unjustified |  terror  
-##  [1941-Roosevelt, 287]           seemed frozen by a fatalistic |  terror  
-##    [1961-Kennedy, 866]         alter that uncertain balance of |  terror  
-##    [1961-Kennedy, 990]               of science instead of its |  terrors 
-##     [1981-Reagan, 813]          freeing all Americans from the |  terror  
-##    [1981-Reagan, 2196]        understood by those who practice | terrorism
-##   [1997-Clinton, 1055]             They fuel the fanaticism of |  terror  
-##   [1997-Clinton, 1655]       maintain a strong defense against |  terror  
-##     [2009-Obama, 1632]          advance their aims by inducing |  terror  
-##     [2017-Trump, 1117] civilized world against radical Islamic | terrorism
-##                                     
-##  | , intrigue, or venality          
-##  | which paralyzes needed efforts to
-##  | , we proved that this            
-##  | that stays the hand of           
-##  | . Together let us explore        
-##  | of runaway living costs.         
-##  | and prey upon their neighbors    
-##  | . And they torment the           
-##  | and destruction. Our children    
-##  | and slaughtering innocents, we   
-##  | , which we will eradicate</code></pre>
+<pre><code>##                                                                             
+##     [1797-Adams, 1325]                   fraud or violence, by |  terror   |
+##  [1933-Roosevelt, 112]      nameless, unreasoning, unjustified |  terror   |
+##  [1941-Roosevelt, 287]           seemed frozen by a fatalistic |  terror   |
+##    [1961-Kennedy, 866]         alter that uncertain balance of |  terror   |
+##    [1961-Kennedy, 990]               of science instead of its |  terrors  |
+##     [1981-Reagan, 813]          freeing all Americans from the |  terror   |
+##    [1981-Reagan, 2196]        understood by those who practice | terrorism |
+##   [1997-Clinton, 1055]             They fuel the fanaticism of |  terror   |
+##   [1997-Clinton, 1655]       maintain a strong defense against |  terror   |
+##     [2009-Obama, 1632]          advance their aims by inducing |  terror   |
+##     [2017-Trump, 1117] civilized world against radical Islamic | terrorism |
+##                                   
+##  , intrigue, or venality          
+##  which paralyzes needed efforts to
+##  , we proved that this            
+##  that stays the hand of           
+##  . Together let us explore        
+##  of runaway living costs.         
+##  and prey upon their neighbors    
+##  . And they torment the           
+##  and destruction. Our children    
+##  and slaughtering innocents, we   
+##  , which we will eradicate</code></pre>
 <div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb30-1" title="1"><span class="kw">kwic</span>(data_corpus_inaugural, <span class="dt">pattern =</span> <span class="st">&quot;communist*&quot;</span>)</a></code></pre></div>
 <pre><code>##                                                                   
 ##   [1949-Truman, 834] the actions resulting from the | Communist  |
@@ -633,20 +633,20 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <p>Using <code>phrase()</code> we can also look up multi-word expressions.</p>
 <div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb32-1" title="1"><span class="kw">kwic</span>(data_corpus_inaugural, <span class="dt">pattern =</span> <span class="kw">phrase</span>(<span class="st">&quot;United States&quot;</span>)) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb32-2" title="2"><span class="st">    </span><span class="kw">head</span>() <span class="co"># show context of the first six occurrences of &quot;United States&quot;</span></a></code></pre></div>
-<pre><code>##                                                              
-##  [1789-Washington, 434:435]            of the people of the |
-##  [1789-Washington, 530:531]          more than those of the |
-##       [1797-Adams, 525:526]     saw the Constitution of the |
-##     [1797-Adams, 1717:1718]      to the Constitution of the |
-##     [1797-Adams, 2481:2482] support the Constitution of the |
-##   [1805-Jefferson, 441:442]       sees a taxgatherer of the |
-##                                                       
-##  United States | a Government instituted by themselves
-##  United States | . Every step by which                
-##  United States | in a foreign country.                
-##  United States | , and a conscientious determination  
-##  United States | , I entertain no doubt               
-##  United States | ? These contributions enable us</code></pre>
+<pre><code>##                                                                              
+##  [1789-Washington, 434:435]            of the people of the | United States |
+##  [1789-Washington, 530:531]          more than those of the | United States |
+##       [1797-Adams, 525:526]     saw the Constitution of the | United States |
+##     [1797-Adams, 1717:1718]      to the Constitution of the | United States |
+##     [1797-Adams, 2481:2482] support the Constitution of the | United States |
+##   [1805-Jefferson, 441:442]       sees a taxgatherer of the | United States |
+##                                       
+##  a Government instituted by themselves
+##  . Every step by which                
+##  in a foreign country.                
+##  , and a conscientious determination  
+##  , I entertain no doubt               
+##  ? These contributions enable us</code></pre>
 <p>In the above summary, <code>Year</code> and <code>President</code> are variables associated with each document. We can access such variables with the <code>docvars()</code> function.</p>
 <div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb34-1" title="1"><span class="co"># inspect the document-level variables</span></a>
 <a class="sourceLine" id="cb34-2" title="2"><span class="kw">head</span>(<span class="kw">docvars</span>(data_corpus_inaugural))</a></code></pre></div>
@@ -682,10 +682,9 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <a class="sourceLine" id="cb38-3" title="3"><span class="kw">tokens</span>(txt)</a></code></pre></div>
 <pre><code>## tokens from 2 documents.
 ## text1 :
-##  [1] &quot;This&quot;      &quot;is&quot;        &quot;$&quot;         &quot;10&quot;        &quot;in&quot;       
-##  [6] &quot;999&quot;       &quot;different&quot; &quot;ways&quot;      &quot;,&quot;         &quot;up&quot;       
-## [11] &quot;and&quot;       &quot;down&quot;      &quot;;&quot;         &quot;left&quot;      &quot;and&quot;      
-## [16] &quot;right&quot;     &quot;!&quot;        
+##  [1] &quot;This&quot;      &quot;is&quot;        &quot;$&quot;         &quot;10&quot;        &quot;in&quot;        &quot;999&quot;      
+##  [7] &quot;different&quot; &quot;ways&quot;      &quot;,&quot;         &quot;up&quot;        &quot;and&quot;       &quot;down&quot;     
+## [13] &quot;;&quot;         &quot;left&quot;      &quot;and&quot;       &quot;right&quot;     &quot;!&quot;        
 ## 
 ## text2 :
 ##  [1] &quot;@kenbenoit&quot;     &quot;working&quot;        &quot;:&quot;              &quot;on&quot;            
@@ -696,9 +695,8 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb40-1" title="1"><span class="kw">tokens</span>(txt, <span class="dt">remove_numbers =</span> <span class="ot">TRUE</span>,  <span class="dt">remove_punct =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
 <pre><code>## tokens from 2 documents.
 ## text1 :
-##  [1] &quot;This&quot;      &quot;is&quot;        &quot;in&quot;        &quot;different&quot; &quot;ways&quot;     
-##  [6] &quot;up&quot;        &quot;and&quot;       &quot;down&quot;      &quot;left&quot;      &quot;and&quot;      
-## [11] &quot;right&quot;    
+##  [1] &quot;This&quot;      &quot;is&quot;        &quot;in&quot;        &quot;different&quot; &quot;ways&quot;      &quot;up&quot;       
+##  [7] &quot;and&quot;       &quot;down&quot;      &quot;left&quot;      &quot;and&quot;       &quot;right&quot;    
 ## 
 ## text2 :
 ## [1] &quot;@kenbenoit&quot;     &quot;working&quot;        &quot;on&quot;             &quot;#quanteda&quot;     
@@ -707,9 +705,9 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb42-1" title="1"><span class="kw">tokens</span>(txt, <span class="dt">remove_numbers =</span> <span class="ot">FALSE</span>, <span class="dt">remove_punct =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
 <pre><code>## tokens from 2 documents.
 ## text1 :
-##  [1] &quot;This&quot;      &quot;is&quot;        &quot;10&quot;        &quot;in&quot;        &quot;999&quot;      
-##  [6] &quot;different&quot; &quot;ways&quot;      &quot;up&quot;        &quot;and&quot;       &quot;down&quot;     
-## [11] &quot;left&quot;      &quot;and&quot;       &quot;right&quot;    
+##  [1] &quot;This&quot;      &quot;is&quot;        &quot;10&quot;        &quot;in&quot;        &quot;999&quot;       &quot;different&quot;
+##  [7] &quot;ways&quot;      &quot;up&quot;        &quot;and&quot;       &quot;down&quot;      &quot;left&quot;      &quot;and&quot;      
+## [13] &quot;right&quot;    
 ## 
 ## text2 :
 ##  [1] &quot;@kenbenoit&quot;     &quot;working&quot;        &quot;on&quot;             &quot;#quanteda&quot;     
@@ -718,9 +716,9 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb44-1" title="1"><span class="kw">tokens</span>(txt, <span class="dt">remove_numbers =</span> <span class="ot">TRUE</span>,  <span class="dt">remove_punct =</span> <span class="ot">FALSE</span>)</a></code></pre></div>
 <pre><code>## tokens from 2 documents.
 ## text1 :
-##  [1] &quot;This&quot;      &quot;is&quot;        &quot;$&quot;         &quot;in&quot;        &quot;different&quot;
-##  [6] &quot;ways&quot;      &quot;,&quot;         &quot;up&quot;        &quot;and&quot;       &quot;down&quot;     
-## [11] &quot;;&quot;         &quot;left&quot;      &quot;and&quot;       &quot;right&quot;     &quot;!&quot;        
+##  [1] &quot;This&quot;      &quot;is&quot;        &quot;$&quot;         &quot;in&quot;        &quot;different&quot; &quot;ways&quot;     
+##  [7] &quot;,&quot;         &quot;up&quot;        &quot;and&quot;       &quot;down&quot;      &quot;;&quot;         &quot;left&quot;     
+## [13] &quot;and&quot;       &quot;right&quot;     &quot;!&quot;        
 ## 
 ## text2 :
 ##  [1] &quot;@kenbenoit&quot;     &quot;working&quot;        &quot;:&quot;              &quot;on&quot;            
@@ -731,10 +729,9 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb46-1" title="1"><span class="kw">tokens</span>(txt, <span class="dt">remove_numbers =</span> <span class="ot">FALSE</span>, <span class="dt">remove_punct =</span> <span class="ot">FALSE</span>)</a></code></pre></div>
 <pre><code>## tokens from 2 documents.
 ## text1 :
-##  [1] &quot;This&quot;      &quot;is&quot;        &quot;$&quot;         &quot;10&quot;        &quot;in&quot;       
-##  [6] &quot;999&quot;       &quot;different&quot; &quot;ways&quot;      &quot;,&quot;         &quot;up&quot;       
-## [11] &quot;and&quot;       &quot;down&quot;      &quot;;&quot;         &quot;left&quot;      &quot;and&quot;      
-## [16] &quot;right&quot;     &quot;!&quot;        
+##  [1] &quot;This&quot;      &quot;is&quot;        &quot;$&quot;         &quot;10&quot;        &quot;in&quot;        &quot;999&quot;      
+##  [7] &quot;different&quot; &quot;ways&quot;      &quot;,&quot;         &quot;up&quot;        &quot;and&quot;       &quot;down&quot;     
+## [13] &quot;;&quot;         &quot;left&quot;      &quot;and&quot;       &quot;right&quot;     &quot;!&quot;        
 ## 
 ## text2 :
 ##  [1] &quot;@kenbenoit&quot;     &quot;working&quot;        &quot;:&quot;              &quot;on&quot;            
@@ -745,12 +742,11 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb48-1" title="1"><span class="kw">tokens</span>(txt, <span class="dt">remove_numbers =</span> <span class="ot">FALSE</span>, <span class="dt">remove_punct =</span> <span class="ot">FALSE</span>, <span class="dt">remove_separators =</span> <span class="ot">FALSE</span>)</a></code></pre></div>
 <pre><code>## tokens from 2 documents.
 ## text1 :
-##  [1] &quot;This&quot;      &quot; &quot;         &quot;is&quot;        &quot; &quot;         &quot;$&quot;        
-##  [6] &quot;10&quot;        &quot; &quot;         &quot;in&quot;        &quot; &quot;         &quot;999&quot;      
-## [11] &quot; &quot;         &quot;different&quot; &quot; &quot;         &quot;ways&quot;      &quot;,&quot;        
-## [16] &quot;\n&quot;        &quot; &quot;         &quot;up&quot;        &quot; &quot;         &quot;and&quot;      
-## [21] &quot; &quot;         &quot;down&quot;      &quot;;&quot;         &quot; &quot;         &quot;left&quot;     
-## [26] &quot; &quot;         &quot;and&quot;       &quot; &quot;         &quot;right&quot;     &quot;!&quot;        
+##  [1] &quot;This&quot;      &quot; &quot;         &quot;is&quot;        &quot; &quot;         &quot;$&quot;         &quot;10&quot;       
+##  [7] &quot; &quot;         &quot;in&quot;        &quot; &quot;         &quot;999&quot;       &quot; &quot;         &quot;different&quot;
+## [13] &quot; &quot;         &quot;ways&quot;      &quot;,&quot;         &quot;\n&quot;        &quot; &quot;         &quot;up&quot;       
+## [19] &quot; &quot;         &quot;and&quot;       &quot; &quot;         &quot;down&quot;      &quot;;&quot;         &quot; &quot;        
+## [25] &quot;left&quot;      &quot; &quot;         &quot;and&quot;       &quot; &quot;         &quot;right&quot;     &quot;!&quot;        
 ## 
 ## text2 :
 ##  [1] &quot;@kenbenoit&quot;     &quot; &quot;              &quot;working&quot;        &quot;:&quot;             
@@ -763,16 +759,16 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb50-1" title="1"><span class="kw">tokens</span>(<span class="st">&quot;Great website: http://textasdata.com?page=123.&quot;</span>, <span class="dt">what =</span> <span class="st">&quot;character&quot;</span>)</a></code></pre></div>
 <pre><code>## tokens from 1 document.
 ## text1 :
-##  [1] &quot;G&quot; &quot;r&quot; &quot;e&quot; &quot;a&quot; &quot;t&quot; &quot;w&quot; &quot;e&quot; &quot;b&quot; &quot;s&quot; &quot;i&quot; &quot;t&quot; &quot;e&quot; &quot;:&quot; &quot;h&quot; &quot;t&quot; &quot;t&quot; &quot;p&quot;
-## [18] &quot;:&quot; &quot;/&quot; &quot;/&quot; &quot;t&quot; &quot;e&quot; &quot;x&quot; &quot;t&quot; &quot;a&quot; &quot;s&quot; &quot;d&quot; &quot;a&quot; &quot;t&quot; &quot;a&quot; &quot;.&quot; &quot;c&quot; &quot;o&quot; &quot;m&quot;
-## [35] &quot;?&quot; &quot;p&quot; &quot;a&quot; &quot;g&quot; &quot;e&quot; &quot;=&quot; &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;.&quot;</code></pre>
+##  [1] &quot;G&quot; &quot;r&quot; &quot;e&quot; &quot;a&quot; &quot;t&quot; &quot;w&quot; &quot;e&quot; &quot;b&quot; &quot;s&quot; &quot;i&quot; &quot;t&quot; &quot;e&quot; &quot;:&quot; &quot;h&quot; &quot;t&quot; &quot;t&quot; &quot;p&quot; &quot;:&quot; &quot;/&quot;
+## [20] &quot;/&quot; &quot;t&quot; &quot;e&quot; &quot;x&quot; &quot;t&quot; &quot;a&quot; &quot;s&quot; &quot;d&quot; &quot;a&quot; &quot;t&quot; &quot;a&quot; &quot;.&quot; &quot;c&quot; &quot;o&quot; &quot;m&quot; &quot;?&quot; &quot;p&quot; &quot;a&quot; &quot;g&quot;
+## [39] &quot;e&quot; &quot;=&quot; &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;.&quot;</code></pre>
 <div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb52-1" title="1"><span class="kw">tokens</span>(<span class="st">&quot;Great website: http://textasdata.com?page=123.&quot;</span>, <span class="dt">what =</span> <span class="st">&quot;character&quot;</span>,</a>
 <a class="sourceLine" id="cb52-2" title="2">         <span class="dt">remove_separators =</span> <span class="ot">FALSE</span>)</a></code></pre></div>
 <pre><code>## tokens from 1 document.
 ## text1 :
-##  [1] &quot;G&quot; &quot;r&quot; &quot;e&quot; &quot;a&quot; &quot;t&quot; &quot; &quot; &quot;w&quot; &quot;e&quot; &quot;b&quot; &quot;s&quot; &quot;i&quot; &quot;t&quot; &quot;e&quot; &quot;:&quot; &quot; &quot; &quot;h&quot; &quot;t&quot;
-## [18] &quot;t&quot; &quot;p&quot; &quot;:&quot; &quot;/&quot; &quot;/&quot; &quot;t&quot; &quot;e&quot; &quot;x&quot; &quot;t&quot; &quot;a&quot; &quot;s&quot; &quot;d&quot; &quot;a&quot; &quot;t&quot; &quot;a&quot; &quot;.&quot; &quot;c&quot;
-## [35] &quot;o&quot; &quot;m&quot; &quot;?&quot; &quot;p&quot; &quot;a&quot; &quot;g&quot; &quot;e&quot; &quot;=&quot; &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;.&quot;</code></pre>
+##  [1] &quot;G&quot; &quot;r&quot; &quot;e&quot; &quot;a&quot; &quot;t&quot; &quot; &quot; &quot;w&quot; &quot;e&quot; &quot;b&quot; &quot;s&quot; &quot;i&quot; &quot;t&quot; &quot;e&quot; &quot;:&quot; &quot; &quot; &quot;h&quot; &quot;t&quot; &quot;t&quot; &quot;p&quot;
+## [20] &quot;:&quot; &quot;/&quot; &quot;/&quot; &quot;t&quot; &quot;e&quot; &quot;x&quot; &quot;t&quot; &quot;a&quot; &quot;s&quot; &quot;d&quot; &quot;a&quot; &quot;t&quot; &quot;a&quot; &quot;.&quot; &quot;c&quot; &quot;o&quot; &quot;m&quot; &quot;?&quot; &quot;p&quot;
+## [39] &quot;a&quot; &quot;g&quot; &quot;e&quot; &quot;=&quot; &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;.&quot;</code></pre>
 <p>and sentences:</p>
 <div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb54-1" title="1"><span class="co"># sentence level         </span></a>
 <a class="sourceLine" id="cb54-2" title="2"><span class="kw">tokens</span>(<span class="kw">c</span>(<span class="st">&quot;Kurt Vongeut said; only assholes use semi-colons.&quot;</span>,</a>
@@ -876,19 +872,12 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <pre><code>## Document-feature matrix of: 5 documents, 10 features (0.0% sparse).
 ## 5 x 10 sparse Matrix of class &quot;dfm&quot;
 ##        features
-## docs    people budget government public minister tax economy pay jobs
-##   FF        23     44         47     65       11  60      37  41   41
-##   FG        78     71         61     47       62  11      20  29   17
-##   Green     15     26         19      4        4  11      16   4   15
-##   LAB       69     66         36     32       54  47      37  24   20
-##   SF        81     53         73     31       39  34      50  24   27
-##        features
-## docs    billion
-##   FF         32
-##   FG         21
-##   Green       3
-##   LAB        34
-##   SF         29</code></pre>
+## docs    people budget government public minister tax economy pay jobs billion
+##   FF        23     44         47     65       11  60      37  41   41      32
+##   FG        78     71         61     47       62  11      20  29   17      21
+##   Green     15     26         19      4        4  11      16   4   15       3
+##   LAB       69     66         36     32       54  47      37  24   20      34
+##   SF        81     53         73     31       39  34      50  24   27      29</code></pre>
 </div>
 <div id="grouping-words-by-dictionary-or-equivalence-class" class="section level3">
 <h3>Grouping words by dictionary or equivalence class</h3>
@@ -965,22 +954,22 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <a class="sourceLine" id="cb87-2" title="2">                          <span class="dt">method =</span> <span class="st">&quot;cosine&quot;</span>, <span class="dt">margin =</span> <span class="st">&quot;features&quot;</span>)</a>
 <a class="sourceLine" id="cb87-3" title="3"><span class="kw">lapply</span>(<span class="kw">as.list</span>(tstat_sim), head, <span class="dv">10</span>)</a></code></pre></div>
 <pre><code>## $fair
-##      time    better       far  strategi     lower        us      long 
-## 0.8266617 0.8135324 0.8036487 0.8002557 0.7995066 0.7992766 0.7977770 
-##       one   practic  american 
-## 0.7949795 0.7944127 0.7892432 
+##      time    better       far  strategi     lower        us      long       one 
+## 0.8266617 0.8135324 0.8036487 0.8002557 0.7995066 0.7992766 0.7977770 0.7949795 
+##   practic  american 
+## 0.7944127 0.7892432 
 ## 
 ## $health
-##    system      issu    privat      need    expand   support    reform 
-## 0.9232094 0.9229859 0.9175231 0.9143293 0.9118901 0.9072374 0.9057456 
-##      hous    dramat      mani 
-## 0.9054303 0.9051588 0.9045851 
+##    system      issu    privat      need    expand   support    reform      hous 
+## 0.9232094 0.9229859 0.9175231 0.9143293 0.9118901 0.9072374 0.9057456 0.9054303 
+##    dramat      mani 
+## 0.9051588 0.9045851 
 ## 
 ## $terror
-## terrorist    coalit    cheney      evil  homeland      11th    sudden 
-## 0.8539894 0.8179609 0.8175618 0.7949619 0.7878223 0.7603221 0.7556575 
-##     regim   septemb   tyranni 
-## 0.7533021 0.7502925 0.7383253</code></pre>
+## terrorist    coalit    cheney      evil  homeland      11th    sudden     regim 
+## 0.8539894 0.8179609 0.8175618 0.7949619 0.7878223 0.7603221 0.7556575 0.7533021 
+##   septemb   tyranni 
+## 0.7502925 0.7383253</code></pre>
 </div>
 <div id="scaling-document-positions" class="section level2">
 <h2>Scaling document positions</h2>
@@ -1006,30 +995,30 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <a class="sourceLine" id="cb92-4" title="4">    <span class="kw">get_terms</span>(my_lda_fit20, <span class="dv">5</span>)</a>
 <a class="sourceLine" id="cb92-5" title="5">}</a></code></pre></div>
 <pre><code>## Loading required package: topicmodels</code></pre>
-<pre><code>##      Topic 1    Topic 2      Topic 3    Topic 4   Topic 5       Topic 6  
-## [1,] &quot;fianna&quot;   &quot;level&quot;      &quot;million&quot;  &quot;child&quot;   &quot;alternative&quot; &quot;levy&quot;   
-## [2,] &quot;live&quot;     &quot;research&quot;   &quot;recent&quot;   &quot;benefit&quot; &quot;citizenship&quot; &quot;million&quot;
-## [3,] &quot;fáil&quot;     &quot;enterprise&quot; &quot;welfare&quot;  &quot;day&quot;     &quot;wealth&quot;      &quot;carbon&quot; 
-## [4,] &quot;system&quot;   &quot;adjustment&quot; &quot;measures&quot; &quot;today&quot;   &quot;adjustment&quot;  &quot;change&quot; 
-## [5,] &quot;taxation&quot; &quot;capital&quot;    &quot;change&quot;   &quot;bank&quot;    &quot;breaks&quot;      &quot;welfare&quot;
-##      Topic 7   Topic 8     Topic 9     Topic 10    Topic 11   Topic 12    
-## [1,] &quot;million&quot; &quot;taoiseach&quot; &quot;welfare&quot;   &quot;spending&quot;  &quot;family&quot;   &quot;million&quot;   
-## [2,] &quot;welfare&quot; &quot;gael&quot;      &quot;system&quot;    &quot;review&quot;    &quot;private&quot;  &quot;welfare&quot;   
-## [3,] &quot;care&quot;    &quot;fine&quot;      &quot;child&quot;     &quot;reduction&quot; &quot;hospital&quot; &quot;support&quot;   
-## [4,] &quot;per&quot;     &quot;may&quot;       &quot;worst&quot;     &quot;level&quot;     &quot;carers&quot;   &quot;investment&quot;
-## [5,] &quot;workers&quot; &quot;irish&quot;     &quot;education&quot; &quot;million&quot;   &quot;top&quot;      &quot;back&quot;      
-##      Topic 13   Topic 14    Topic 15    Topic 16      Topic 17    Topic 18
-## [1,] &quot;fianna&quot;   &quot;failed&quot;    &quot;taoiseach&quot; &quot;kind&quot;        &quot;hit&quot;       &quot;fianna&quot;
-## [2,] &quot;fáil&quot;     &quot;strategy&quot;  &quot;employees&quot; &quot;imagination&quot; &quot;families&quot;  &quot;fáil&quot;  
-## [3,] &quot;national&quot; &quot;needed&quot;    &quot;rate&quot;      &quot;policies&quot;    &quot;allowance&quot; &quot;side&quot;  
-## [4,] &quot;irish&quot;    &quot;ministers&quot; &quot;referred&quot;  &quot;wit&quot;         &quot;policies&quot;  &quot;level&quot; 
-## [5,] &quot;support&quot;  &quot;system&quot;    &quot;debate&quot;    &quot;create&quot;      &quot;benefit&quot;   &quot;third&quot; 
-##      Topic 19       Topic 20    
-## [1,] &quot;society&quot;      &quot;measures&quot;  
-## [2,] &quot;enterprising&quot; &quot;reduced&quot;   
-## [3,] &quot;sense&quot;        &quot;investment&quot;
-## [4,] &quot;equal&quot;        &quot;increases&quot; 
-## [5,] &quot;nation&quot;       &quot;including&quot;</code></pre>
+<pre><code>##      Topic 1     Topic 2   Topic 3     Topic 4       Topic 5     Topic 6  
+## [1,] &quot;taoiseach&quot; &quot;welfare&quot; &quot;taoiseach&quot; &quot;alternative&quot; &quot;care&quot;      &quot;welfare&quot;
+## [2,] &quot;whether&quot;   &quot;system&quot;  &quot;gael&quot;      &quot;citizenship&quot; &quot;welfare&quot;   &quot;system&quot; 
+## [3,] &quot;agree&quot;     &quot;worst&quot;   &quot;fine&quot;      &quot;wealth&quot;      &quot;per&quot;       &quot;child&quot;  
+## [4,] &quot;terms&quot;     &quot;fianna&quot;  &quot;may&quot;       &quot;adjustment&quot;  &quot;allowance&quot; &quot;deficit&quot;
+## [5,] &quot;wage&quot;      &quot;fáil&quot;    &quot;irish&quot;     &quot;breaks&quot;      &quot;hit&quot;       &quot;fáil&quot;   
+##      Topic 7    Topic 8       Topic 9       Topic 10   Topic 11    Topic 12
+## [1,] &quot;fianna&quot;   &quot;investment&quot;  &quot;kind&quot;        &quot;high&quot;     &quot;needed&quot;    &quot;fianna&quot;
+## [2,] &quot;fáil&quot;     &quot;million&quot;     &quot;imagination&quot; &quot;order&quot;    &quot;ministers&quot; &quot;fáil&quot;  
+## [3,] &quot;national&quot; &quot;development&quot; &quot;policies&quot;    &quot;taxation&quot; &quot;asking&quot;    &quot;side&quot;  
+## [4,] &quot;irish&quot;    &quot;back&quot;        &quot;wit&quot;         &quot;stimulus&quot; &quot;seen&quot;      &quot;level&quot; 
+## [5,] &quot;support&quot;  &quot;energy&quot;      &quot;create&quot;      &quot;package&quot;  &quot;adopted&quot;   &quot;third&quot; 
+##      Topic 13  Topic 14    Topic 15    Topic 16       Topic 17     Topic 18 
+## [1,] &quot;benefit&quot; &quot;taoiseach&quot; &quot;spending&quot;  &quot;society&quot;      &quot;welfare&quot;    &quot;child&quot;  
+## [2,] &quot;child&quot;   &quot;employees&quot; &quot;million&quot;   &quot;enterprising&quot; &quot;support&quot;    &quot;know&quot;   
+## [3,] &quot;day&quot;     &quot;rate&quot;      &quot;reduction&quot; &quot;sense&quot;        &quot;employment&quot; &quot;fáil&quot;   
+## [4,] &quot;today&quot;   &quot;referred&quot;  &quot;energy&quot;    &quot;equal&quot;        &quot;million&quot;    &quot;welfare&quot;
+## [5,] &quot;society&quot; &quot;debate&quot;    &quot;per&quot;       &quot;nation&quot;       &quot;confidence&quot; &quot;fianna&quot; 
+##      Topic 19     Topic 20  
+## [1,] &quot;failed&quot;     &quot;review&quot;  
+## [2,] &quot;strategy&quot;   &quot;measures&quot;
+## [3,] &quot;confront&quot;   &quot;scheme&quot;  
+## [4,] &quot;businesses&quot; &quot;welfare&quot; 
+## [5,] &quot;vision&quot;     &quot;million&quot;</code></pre>
 </div>
 </div>
 

@@ -4,9 +4,15 @@
 \alias{textstat_readability}
 \title{Calculate readability}
 \usage{
-textstat_readability(x, measure = "Flesch", remove_hyphens = TRUE,
-  min_sentence_length = 1, max_sentence_length = 10000,
-  intermediate = FALSE, ...)
+textstat_readability(
+  x,
+  measure = "Flesch",
+  remove_hyphens = TRUE,
+  min_sentence_length = 1,
+  max_sentence_length = 10000,
+  intermediate = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{a character or \link{corpus} object containing the texts}
@@ -100,12 +106,12 @@ The following readability formulas have been implemented, where
   \times AWL + 1.079812 \times \frac{n_{st} \times 100}{n_{w}}}{
   141.8401 - (0.214590 * 100 * AWL) + (1.079812 * Nst * 100 / Nw)}}
 
-  \item{\code{"Coleman.Liau.Grade"}:}{Coleman-Liau Grade Level (Coleman
+  \item{\code{"Coleman.Liau.grade"}:}{Coleman-Liau Grade Level (Coleman
   and Liau 1975).
   \deqn{-27.4004 \times \mathtt{Coleman.Liau.ECP} \times 100 +
   23.06395}{-27.4004 * Coleman.Liau.ECP / 100 + 23.06395}}
 
-  \item{\code{"Coleman.Liau.Short"}:}{Coleman-Liau Index (Coleman and Liau 1975).
+  \item{\code{"Coleman.Liau.short"}:}{Coleman-Liau Index (Coleman and Liau 1975).
   \deqn{5.88 \times AWL + 29.6 \times \frac{n_{st}}{n_{w}} - 15.8}{
   5.88 * AWL + (0.296 * Nst / Nw) - 15.8}}
 
@@ -297,7 +303,7 @@ The following readability formulas have been implemented, where
   where \eqn{n_{wsy>=3}} = Nwmin3sy = the number of words with 3 syllables or more.
   This measure is regression equation C in McLaughlin's original paper.}
 
-  \item{\code{"SMOG.Simple"}:}{Simplified Version of McLaughlin's (1969) SMOG Measure. \deqn{
+  \item{\code{"SMOG.simple"}:}{Simplified Version of McLaughlin's (1969) SMOG Measure. \deqn{
   \sqrt{Nwmin3sy \times \frac{30}{n_{st}}} +
   3}{sqrt(Nwmin3sy * 30 / Nst) + 3}}
 
@@ -399,7 +405,7 @@ Anderson, J. (1983). \href{https://www.jstor.org/stable/40031755}{Lix and
   Psychology}, 60(2), 283.
 
   Dale, E. and Chall, J.S. (1948).
-  \href{https://www.jstor.org/stable/pdf/1473669}{A Formula for Predicting
+  \href{https://www.jstor.org/stable/1473169}{A Formula for Predicting
   Readability: Instructions}. \emph{Educational Research Bulletin}, 37-54.
 
   Chall, J.S. and Dale, E. (1995). \emph{Readability Revisited: The New
@@ -438,7 +444,7 @@ Anderson, J. (1983). \href{https://www.jstor.org/stable/40031755}{Lix and
   Gunning, R. (1952). \emph{The Technique of Clear Writing}.  New York: McGraw-Hill.
   
   Klare, G.R. (1975).
-  \href{https://www.jstor.org/stable/pdf/747086}{Assessing Readability}.
+  \href{https://www.jstor.org/stable/747086}{Assessing Readability}.
   \emph{Reading Research Quarterly}, 10(1), 62-102.
   
   Kincaid, J. P., Fishburne Jr, R.P., Rogers, R.L., & Chissom, B.S. (1975).
@@ -471,7 +477,7 @@ Anderson, J. (1983). \href{https://www.jstor.org/stable/40031755}{Lix and
   Entwicklungspsychologie und Pädagogische Psychologie}, 16(3), 231--244.
 
   Wheeler, L.R. & Smith, E.H. (1954).
-  \href{https://www.jstor.org/stable/pdf/41384251}{A Practical Readability
+  \href{https://www.jstor.org/stable/41384251}{A Practical Readability
   Formula for the Classroom Teacher in the Primary Grades}. \emph{Elementary
   English}, 31, 397--399.
 

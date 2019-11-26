@@ -1,12 +1,26 @@
+# quanteda 1.5.2
+
+## New features
+
+* Added Yule's I to `textstat_lexdiv()`.
+* Added forward compatibility for newer (v2) corpus class objects.
+* Added a new function `featfreq()` to compute the overall feature frequencies from a dfm.  
+
+## Bug fixes
+
+* Fixed a bug in `tokens_lookup()` when `exclusive = FALSE` and the tokens object has paddings. (#1743)
+* Fixed a bug in `tokens_replace()` (#1765).
+
+
 # quanteda 1.5.1
 
 ## New features
 
-* Added `omit_empty` as an argument to `convert()`, to allow the user to control whether empty documents are excluded from converted dfm objects for certain formats.  (#1660)
+* Added `omit_empty` as an argument to `convert()`, to allow the user to control whether empty documents are excluded from converted dfm objects for certain formats. (#1660)
 
 ## Bug fixes and stability enhancements
 
-* Fixed a bug that affects the new `textstat_dist()` and `textstat_simil()` (#1730)
+* Fixed a bug that affects the new `textstat_dist()` and `textstat_simil()`. (#1730)
 * Fixed a bug in how `textstat_dist()` and `textstat_simil()` class symmetric matrices.
 
 # quanteda 1.5.0

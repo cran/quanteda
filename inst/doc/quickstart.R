@@ -1,34 +1,34 @@
-## ---- echo = FALSE-------------------------------------------------------
+## ---- echo = FALSE------------------------------------------------------------
 knitr::opts_chunk$set(collapse = FALSE,
                       comment = "##")
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  install.packages("quanteda")
 
-## ----eval = FALSE--------------------------------------------------------
+## ----eval = FALSE-------------------------------------------------------------
 #  devtools::install_github("quanteda/quanteda.corpora")
 
-## ----eval = FALSE--------------------------------------------------------
+## ----eval = FALSE-------------------------------------------------------------
 #  devtools::install_github("kbenoit/quanteda.dictionaries")
 
-## ---- message = FALSE----------------------------------------------------
+## ---- message = FALSE---------------------------------------------------------
 library(quanteda)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 corp_uk <- corpus(data_char_ukimmig2010)  # build a new corpus from the texts
 summary(corp_uk)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 docvars(corp_uk, "Party") <- names(data_char_ukimmig2010)
 docvars(corp_uk, "Year") <- 2010
 summary(corp_uk)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 metadoc(corp_uk, "language") <- "english"
 metadoc(corp_uk, "docsource")  <- paste("data_char_ukimmig2010", 1:ndoc(corp_uk), sep = "_")
 summary(corp_uk, showmeta = TRUE)
 
-## ---- eval=FALSE---------------------------------------------------------
+## ---- eval=FALSE--------------------------------------------------------------
 #  require(readtext)
 #  
 #  # Twitter json
@@ -61,13 +61,13 @@ summary(corp_uk, showmeta = TRUE)
 #  dat_csv <- readtext("/tmp/inaug_texts.csv", textfield = "inaug_speech")
 #  summary(corpus(dat_csv), 5)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 texts(data_corpus_inaugural)[2]
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 summary(data_corpus_irishbudget2010)
 
-## ---- fig.width = 8------------------------------------------------------
+## ---- fig.width = 8-----------------------------------------------------------
 tokeninfo <- summary(data_corpus_inaugural)
 if (require(ggplot2))
     ggplot(data = tokeninfo, aes(x = Year, y = Tokens, group = 1)) +
@@ -79,37 +79,37 @@ if (require(ggplot2))
 # Longest inaugural address: William Henry Harrison
 tokeninfo[which.max(tokeninfo$Tokens), ]
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 corp1 <- corpus(data_corpus_inaugural[1:5])
 corp2 <- corpus(data_corpus_inaugural[53:58])
 corp3 <- corp1 + corp2
 summary(corp3)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 summary(corpus_subset(data_corpus_inaugural, Year > 1990))
 summary(corpus_subset(data_corpus_inaugural, President == "Adams"))
 
-## ---- tidy=TRUE----------------------------------------------------------
+## ---- tidy=TRUE---------------------------------------------------------------
 kwic(data_corpus_inaugural, pattern = "terror")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 kwic(data_corpus_inaugural, pattern = "terror", valuetype = "regex")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 kwic(data_corpus_inaugural, pattern = "communist*")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 kwic(data_corpus_inaugural, pattern = phrase("United States")) %>%
     head() # show context of the first six occurrences of "United States"
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # inspect the document-level variables
 head(docvars(data_corpus_inaugural))
 
 # inspect the corpus-level metadata
 metacorpus(data_corpus_inaugural)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 txt <- c(text1 = "This is $10 in 999 different ways,\n up and down; left and right!",
          text2 = "@kenbenoit working: on #quanteda 2day\t4ever, http://textasdata.com?page=123.")
 tokens(txt)
@@ -119,79 +119,79 @@ tokens(txt, remove_numbers = TRUE,  remove_punct = FALSE)
 tokens(txt, remove_numbers = FALSE, remove_punct = FALSE)
 tokens(txt, remove_numbers = FALSE, remove_punct = FALSE, remove_separators = FALSE)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 tokens("Great website: http://textasdata.com?page=123.", what = "character")
 tokens("Great website: http://textasdata.com?page=123.", what = "character",
          remove_separators = FALSE)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # sentence level         
 tokens(c("Kurt Vongeut said; only assholes use semi-colons.",
          "Today is Thursday in Canberra:  It is yesterday in London.",
          "En el caso de que no puedas ir con ellos, ¿quieres ir con nosotros?"),
           what = "sentence")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 tokens("New York City is located in the United States.") %>%
     tokens_compound(pattern = phrase(c("New York City", "United States")))
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 corp_inaug_post1990 <- corpus_subset(data_corpus_inaugural, Year > 1990)
 
 # make a dfm
 dfmat_inaug_post1990 <- dfm(corp_inaug_post1990)
 dfmat_inaug_post1990[, 1:5]
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # make a dfm, removing stopwords and applying stemming
 dfmat_inaug_post1990 <- dfm(dfmat_inaug_post1990,
                             remove = stopwords("english"),
                             stem = TRUE, remove_punct = TRUE)
 dfmat_inaug_post1990[, 1:5]
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 head(stopwords("en"), 20)
 head(stopwords("ru"), 10)
 head(stopwords("ar", source = "misc"), 10)
 
-## ----warning=FALSE, fig.width = 8, fig.height = 8------------------------
+## ----warning=FALSE, fig.width = 8, fig.height = 8-----------------------------
 dfmat_uk <- dfm(data_char_ukimmig2010, remove = stopwords("english"), remove_punct = TRUE)
 dfmat_uk
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 topfeatures(dfmat_uk, 20) # 20 most frequent words
 
-## ----warning=FALSE, fig.width = 7, fig.height = 7------------------------
+## ----warning=FALSE, fig.width = 7, fig.height = 7-----------------------------
 set.seed(100)
 textplot_wordcloud(dfmat_uk, min_count = 6, random_order = FALSE,
                    rotation = .25,
                    color = RColorBrewer::brewer.pal(8, "Dark2"))
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 dfmat_ire <- dfm(data_corpus_irishbudget2010, groups = "party",
                   remove = stopwords("english"), remove_punct = TRUE)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 dfm_sort(dfmat_ire)[, 1:10]
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 corp_inaug_post1991 <- corpus_subset(data_corpus_inaugural, Year > 1991)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 dict <- dictionary(list(terror = c("terrorism", "terrorists", "threat"),
                         economy = c("jobs", "business", "grow", "work")))
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 dfmat_inaug_post1991_dict <- dfm(corp_inaug_post1991, dictionary = dict)
 dfmat_inaug_post1991_dict
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  dictliwc <- dictionary(file = "~/Dropbox/QUANTESS/dictionaries/LIWC/LIWC2001_English.dic",
 #                         format = "LIWC")
 #  dfmat_inaug_subset <- dfm(data_corpus_inaugural[52:58], dictionary = dictliwc)
 #  dfmat_inaug_subset[, 1:10]
 
-## ----fig.width = 6-------------------------------------------------------
+## ----fig.width = 6------------------------------------------------------------
 dfmat_inaug_post1980 <- dfm(corpus_subset(data_corpus_inaugural, Year > 1980),
                             remove = stopwords("english"), stem = TRUE, remove_punct = TRUE)
 tstat_obama <- textstat_simil(dfmat_inaug_post1980, 
@@ -200,7 +200,7 @@ tstat_obama <- textstat_simil(dfmat_inaug_post1980,
 tstat_obama
 # dotchart(as.list(tstat_obama)$"2009-Obama", xlab = "Cosine similarity")
 
-## ---- fig.width = 10, fig.height = 7, eval = TRUE------------------------
+## ---- fig.width = 10, fig.height = 7, eval = TRUE-----------------------------
 data_corpus_sotu <- readRDS(url("https://quanteda.org/data/data_corpus_sotu.rds"))
 dfmat_sotu <- dfm(corpus_subset(data_corpus_sotu, Date > as.Date("1980-01-01")),
                stem = TRUE, remove_punct = TRUE,
@@ -217,19 +217,19 @@ pres_cluster$labels <- docnames(dfmat_sotu)
 plot(pres_cluster, xlab = "", sub = "",
      main = "Euclidean Distance on Normalized Token Frequency")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 tstat_sim <- textstat_simil(dfmat_sotu, dfmat_sotu[, c("fair", "health", "terror")],
                           method = "cosine", margin = "features")
 lapply(as.list(tstat_sim), head, 10)
 
-## ----fig.width = 7, fig.height = 5---------------------------------------
+## ----fig.width = 7, fig.height = 5--------------------------------------------
 dfmat_ire <- dfm(data_corpus_irishbudget2010)
 tmod_wf <- textmodel_wordfish(dfmat_ire, dir = c(2, 1))
 
 # plot the Wordfish estimates by party
 textplot_scale1d(tmod_wf, groups = docvars(dfmat_ire, "party"))
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 dfmat_ire2 <- dfm(data_corpus_irishbudget2010,
                 remove_punct = TRUE, remove_numbers = TRUE, remove = stopwords("english"))
 dfmat_ire2 <- dfm_trim(dfmat_ire2, min_termfreq = 4, max_docfreq = 10)
