@@ -12,7 +12,7 @@ knitr::opts_chunk$set(collapse = FALSE,
 #  devtools::install_github("kbenoit/quanteda.dictionaries")
 
 ## ---- message = FALSE---------------------------------------------------------
-library(quanteda)
+library("quanteda")
 
 ## -----------------------------------------------------------------------------
 corp_uk <- corpus(data_char_ukimmig2010)  # build a new corpus from the texts
@@ -22,11 +22,6 @@ summary(corp_uk)
 docvars(corp_uk, "Party") <- names(data_char_ukimmig2010)
 docvars(corp_uk, "Year") <- 2010
 summary(corp_uk)
-
-## -----------------------------------------------------------------------------
-metadoc(corp_uk, "language") <- "english"
-metadoc(corp_uk, "docsource")  <- paste("data_char_ukimmig2010", 1:ndoc(corp_uk), sep = "_")
-summary(corp_uk, showmeta = TRUE)
 
 ## ---- eval=FALSE--------------------------------------------------------------
 #  require(readtext)
@@ -69,6 +64,7 @@ summary(data_corpus_irishbudget2010)
 
 ## ---- fig.width = 8-----------------------------------------------------------
 tokeninfo <- summary(data_corpus_inaugural)
+tokeninfo$Year <- docvars(data_corpus_inaugural, "Year")
 if (require(ggplot2))
     ggplot(data = tokeninfo, aes(x = Year, y = Tokens, group = 1)) +
     geom_line() +
@@ -106,9 +102,6 @@ kwic(data_corpus_inaugural, pattern = phrase("United States")) %>%
 # inspect the document-level variables
 head(docvars(data_corpus_inaugural))
 
-# inspect the corpus-level metadata
-metacorpus(data_corpus_inaugural)
-
 ## -----------------------------------------------------------------------------
 txt <- c(text1 = "This is $10 in 999 different ways,\n up and down; left and right!",
          text2 = "@kenbenoit working: on #quanteda 2day\t4ever, http://textasdata.com?page=123.")
@@ -125,7 +118,7 @@ tokens("Great website: http://textasdata.com?page=123.", what = "character",
          remove_separators = FALSE)
 
 ## -----------------------------------------------------------------------------
-# sentence level         
+# sentence level       
 tokens(c("Kurt Vongeut said; only assholes use semi-colons.",
          "Today is Thursday in Canberra:  It is yesterday in London.",
          "En el caso de que no puedas ir con ellos, ¿quieres ir con nosotros?"),
@@ -194,8 +187,8 @@ dfmat_inaug_post1991_dict
 ## ----fig.width = 6------------------------------------------------------------
 dfmat_inaug_post1980 <- dfm(corpus_subset(data_corpus_inaugural, Year > 1980),
                             remove = stopwords("english"), stem = TRUE, remove_punct = TRUE)
-tstat_obama <- textstat_simil(dfmat_inaug_post1980, 
-                              dfmat_inaug_post1980[c("2009-Obama", "2013-Obama"), ], 
+tstat_obama <- textstat_simil(dfmat_inaug_post1980,
+                              dfmat_inaug_post1980[c("2009-Obama", "2013-Obama"), ],
                               margin = "documents", method = "cosine")
 tstat_obama
 # dotchart(as.list(tstat_obama)$"2009-Obama", xlab = "Cosine similarity")
@@ -224,20 +217,21 @@ lapply(as.list(tstat_sim), head, 10)
 
 ## ----fig.width = 7, fig.height = 5--------------------------------------------
 dfmat_ire <- dfm(data_corpus_irishbudget2010)
-tmod_wf <- textmodel_wordfish(dfmat_ire, dir = c(2, 1))
+# tmod_wf <- textmodel_wordfish(dfmat_ire, dir = c(2, 1))
 
 # plot the Wordfish estimates by party
-textplot_scale1d(tmod_wf, groups = docvars(dfmat_ire, "party"))
+# textplot_scale1d(tmod_wf, groups = docvars(dfmat_ire, "party"))
 
 ## -----------------------------------------------------------------------------
-dfmat_ire2 <- dfm(data_corpus_irishbudget2010,
-                remove_punct = TRUE, remove_numbers = TRUE, remove = stopwords("english"))
-dfmat_ire2 <- dfm_trim(dfmat_ire2, min_termfreq = 4, max_docfreq = 10)
-dfmat_ire2
+quant_dfm <- dfm(data_corpus_irishbudget2010, 
+                 remove_punct = TRUE, remove_numbers = TRUE, 
+                 remove = stopwords("english"))
+quant_dfm <- dfm_trim(quant_dfm, min_termfreq = 4, max_docfreq = 10)
+quant_dfm
 
 set.seed(100)
-if (require(topicmodels)) {
-    my_lda_fit20 <- LDA(convert(dfmat_ire2, to = "topicmodels"), k = 20)
-    get_terms(my_lda_fit20, 5)
+if (require("stm")) {
+    my_lda_fit20 <- stm(quant_dfm, K = 20, verbose = FALSE)
+    plot(my_lda_fit20)    
 }
 

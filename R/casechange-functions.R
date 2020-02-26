@@ -1,14 +1,14 @@
 #' Convert the case of tokens
-#' 
-#' \code{tokens_tolower} and \code{tokens_toupper} convert the features of a
-#' \link{tokens} object and re-index the types.
+#'
+#' `tokens_tolower()` and `tokens_toupper()` convert the features of a
+#' [tokens] object and re-index the types.
 #' @inheritParams char_tolower
 #' @importFrom stringi stri_trans_tolower
 #' @export
 #' @examples
 #' # for a document-feature matrix
 #' toks <- tokens(c(txt1 = "b A A", txt2 = "C C a b B"))
-#' tokens_tolower(toks) 
+#' tokens_tolower(toks)
 #' tokens_toupper(toks)
 tokens_tolower <- function(x, keep_acronyms = FALSE) {
     UseMethod("tokens_tolower")
@@ -56,26 +56,25 @@ tokens_toupper.tokens <- function(x) {
 
 
 #' Convert the case of character objects
-#' 
-#' \code{char_tolower} and \code{char_toupper} are replacements for 
-#' \link[base]{tolower} and \link[base]{toupper} based on the \pkg{stringi} 
-#' package.  The \pkg{stringi} functions for case conversion are superior to the
-#' \pkg{base} functions because they correctly handle case conversion for
-#' Unicode.  In addition, the \code{*_tolower} functions provide an option for
-#' preserving acronyms.
-#' @param x the input object whose character/tokens/feature elements will be 
+#'
+#' `char_tolower` and `char_toupper` are replacements for
+#' \link[base:chartr]{base::tolower()} and \link[base:chartr]{base::tolower()}
+#' based on the \pkg{stringi} package.  The \pkg{stringi} functions for case
+#' conversion are superior to the \pkg{base} functions because they correctly
+#' handle case conversion for Unicode.  In addition, the `*_tolower()` functions
+#' provide an option for preserving acronyms.
+#' @param x the input object whose character/tokens/feature elements will be
 #'   case-converted
-#' @param keep_acronyms logical; if \code{TRUE}, do not lowercase any 
-#'   all-uppercase words (applies only to \code{*_tolower} functions)
-#' @import stringi
+#' @param keep_acronyms logical; if `TRUE`, do not lowercase any
+#'   all-uppercase words (applies only to `*_tolower()` functions)
 #' @export
 #' @examples
 #' txt1 <- c(txt1 = "b A A", txt2 = "C C a b B")
-#' char_tolower(txt1) 
+#' char_tolower(txt1)
 #' char_toupper(txt1)
-#' 
+#'
 #' # with acronym preservation
-#' txt2 <- c(text1 = "England and France are members of NATO and UNESCO", 
+#' txt2 <- c(text1 = "England and France are members of NATO and UNESCO",
 #'           text2 = "NASA sent a rocket into space.")
 #' char_tolower(txt2)
 #' char_tolower(txt2, keep_acronyms = TRUE)
@@ -89,6 +88,7 @@ char_tolower.default <- function(x, keep_acronyms = FALSE) {
     stop(friendly_class_undefined_message(class(x), "char_tolower"))
 }
 
+#' @importFrom stringi stri_extract_all_regex stri_replace_all_regex stri_trans_tolower
 #' @export
 char_tolower.character <- function(x, keep_acronyms = FALSE) {
     name <- names(x)
@@ -96,11 +96,11 @@ char_tolower.character <- function(x, keep_acronyms = FALSE) {
         match <- stri_extract_all_regex(x, "\\b(\\p{Uppercase_Letter}(\\p{Uppercase_Letter}|\\d)+)\\b")
         for (i in which(lengths(match) > 0)) {
             m <- unique(match[[i]])
-            x[i] <- stri_replace_all_regex(x[i], paste0('\\b', m, '\\b'), 
-                                                 paste0('\uE000', m, '\uE001'), 
+            x[i] <- stri_replace_all_regex(x[i], paste0("\\b", m, "\\b"),
+                                                 paste0("\uE000", m, "\uE001"),
                                            vectorize_all = FALSE)
             x[i] <- stri_trans_tolower(x[i])
-            x[i] <- stri_replace_all_regex(x[i], paste0('\uE000', stri_trans_tolower(m), '\uE001'), 
+            x[i] <- stri_replace_all_regex(x[i], paste0("\uE000", stri_trans_tolower(m), "\uE001"),
                                                  m, vectorize_all = FALSE)
         }
     } else {
@@ -111,7 +111,7 @@ char_tolower.character <- function(x, keep_acronyms = FALSE) {
 }
 
 #' @rdname char_tolower
-#' @export 
+#' @export
 char_toupper <- function(x) {
     UseMethod("char_toupper")
 }
@@ -121,7 +121,8 @@ char_toupper.default <- function(x) {
     stop(friendly_class_undefined_message(class(x), "char_toupper"))
 }
 
-#' @export 
+#' @importFrom stringi stri_trans_toupper
+#' @export
 char_toupper.character <- function(x) {
     name <- names(x)
     x <- stri_trans_toupper(x)
@@ -130,8 +131,8 @@ char_toupper.character <- function(x) {
 }
 
 #' Convert the case of the features of a dfm and combine
-#' 
-#' \code{dfm_tolower} and \code{dfm_toupper} convert the features of the dfm or
+#'
+#' `dfm_tolower()` and `dfm_toupper()` convert the features of the dfm or
 #' fcm to lower and upper case, respectively, and then recombine the counts.
 #' @inheritParams char_tolower
 #' @importFrom stringi stri_trans_tolower
@@ -140,9 +141,9 @@ char_toupper.character <- function(x) {
 #' # for a document-feature matrix
 #' dfmat <- dfm(c("b A A", "C C a b B"), tolower = FALSE)
 #' dfmat
-#' dfm_tolower(dfmat) 
+#' dfm_tolower(dfmat)
 #' dfm_toupper(dfmat)
-#'    
+#'
 dfm_tolower <- function(x, keep_acronyms = FALSE) {
     UseMethod("dfm_tolower")
 }
@@ -181,20 +182,20 @@ dfm_toupper.dfm <- function(x) {
 }
 
 #' @rdname dfm_tolower
-#' @details \code{fcm_tolower} and \code{fcm_toupper} convert both dimensions of
-#'   the \link{fcm} to lower and upper case, respectively, and then recombine
-#'   the counts. This works only on fcm objects created with \code{context = 
-#'   "document"}.
+#' @details `fcm_tolower()` and `fcm_toupper()` convert both dimensions of
+#'   the [fcm] to lower and upper case, respectively, and then recombine
+#'   the counts. This works only on fcm objects created with `context =
+#'   "document"`.
 #' @export
 #' @examples
 #' # for a feature co-occurrence matrix
-#' fcmat <- fcm(tokens(c("b A A d", "C C a b B e")), 
+#' fcmat <- fcm(tokens(c("b A A d", "C C a b B e")),
 #'              context = "document")
 #' fcmat
-#' fcm_tolower(fcmat) 
-#' fcm_toupper(fcmat)   
+#' fcm_tolower(fcmat)
+#' fcm_toupper(fcmat)
 fcm_tolower <- function(x, keep_acronyms = FALSE) {
-    UseMethod("fcm_tolower")   
+    UseMethod("fcm_tolower")
 }
 
 #' @export
@@ -212,7 +213,7 @@ fcm_tolower.fcm <- function(x, keep_acronyms = FALSE) {
 #' @importFrom stringi stri_trans_toupper
 #' @export
 fcm_toupper <- function(x) {
-    UseMethod("fcm_toupper")   
+    UseMethod("fcm_toupper")
 }
 
 #' @export

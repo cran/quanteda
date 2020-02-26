@@ -7,13 +7,6 @@ test_that("summary method works for corpus", {
     )
 })
 
-test_that("summary.corpus with verbose prints warning", {
-    expect_warning(
-        summary(data_corpus_irishbudget2010, verbose = FALSE),
-        "verbose argument is defunct"
-    )        
-})
-
 test_that("summary.corpus works with longer corpora n > default (#1242)", {
     longcorp <- corpus(
         rep(LETTERS, 4), 
@@ -26,7 +19,7 @@ test_that("summary.corpus works with longer corpora n > default (#1242)", {
 })
 
 test_that("print.summary.corpus work", {
-    summ1 <- summary(data_corpus_inaugural + data_corpus_inaugural)
+    summ1 <- summary(data_corpus_inaugural[1:58] + data_corpus_dailnoconf1991)
     expect_output(
         print(summ1),
         "Corpus consisting of 116 documents, showing 100 documents:"
@@ -37,18 +30,19 @@ test_that("print.summary.corpus work", {
     )
     expect_output(
         print(summ1[, c("Types", "Tokens")]),
-        "^\\s+Types Tokens\\n1\\s+625\\s+1538"
+        "^\\s+Types Tokens\\n1\\s+625\\s+153"
     )
 })
 
-test_that("summary_character works as expected",  {
+test_that("summarize_texts works as expected",  {
     txt <- c("Testing this text. Second sentence.", "And this one.")
     expect_identical(
-        quanteda:::summary_character(txt),
+        quanteda:::summarize_texts(txt),
         data.frame(Text = c("text1", "text2"),
                    Types = c(6L, 4L),
                    Tokens = c(7L, 4L),
-                   Sentences = c(2L, 1L))
+                   Sentences = c(2L, 1L),
+                   stringsAsFactors = FALSE)
     )
 })
 

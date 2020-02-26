@@ -30,13 +30,13 @@ Internal functions to import dictionary files in a variety of formats
 \code{read_dict_lexicoder} imports Lexicoder files in the \code{.lc3} format.
 
 \code{read_dict_wordstat} imports WordStat files in the
-  \code{.cat} format.
+\code{.cat} format.
 
 \code{read_dict_liwc} imports LIWC dictionary files in the
-  \code{.dic} format.
+\code{.dic} format.
 
 \code{read_dict_yoshikoder} imports Yoshikoder files in the
-  \code{.ykd} format.
+\code{.ykd} format.
 }
 \examples{
 dict <- quanteda:::read_dict_lexicoder(
@@ -48,7 +48,7 @@ dict <- quanteda:::read_dict_lexicoder(
 dict <- quanteda:::read_dict_wordstat(system.file("extdata", "RID.cat", package = "quanteda"))
 # dict <- read_dict_wordstat("/home/kohei/Documents/Dictionary/LaverGarry.txt", "utf-8")
 # dict <- read_dict_wordstat("/home/kohei/Documents/Dictionary/Wordstat/ROGET.cat", "utf-8")
-# dict <- read_dict_wordstat("/home/kohei/Documents/Dictionary/Wordstat/WordStat Sentiments.cat", 
+# dict <- read_dict_wordstat("/home/kohei/Documents/Dictionary/Wordstat/WordStat Sentiments.cat",
 #                            encoding = "iso-8859-1")
 }
 
@@ -56,7 +56,7 @@ dict <- quanteda:::read_dict_liwc(
     system.file("extdata", "moral_foundations_dictionary.dic", package = "quanteda")
 )
 
-dict <- quanteda:::read_dict_yoshikoder(system.file("extdata", "laver_garry.ykd", 
+dict <- quanteda:::read_dict_yoshikoder(system.file("extdata", "laver_garry.ykd",
                                                     package = "quanteda"))
 }
 \keyword{dictionary}

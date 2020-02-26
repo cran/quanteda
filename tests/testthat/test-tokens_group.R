@@ -1,10 +1,9 @@
-context('test tokens_group.R')
-
+context('test tokens_group')
 
 test_that("test that tokens_group is working", {
     
-    txts <- c('a b c d', 'e f g h', 'A B C', 'X Y Z')
-    toks <- tokens(txts)
+    txt <- c('a b c d', 'e f g h', 'A B C', 'X Y Z')
+    toks <- tokens(txt)
     expect_equal(
         as.list(quanteda:::tokens_group(toks, c(1, 1, 2, 2))),
         list('1' = c('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'),
@@ -22,6 +21,21 @@ test_that("test that tokens_group is working", {
         list('A' = c('e', 'f', 'g', 'h', 'X', 'Y', 'Z'),
              'Z' = c('a', 'b', 'c', 'd', 'A', 'B', 'C'))
     )
+    
+    group <- factor(c('Z', 'A', 'Z', 'A'), levels = c("A", "B", "Z"))
+    expect_equal(
+        as.list(quanteda:::tokens_group(toks, group)),
+        list('A' = c('e', 'f', 'g', 'h', 'X', 'Y', 'Z'),
+             'Z' = c('a', 'b', 'c', 'd', 'A', 'B', 'C'))
+    )
+    
+    expect_equal(
+        as.list(quanteda:::tokens_group(toks, group, fill = TRUE)),
+        list('A' = c('e', 'f', 'g', 'h', 'X', 'Y', 'Z'),
+             'B' = character(),
+             'Z' = c('a', 'b', 'c', 'd', 'A', 'B', 'C'))
+    )
+    
     
 })
 
@@ -82,35 +96,37 @@ test_that("generate_groups works for tokens objects", {
 })
 
 test_that("generate_groups works for corpus objects", {
-    toks <- data_corpus_irishbudget2010
+    corp <- as.corpus(data_corpus_irishbudget2010)
     expect_equal(
-        quanteda:::generate_groups(toks, rep(c("A", "B"), each = 7)),
+        quanteda:::generate_groups(corp, rep(c("A", "B"), each = 7)),
         factor(rep(c("A", "B"), each = 7))
     )
     expect_equal(
-        quanteda:::generate_groups(toks, factor(rep(c("A", "B"), each = 7))),
+        quanteda:::generate_groups(corp, factor(rep(c("A", "B"), each = 7))),
         factor(rep(c("A", "B"), each = 7))
     )
     expect_equal(
-        quanteda:::generate_groups(toks, factor(rep(c(1, 2), each = 7))),
+        quanteda:::generate_groups(corp, factor(rep(c(1, 2), each = 7))),
         factor(rep(c(1, 2), each = 7))
     )
     expect_equal(
-        quanteda:::generate_groups(toks, "party"),
+        quanteda:::generate_groups(corp, "party"),
         factor(docvars(data_corpus_irishbudget2010, "party"))
     )
     expect_error(
-        quanteda:::generate_groups(toks, rep(c("A", "B"), each = 6)),
+        quanteda:::generate_groups(corp, rep(c("A", "B"), each = 6)),
         "groups must name docvars or provide data matching the documents in x"
-    )
-    
-    sents <- corpus_reshape(data_corpus_irishbudget2010, to = "sentences")
-    expect_equal(
-        quanteda:::generate_groups(sents, "_document"),
-        factor(metadoc(sents, "document"),
-               levels = sort(unique(metadoc(sents, "document"))))
     )
     
 })
 
-
+test_that("tokens_group works with NA group labels", {
+    corp <- corpus(c("Doc 1", "Doc 1b", "Doc2", "Doc 3 with NA", "Doc 4, more NA"),
+                   docvars = data.frame(factorvar = c("Yes", "Yes", "No", NA, NA)))
+    toks <- tokens(corp) %>%
+        quanteda:::tokens_group(groups = "factorvar")
+    expect_identical(
+        as.list(toks),
+        list(No = "Doc2", Yes = c("Doc", "1", "Doc", "1b"))
+    )
+})

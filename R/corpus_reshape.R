@@ -7,7 +7,7 @@
 #' to sentences, and then back to documents (possibly after modifying the sentences).
 #' @param x corpus whose document units will be reshaped
 #' @param to new document units in which the corpus will be recast
-#' @param ... additional arguments passed to \code{\link{tokens}}, since the
+#' @param ... additional arguments passed to [tokens()], since the
 #'   syntactic segmenter uses this function)
 #' @inheritParams corpus_segment
 #' @return A corpus object with the documents defined as the new units,
@@ -16,10 +16,9 @@
 #' # simple example
 #' corp1 <- corpus(c(textone = "This is a sentence.  Another sentence.  Yet another.",
 #'                  textwo = "Premiere phrase.  Deuxieme phrase."),
-#'                  docvars = data.frame(country=c("UK", "USA"), year=c(1990, 2000)),
-#'                  metacorpus = list(notes = "Example showing how corpus_reshape() works."))
+#'                  docvars = data.frame(country=c("UK", "USA"), year=c(1990, 2000)))
 #' summary(corp1)
-#' summary(corpus_reshape(corp1, to = "sentences"), showmeta = TRUE)
+#' summary(corpus_reshape(corp1, to = "sentences"))
 #'
 #' # example with inaugural corpus speeches
 #' (corp2 <- corpus_subset(data_corpus_inaugural, Year>2004))
@@ -29,13 +28,12 @@
 #' ## Note that Bush 2005 is recorded as a single paragraph because that text
 #' ## used a single \n to mark the end of a paragraph.
 #' @export
-#' @import stringi
 #' @keywords corpus
 corpus_reshape <- function(x, to = c("sentences", "paragraphs", "documents"),
                            use_docvars = TRUE, ...) {
     UseMethod("corpus_reshape")
 }
-    
+
 #' @export
 corpus_reshape.default <- function(x, to = c("sentences", "paragraphs", "documents"),
                                    use_docvars = TRUE, ...) {
@@ -45,61 +43,41 @@ corpus_reshape.default <- function(x, to = c("sentences", "paragraphs", "documen
 #' @export
 corpus_reshape.corpus <- function(x, to = c("sentences", "paragraphs", "documents"),
                                   use_docvars = TRUE, ...) {
-    x <- corpus(x)
+
+    x <- as.corpus(x)
     to <- match.arg(to)
-
+    attrs <- attributes(x)
+    if (field_object(attrs, "unit") == to)
+        return(x)
     if (to == "documents") {
-        if (settings(x, "units") %in% c("sentences", "paragraphs")) {
-
-            docid <- docvars(x, "_docid")
-            segid <- docvars(x, "_segid")
-
-            if (settings(x, "units") == "sentences") {
-                texts <- stri_join_list(split(texts(x), factor(docid)), sep = "  ")
+        if (field_object(attrs, "unit") %in% c("sentences", "paragraphs", "segments")) {
+            docnum <- as.integer(droplevels(attrs$docvars[["docid_"]]))
+            temp <- list("text" = split(unclass(x), docnum))
+            if (field_object(attrs, "unit") %in% c("sentences", "segments")) {
+                temp[["text"]] <- unlist(lapply(temp[["text"]], paste0, collapse = "  "))
             } else {
-                texts <- stri_join_list(split(texts(x), factor(docid)), sep = "\n\n")
+                temp[["text"]] <- unlist(lapply(temp[["text"]], paste0, collapse = "\n\n"))
             }
-
-            temp <- corpus(texts,
-                           docnames = docvars(x, "_document")[!duplicated(docid)],
-                           docvars = docvars(x)[!duplicated(docid), , drop = FALSE])
-
-            settings(temp, "units") <- "documents"
-            result <- temp
+            attrs[["docvars"]] <- reshape_docvars(attrs[["docvars"]], !duplicated(docnum))
+            unit <- "documents"
         } else {
             stop("reshape to documents only goes from sentences or paragraphs")
         }
-
     } else if (to %in% c("sentences", "paragraphs")) {
-        if (settings(x, "units") == "documents") {
-            vars <- docvars(x)
-
-            # get the relevant function call
-            commands <- as.character(sys.calls())
-            commands <- commands[stri_detect_regex(commands, "reshape\\.corpus")]
-
-            temp <- segment_texts(texts(x), pattern = NULL, extract_pattern = FALSE,
+        if (field_object(attrs, "unit") %in% "documents") {
+            temp <- segment_texts(x,  pattern = NULL, extract_pattern = FALSE,
                                   omit_empty = FALSE, what = to, ...)
-
-            result <- corpus(temp$texts, docnames = rownames(temp),
-                             metacorpus = list(source = metacorpus(x, "source"),
-                                               notes = commands))
-
-            # add repeated versions of remaining docvars
-            if (use_docvars && !is.null(vars)) {
-                rownames(vars) <- NULL # faster to repeat rows without rownames
-                vars <- select_fields(vars, "user")[temp$docid, , drop = FALSE]
-                rownames(vars) <- rownames(temp)
-                docvars(result) <- vars
-            }
-            docvars(result, "_document") <- temp$docname
-            docvars(result, "_docid") <- temp$docid
-            docvars(result, "_segid") <- temp$segid
-            settings(result, "units") <- to
+            attrs[["docvars"]] <- reshape_docvars(attrs[["docvars"]], temp[["docnum"]])
+            unit <- to
         } else {
             stop("reshape to sentences or paragraphs only goes from documents")
         }
-
     }
-    return(result)
+    build_corpus(
+        temp[["text"]],
+        unit = unit,
+        docvars = attrs[["docvars"]],
+        meta = attrs[["meta"]],
+        class = attrs[["class"]]
+    )
 }

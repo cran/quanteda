@@ -16,17 +16,17 @@ corpus_reshape(
 
 \item{to}{new document units in which the corpus will be recast}
 
-\item{use_docvars}{if \code{TRUE}, repeat the docvar values for each 
-segmented text; if \code{FALSE}, drop the docvars in the segmented corpus. 
+\item{use_docvars}{if \code{TRUE}, repeat the docvar values for each
+segmented text; if \code{FALSE}, drop the docvars in the segmented corpus.
 Dropping the docvars might be useful in order to conserve space or if these
 are not desired for the segmented corpus.}
 
-\item{...}{additional arguments passed to \code{\link{tokens}}, since the
+\item{...}{additional arguments passed to \code{\link[=tokens]{tokens()}}, since the
 syntactic segmenter uses this function)}
 }
 \value{
 A corpus object with the documents defined as the new units,
-  including document-level meta-data identifying the original documents.
+including document-level meta-data identifying the original documents.
 }
 \description{
 For a corpus, reshape (or recast) the documents to a different level of aggregation.
@@ -39,10 +39,9 @@ to sentences, and then back to documents (possibly after modifying the sentences
 # simple example
 corp1 <- corpus(c(textone = "This is a sentence.  Another sentence.  Yet another.",
                  textwo = "Premiere phrase.  Deuxieme phrase."),
-                 docvars = data.frame(country=c("UK", "USA"), year=c(1990, 2000)),
-                 metacorpus = list(notes = "Example showing how corpus_reshape() works."))
+                 docvars = data.frame(country=c("UK", "USA"), year=c(1990, 2000)))
 summary(corp1)
-summary(corpus_reshape(corp1, to = "sentences"), showmeta = TRUE)
+summary(corpus_reshape(corp1, to = "sentences"))
 
 # example with inaugural corpus speeches
 (corp2 <- corpus_subset(data_corpus_inaugural, Year>2004))

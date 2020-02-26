@@ -9,6 +9,7 @@ angewandte
 applyDictionary
 Appveyor
 arXiv
+arxiv
 Ausarbeitung
 austin
 Baayen
@@ -335,6 +336,7 @@ textField
 textfile
 textmatrix
 textmodel
+textmodels
 textplot
 textstat
 tf
@@ -348,6 +350,7 @@ tokenization
 tokenizedTexts
 tokenizeOnly
 tokenizer
+tokenizers
 toLower
 topicmodels
 TR
@@ -398,6 +401,8 @@ Wordstat
 WordStat
 wordstem
 wordStem
+wordv
+wordv1
 Wortschatzumfang
 ws
 YAML

@@ -1,10 +1,10 @@
 #' Get or set document names
 #' 
-#' Get or set the document names of a \link{corpus}, \link{tokens}, or \link{dfm} object.
+#' Get or set the document names of a [corpus], [tokens], or [dfm] object.
 #' @param x the object with docnames
 #' @export
-#' @return \code{docnames} returns a character vector of the document names
-#' @seealso \code{\link{featnames}}
+#' @return `docnames` returns a character vector of the document names
+#' @seealso [featnames()]
 #' @examples
 #' # get and set doument names to a corpus
 #' corp <- data_corpus_inaugural
@@ -31,23 +31,18 @@ docnames.default <- function(x) {
 #' @noRd
 #' @export
 docnames.corpus <- function(x) {
-    if (is_pre2(x)) {
-        # didn't use accessor documents() because didn't want to pass
-        # that large object
-        result <- if (is.null(rownames(x$documents))) {
-            paste0("text", seq_len(ndoc(x)))
-        } else {
-            rownames(x$documents)
-        }
-    } else {
-        result <- docnamesv2.corpus(x)
-    }
-    
-    result
+    x <- as.corpus(x)
+    get_docvars(x, "docname_", FALSE, TRUE, TRUE)
 }
 
-#' @param value a character vector of the same length as \code{x}
-#' @return \code{docnames <-} assigns new values to the document names of an object.  
+#' @noRd
+#' @export
+docnames.tokens <- function(x) {
+    get_docvars(x, "docname_", FALSE, TRUE, TRUE)
+}
+
+#' @param value a character vector of the same length as `x`
+#' @return `docnames <-` assigns new values to the document names of an object.  
 #' docnames can only be character, so any non-character value assigned to be a
 #' docname will be coerced to mode `character`.
 #' @export
@@ -68,32 +63,88 @@ docnames.corpus <- function(x) {
 #' @noRd
 #' @export
 "docnames<-.corpus" <- function(x, value) {
-    x <- corpus(x)
-    docvars(x, "_document") <- rownames(x$documents) <- as.character(value)
+    x <- as.corpus(x)
+    value <- make_docnames(value)
+    attr(x, "names") <- attr(x, "docvars")[["docname_"]] <- value
     return(x)
 }
 
 #' @noRd
 #' @export
 "docnames<-.tokens" <- function(x, value) {
-    docvars(x, "_document") <- names(x) <- as.character(value)
+    x <- as.tokens(x)
+    value <- make_docnames(value)
+    attr(x, "names") <- attr(x, "docvars")[["docname_"]] <- value
     return(x)
 }
 
 #' @noRd
 #' @export
 "docnames<-.dfm" <- function(x, value) {
-    docvars(x, "_document") <- x@Dimnames$docs <- as.character(value)
+    x <- as.dfm(x)
+    value <- make_docnames(value)
+    x@Dimnames[["docs"]] <- x@docvars[["docname_"]] <- value
     return(x)
 }
 
+make_docnames <- function(x) {
+    x <- stri_trans_nfc(as.character(x))
+    if (any(duplicated(x)))
+        x <- paste0(x, ".", stats::ave(x == x, x, FUN = cumsum))
+    return(x)
+}
+
+# names<- ----------------
+
+#' @name names-quanteda
+#' @title Special handling for names of quanteda objects
+#' @description Keeps the element names and rownames in sync with the system docvar
+#' `docname_`.
+#' @inheritParams base::names
+#' @method names<- corpus
+#' @keywords internal corpus
+#' @aliases names<-.corpus
+#' @export
+"names<-.corpus" <- function(x, value) {
+    UseMethod("docnames<-")
+}
+
+#' @rdname names-quanteda
+#' @aliases names<-.tokens
+#' @method names<- tokens
+#' @export
+"names<-.tokens" <- function(x, value) {
+    UseMethod("docnames<-")
+}
+
+setGeneric("rownames<-")
+
+#' @include dfm-classes.R
+#' @rdname names-quanteda
+#' @aliases rownames<-.dfm
+#' @export
+setMethod("rownames<-",
+          signature(x = "dfm"),
+          function(x, value) {
+              docnames(x) <- value
+              return(x)
+          })
+
+#' @include fcm-classes.R
+#' @rdname names-quanteda
+#' @aliases rownames<-.fcm
+#' @export
+setMethod("rownames<-",
+          signature(x = "fcm"),
+          function(x, value) {
+              set_fcm_dimnames(x) <- list(value, colnames(x))
+              return(x)
+          })
+
 #' Internal function to extract docid
-#' @noRd
+#' @rdname names-quanteda
+#' @export
 docid <- function(x) {
-    # docid is missing from some object before v2.0 
-    tryCatch({
-        docvars(x, "_docid") # TODO should be exported in v2.0
-    }, error = function(e) {
-        seq_len(ndoc(x))  
-    })
+    get_docvars(x, "docid_", system = TRUE, drop = TRUE)
 } 
+

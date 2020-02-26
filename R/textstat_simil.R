@@ -2,20 +2,20 @@
 
 #' @title textstat_simil/dist classes
 #' @description Sparse classes for similarity and distance matrices created by
-#'   \code{\link{textstat_simil}} and \code{\link{textstat_dist}}.
+#'   [textstat_simil()] and [textstat_dist()].
 #' @rdname textstat_proxy-class
 #' @export
 #' @keywords internal textstat
 #' @slot .Data a sparse \pkg{Matrix} object, symmetric if selection is
-#'   \code{NULL}
+#'   `NULL`
 #' @slot method the method used for computing similarity or distance
 #' @slot min_simil numeric; a threshold for the similarity values below which similarity
 #'   values are not computed
 #' @slot margin identifies the margin of the dfm on which similarity or
-#'   difference was computed:  \code{"documents"} for documents or
-#'   \code{"features"} for word/term features.
-#' @slot type either \code{"textstat_simil"} or \code{"textstat_dist"}
-#' @seealso \code{\link{textstat_simil}}
+#'   difference was computed:  `"documents"` for documents or
+#'   `"features"` for word/term features.
+#' @slot type either `"textstat_simil"` or `"textstat_dist"`
+#' @seealso [textstat_simil()]
 setClass("textstat_proxy", contains = "Matrix",
          slots = c(method = "character",
                    margin = "character",
@@ -59,9 +59,9 @@ setValidity("textstat_simil_symm_sparse", function(object) {
 })
 
 #' Print a textstat_proxy object
-#' 
-#' Print/show method for objects created by \code{textstat_simil} and
-#' \code{textstat_dist}.
+#'
+#' Print/show method for objects created by `textstat_simil` and
+#' `textstat_dist`.
 #' @param object the textstat_proxy object to be printed
 #' @rdname textstat_proxy-class
 #' @export
@@ -83,16 +83,16 @@ setMethod("tail", signature(x = "textstat_proxy"), function(x, n = 6L, ...) {
 })
 
 #' Return the first or last part of a textstat_proxy object
-#' 
-#' For a similarity or distance object computed via \link{textstat_simil} or
-#' \link{textstat_dist}, returns the first or last \code{n} rows.
+#'
+#' For a similarity or distance object computed via [textstat_simil] or
+#' [textstat_dist], returns the first or last `n` rows.
 #' @param x a textstat_simil/textstat_dist object
 #' @param n a single, positive integer.  If positive, size for the resulting
 #'   object: number of first/last documents for the dfm. If negative, all but
 #'   the n last/first number of documents of x.
 #' @param ... unused
-#' @return A \link{matrix} corresponding to the subset defined 
-#'   by \code{n}.
+#' @return A [matrix] corresponding to the subset defined
+#'   by `n`.
 #' @export
 #' @name head.textstat_proxy
 #' @method head textstat_proxy
@@ -120,51 +120,51 @@ setMethod("tail", signature(x = "textstat_proxy"), function(x, n = 6L, ...) {
 #' Similarity and distance computation between documents or features
 #'
 #' These functions compute matrixes of distances and similarities between
-#' documents or features from a \code{\link{dfm}} and return a matrix of
+#' documents or features from a [dfm()] and return a matrix of
 #' similarities or distances in a sparse format.  These methods are fast
-#' and robust because they operate directly on the sparse \link{dfm} objects.
-#' The output can easily be coerced to an ordinary matrix, a data.frame of 
-#' pairwise comparisons, or a \link[stats]{dist} format.
-#' @param x,y a \link{dfm} objects; \code{y} is an optional target matrix matching
-#'   \code{x} in the margin on which the similarity or distance will be computed.
-#' @param selection (deprecated - use \code{y} instead).
+#' and robust because they operate directly on the sparse [dfm] objects.
+#' The output can easily be coerced to an ordinary matrix, a data.frame of
+#' pairwise comparisons, or a [dist][stats::dist] format.
+#' @param x,y a [dfm] objects; `y` is an optional target matrix matching
+#'   `x` in the margin on which the similarity or distance will be computed.
+#' @param selection (deprecated - use `y` instead).
 #' @param margin identifies the margin of the dfm on which similarity or
-#'   difference will be computed:  \code{"documents"} for documents or
-#'   \code{"features"} for word/term features.
+#'   difference will be computed:  `"documents"` for documents or
+#'   `"features"` for word/term features.
 #' @param method character; the method identifying the similarity or distance
 #'   measure to be used; see Details.
 #' @param min_simil numeric; a threshold for the similarity values below which similarity
 #'   values will not be returned
 #' @param ... unused
-#' @details \code{textstat_simil} options are: \code{"correlation"} (default),
-#'   \code{"cosine"}, \code{"jaccard"}, \code{"ejaccard"}, \code{"dice"},
-#'   \code{"edice"}, \code{"simple matching"}, and \code{"hamman"}.
+#' @details `textstat_simil` options are: `"correlation"` (default),
+#'   `"cosine"`, `"jaccard"`, `"ejaccard"`, `"dice"`,
+#'   `"edice"`, `"simple matching"`, and `"hamman"`.
 #' @note If you want to compute similarity on a "normalized" dfm object
 #'   (controlling for variable document lengths, for methods such as correlation
 #'   for which different document lengths matter), then wrap the input dfm in
-#'   \code{\link{dfm_weight}(x, "prop")}.
-#' @return A sparse matrix from the \pkg{Matrix} package that will be symmetric 
-#'   unless \code{y} is specified.
-#'      
-#'   These can be transformed easily into a list format using \code{as.list()},
-#'   which returns a list for each unique element of the second of the pairs,
-#'   \code{as.dist} to be transformed into a \link[stats]{dist} object, or
-#'   \code{as.matrix} to convert it into an ordinary matrix.
+#'   `[dfm_weight](x, "prop")`.
+#' @return A sparse matrix from the \pkg{Matrix} package that will be symmetric
+#'   unless `y` is specified.
+#'
+#'   These can be transformed easily into a list format using `as.list()`, which
+#'   returns a list for each unique element of the second of the pairs,
+#'   `as.dist()` to be transformed into a \link[stats:dist]{dist} object, or
+#'   `as.matrix()` to convert it into an ordinary matrix.
 #' @export
-#' @seealso \code{\link[stats]{as.dist}}
+#' @seealso \code{\link[stats:dist]{stats::as.dist()}}
 #' @examples
 #' # similarities for documents
-#' dfmat <- dfm(corpus_subset(data_corpus_inaugural, Year > 2000), 
+#' dfmat <- dfm(corpus_subset(data_corpus_inaugural, Year > 2000),
 #'              remove_punct = TRUE, remove = stopwords("english"))
 #' (tstat1 <- textstat_simil(dfmat, method = "cosine", margin = "documents"))
 #' as.matrix(tstat1)
 #' as.list(tstat1)
 #' as.list(tstat1, diag = TRUE)
-#' 
+#'
 #' # min_simil
 #' (tstat2 <- textstat_simil(dfmat, method = "cosine", margin = "documents", min_simil = 0.6))
 #' as.matrix(tstat2)
-#' 
+#'
 #' # similarities for for specific documents
 #' textstat_simil(dfmat, dfmat["2017-Trump", ], margin = "documents")
 #' textstat_simil(dfmat, dfmat["2017-Trump", ], method = "cosine", margin = "documents")
@@ -175,7 +175,7 @@ setMethod("tail", signature(x = "textstat_proxy"), function(x, n = 6L, ...) {
 #'                          margin = "features")
 #' head(as.matrix(tstat3), 10)
 #' as.list(tstat3, n = 6)
-#' 
+#'
 textstat_simil <- function(x, y = NULL, selection = NULL,
                            margin = c("documents", "features"),
                            method = c("correlation", "cosine", "jaccard", "ejaccard",
@@ -183,9 +183,8 @@ textstat_simil <- function(x, y = NULL, selection = NULL,
                            min_simil = NULL, ...) {
     UseMethod("textstat_simil")
 }
-    
 
-#' @export    
+#' @export
 textstat_simil.default <- function(x, y = NULL, selection = NULL,
                                margin = c("documents", "features"),
                                method = c("correlation", "cosine", "jaccard", "ejaccard",
@@ -193,8 +192,8 @@ textstat_simil.default <- function(x, y = NULL, selection = NULL,
                                min_simil = NULL, ...) {
     stop(friendly_class_undefined_message(class(x), "textstat_simil"))
 }
-    
-#' @export    
+
+#' @export
 textstat_simil.dfm <- function(x, y = NULL, selection = NULL,
                                margin = c("documents", "features"),
                                method = c("correlation", "cosine", "jaccard", "ejaccard",
@@ -203,9 +202,9 @@ textstat_simil.dfm <- function(x, y = NULL, selection = NULL,
 
     if (!is.null(selection))
         .Deprecated(msg = "'selection' is deprecated. Use 'y' instead.")
-    check_dots(list(...))
-    x <- as.dfm(x)
+    unused_dots(...)
 
+    x <- as.dfm(x)
     margin <- match.arg(margin)
     method <- match.arg(method)
 
@@ -236,6 +235,7 @@ textstat_simil.dfm <- function(x, y = NULL, selection = NULL,
             }
         }
     } else {
+        if (!is.dfm(y)) stop("y must be a dfm matching x in the margin specified")
         y <- as.dfm(y)
     }
     temp <- textstat_proxy(x, y, margin, method,
@@ -270,24 +270,24 @@ textstat_simil.dfm <- function(x, y = NULL, selection = NULL,
 #' @rdname textstat_simil
 #' @export
 #' @param p The power of the Minkowski distance.
-#' @details \code{textstat_dist} options are: \code{"euclidean"} (default), 
-#'   \code{"manhattan"}, \code{"maximum"}, \code{"canberra"},
-#'   and \code{"minkowski"}.
+#' @details `textstat_dist` options are: `"euclidean"` (default),
+#'   `"manhattan"`, `"maximum"`, `"canberra"`,
+#'   and `"minkowski"`.
 #' @importFrom RcppParallel RcppParallelLibs
 #' @examples
-#'                
-#' # distances for documents 
+#'
+#' # distances for documents
 #' (tstat4 <- textstat_dist(dfmat, margin = "documents"))
 #' as.matrix(tstat4)
 #' as.list(tstat4)
 #' as.dist(tstat4)
-#' 
+#'
 #' # distances for specific documents
 #' textstat_dist(dfmat, dfmat["2017-Trump", ], margin = "documents")
 #' (tstat5 <- textstat_dist(dfmat, dfmat[c("2009-Obama" , "2013-Obama"), ], margin = "documents"))
 #' as.matrix(tstat5)
 #' as.list(tstat5)
-#' 
+#'
 #' \dontrun{
 #' # plot a dendrogram after converting the object into distances
 #' plot(hclust(as.dist(tstat4)))
@@ -317,7 +317,8 @@ textstat_dist.dfm <- function(x, y = NULL, selection = NULL,
                               p = 2, ...) {
     if (!is.null(selection))
         .Deprecated(msg = "'selection' is deprecated. Use 'y' instead.")
-    check_dots(list(...))
+
+    unused_dots(...)
     x <- as.dfm(x)
 
     margin <- match.arg(margin)
@@ -350,6 +351,7 @@ textstat_dist.dfm <- function(x, y = NULL, selection = NULL,
             }
         }
     } else {
+        if (!is.dfm(y)) stop("y must be a dfm matching x in the margin specified")
         y <- as.dfm(y)
     }
     temp <- textstat_proxy(x, y, margin, method,
@@ -371,15 +373,15 @@ textstat_dist.dfm <- function(x, y = NULL, selection = NULL,
 
 #' @rdname textstat_simil
 #' @method as.list textstat_proxy
-#' @param sorted sort results in descending order if \code{TRUE}
-#' @param n the top \code{n} highest-ranking items will be returned.  If n is 
-#'   \code{NULL}, return all items.
-#' @param diag logical; if \code{FALSE}, exclude the item's comparison with itself
-#' @return \code{as.data.list} for a \code{textstat_simil} or
-#'   \code{textstat_dist} object returns a list equal in length to the columns of the 
+#' @param sorted sort results in descending order if `TRUE`
+#' @param n the top `n` highest-ranking items will be returned.  If n is
+#'   `NULL`, return all items.
+#' @param diag logical; if `FALSE`, exclude the item's comparison with itself
+#' @return `as.data.list` for a `textstat_simil` or
+#'   `textstat_dist` object returns a list equal in length to the columns of the
 #'   simil or dist object, with the rows and their values as named  elements.  By default,
-#'   this list excludes same-time pairs (when \code{diag = FALSE}) and sorts the values
-#'   in descending order (when \code{sorted = TRUE}).
+#'   this list excludes same-time pairs (when `diag = FALSE`) and sorts the values
+#'   in descending order (when `sorted = TRUE`).
 #' @keywords textstat
 #' @export
 as.list.textstat_proxy <- function(x, sorted = TRUE, n = NULL, diag = FALSE, ...) {
@@ -389,7 +391,7 @@ as.list.textstat_proxy <- function(x, sorted = TRUE, n = NULL, diag = FALSE, ...
         warning("ignoring n when sorted = FALSE")
         n <- NULL
     }
-    
+
     x <- proxy2triplet(x, upper = TRUE)
     if (!diag)
         x <- diag2na(x)
@@ -410,16 +412,16 @@ as.list.textstat_proxy <- function(x, sorted = TRUE, n = NULL, diag = FALSE, ...
 #' @rdname textstat_simil
 #' @method as.data.frame textstat_proxy
 #' @inheritParams base::as.data.frame
-#' @param upper logical; if \code{TRUE}, return pairs as both (A, B) and (B, A)
-#' @return \code{as.data.frame} for a \code{textstat_simil} or
-#'   \code{textstat_dist} object returns a data.frame of pairwise combinations
+#' @param upper logical; if `TRUE`, return pairs as both (A, B) and (B, A)
+#' @return `as.data.frame` for a `textstat_simil` or
+#'   `textstat_dist` object returns a data.frame of pairwise combinations
 #'   and the and their similarity or distance value.
 #' @export
 as.data.frame.textstat_proxy <- function(x, row.names = NULL, optional = FALSE,
                                             diag = FALSE, upper = FALSE,  ...) {
     method <- x@method
     margin <- x@margin
-    
+
     if (!isSymmetric(x) && upper)
         warning("upper = TRUE has no effect when columns have been selected")
     x <- proxy2triplet(x, upper)
@@ -443,11 +445,11 @@ as.data.frame.textstat_proxy <- function(x, row.names = NULL, optional = FALSE,
 }
 
 #' convert same-value pairs to NA in a textstat_proxy object
-#' 
-#' Converts the diagonal, or the same-pair equivalent in an object 
+#'
+#' Converts the diagonal, or the same-pair equivalent in an object
 #' where the columns have been selected, to NA.
-#' @param x the return from \code{\link{textstat_simil}} or \code{\link{textstat_dist}}
-#' @return sparse Matrix format with same-pair values replaced with \code{NA}
+#' @param x the return from [textstat_simil()] or [textstat_dist()]
+#' @return sparse Matrix format with same-pair values replaced with `NA`
 #' @keywords textstat internal
 diag2na <- function(x) {
     if (is(x, "dsTMatrix")) {
@@ -481,11 +483,11 @@ proxy2triplet <- function(x, upper) {
 
 #' as.matrix method for textstat_simil_sparse
 #'
-#' @param x an object returned by \link{textstat_simil} when \code{min_simil >
-#'   0}
+#' @param x an object returned by [textstat_simil] when `min_simil >
+#'   0`
 #' @param omitted value that will replace the omitted cells
 #' @param ... unused
-#' @return a \link{matrix} object
+#' @return a [matrix] object
 #' @export
 #' @keywords textstat internal
 #' @rdname as.matrix.textstat_simil_sparse
@@ -506,21 +508,21 @@ setMethod("as.matrix", "textstat_simil_symm_sparse",
 
 # textstat_proxy ---------
 
-#' [Experimental] Compute document/feature proximity
+#' \[Experimental\] Compute document/feature proximity
 #'
-#' This is an underlying function for \code{textstat_dist} and
-#' \code{textstat_simil} but returns \code{TsparseMatrix}.
+#' This is an underlying function for `textstat_dist` and
+#' `textstat_simil` but returns `TsparseMatrix`.
 #' @keywords internal
-#' @param y if a \link{dfm} object is provided, proximity between documents or
-#'   features in \code{x} and \code{y} is computed.
-#' @param use_na if \code{TRUE}, return \code{NA} for proximity to empty
-#'   vectors. Note that use of \code{NA} makes the proximity matrices denser.
+#' @param y if a [dfm] object is provided, proximity between documents or
+#'   features in `x` and `y` is computed.
+#' @param use_na if `TRUE`, return `NA` for proximity to empty
+#'   vectors. Note that use of `NA` makes the proximity matrices denser.
 #' @inheritParams textstat_dist
 #' @param min_proxy the minimum proximity value to be recoded.
 #' @param rank an integer value specifying top-n most proximity values to be
 #'   recorded.
 #' @export
-#' @seealso \code{\link{textstat_dist}}, \code{\link{textstat_simil}}
+#' @seealso [textstat_dist()], [textstat_simil()]
 textstat_proxy <- function(x, y = NULL,
                            margin = c("documents", "features"),
                            method = c("cosine", "correlation", "jaccard", "ejaccard",
