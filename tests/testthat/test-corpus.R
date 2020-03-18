@@ -1,5 +1,7 @@
 context("test corpus")
 
+data(data_corpus_irishbudget2010, package = "quanteda.textmodels")
+
 test_that("test show.corpus", {
     expect_output(
         print(corpus(c("The"))),
@@ -220,7 +222,6 @@ test_that("corpus works for texts with duplicate filenames", {
 })
 
 test_that("create a corpus on a corpus", {
-
     corp <- data_corpus_irishbudget2010
     expect_equivalent(
         as.corpus(corp),
@@ -467,27 +468,7 @@ test_that("upgrade_corpus is working", {
     expect_true(is.factor(attr(corp3, "docvars")[["docid_"]]))
 })
 
-test_that("metadoc works but raise deprecation warning", {
-    corp <- corpus(c("aa bb cc", "ccc dd"))
-    suppressWarnings(expect_equal(colnames(metadoc(corp)), character()))
-    suppressWarnings(metadoc(corp, "var1") <- c(1, 5))
-    suppressWarnings(metadoc(corp, "var2") <- c("T", "F"))
-    suppressWarnings(expect_equal(colnames(metadoc(corp)), c("_var1", "_var2")))
-    expect_warning(metadoc(corp), "metadoc is deprecated")
-})
-
-test_that("metadoc works but raise deprecation warning", {
-    expect_error(
-        corpus(c("aa bb cc", "ccc dd"), docnames = c("text1", "text1"),
-               "docnames must be unique")
-    )
-    expect_silent(
-        corpus(c("aa bb cc", "ccc dd"), docnames = c("text1", "text1"), unique_docnames = FALSE)
-    )
-})
-
 test_that("raise error when docnames or docvars are invalid", {
-
     expect_error(
         corpus(c("a b c", "b c d"), docnames = "onedoc"),
         quanteda:::message_error("docnames_mismatch")
@@ -496,7 +477,16 @@ test_that("raise error when docnames or docvars are invalid", {
         corpus(c("a b c", "b c d"), docvars = data.frame(docid_ = c("s1", "s2"))),
         quanteda:::message_error("docvars_invalid")
     )
+})
 
+test_that("docname uniqueness flag works", {
+    expect_error(
+        corpus(c("aa bb cc", "ccc dd"), docnames = c("text1", "text1")),
+        "docnames must be unique"
+    )
+    expect_silent(
+        corpus(c("aa bb cc", "ccc dd"), docnames = c("text1", "text1"), unique_docnames = FALSE)
+    )
 })
 
 test_that("[.corpus out of bounds generates expected error", {
@@ -612,3 +602,16 @@ test_that("corpus indexing works as expected", {
     expect_error(corp["d4"], "Subscript out of bounds")
     expect_error(corp[c("d1", "d4")], "Subscript out of bounds")
 })
+
+test_that("corpus normalize dashes and hyphens", {
+  corp <- corpus(c(d1 = "thanks--great, good-bye",
+                   d2 = "100‒200, maybe ⁓150", 
+                   d3 = "cut here –––––––––"))
+  
+  expect_equal(texts(corp), 
+               c(d1 = "thanks - great, good-bye",
+                 d2 = "100 - 200, maybe  - 150", 
+                 d3 = "cut here  - ")
+  )
+})
+

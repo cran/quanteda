@@ -1,71 +1,6 @@
 context("test dfm")
 
-# test_that("oldest dfm test", {
-#     mycorpus <- corpus_subset(data_corpus_inaugural, Year > 1900)
-#     mydict <- dictionary(list(christmas = c("Christmas", "Santa", "holiday"),
-#                               opposition = c("Opposition", "reject", "notincorpus"),
-#                               taxing = "taxing",
-#                               taxation = "taxation",
-#                               taxregex = "tax*",
-#                               country = "united_states"))
-#     dictDfm <- dfm(mycorpus, dictionary = mydict, valuetype = "glob")
-#     dictDfm <- dictDfm[1:10, ]
-#     dictDfm <- thesDfm <- dfm(mycorpus, thesaurus = mydict, valuetype = "glob")
-#     dictDfm <- thesDfm[1:10, (nfeat(thesDfm) - 8) : nfeat(thesDfm)]
-# 
-#     preDictDfm <- dfm(mycorpus, remove_punct = TRUE, remove_numbers = TRUE)
-#     dfm_lookup(preDictDfm, mydict)
-# 
-#     txt <- tokens(char_tolower(c("My Christmas was ruined by your opposition tax plan.",
-#                                  "The United_States has progressive taxation.")),
-#                   remove_punct = TRUE)
-# 
-#     dictDfm <- dfm(txt, dictionary = mydict, verbose = FALSE)
-#     dictDfm <- dfm(txt, thesaurus = mydict, verbose = FALSE)
-#     dictDfm <- dfm(txt, thesaurus = mydict, verbose = FALSE)
-# 
-#     txtDfm <- dfm(txt, verbose = FALSE)
-#     dictDfm <- dfm_lookup(txtDfm, mydict, valuetype = "glob")
-#     dictDfm <- dfm_lookup(txtDfm, mydict, exclusive = FALSE, valuetype = "glob", verbose = FALSE)
-# 
-#     inaugTextsTokenized <- tokens(data_corpus_inaugural, remove_punct = TRUE)
-#     inaugTextsTokenized <- tokens_tolower(inaugTextsTokenized)
-# 
-#     ## need to be carefully inspected!
-#     txt <- "The tall brown trees with pretty leaves in its branches."
-#     txtDfm <- dfm(txt)
-#     txtDfm <- dfm(txt, stem = TRUE)
-#     txtDfm <- dfm(txt, remove = stopwords("english"))
-#     txtDfm <- dfm(txt, stem = TRUE, remove = stopwords("english"))
-# 
-#     myDict <- dictionary(list(christmas = c("Christmas", "Santa", "holiday"),
-#                               opposition = c("Opposition", "reject", "notincorpus"),
-#                               taxglob = "tax*",
-#                               taxregex = "tax.+$",
-#                               country = c("United_States", "Sweden")))
-#     myDfm <- dfm(c("My Christmas was ruined by your opposition tax plan.",
-#                    "Does the United_States or Sweden have more progressive taxation?"),
-#                  remove = stopwords("english"), remove_punct = TRUE, tolower = FALSE,
-#                  verbose = FALSE)
-# 
-#     # glob format
-#     tmp <- dfm_lookup(myDfm, myDict, valuetype = "glob", case_insensitive = TRUE)
-#     expect_equal(as.vector(tmp[, c("christmas", "country")]), c(1, 0, 0, 2))
-#     tmp <- dfm_lookup(myDfm, myDict, valuetype = "glob", case_insensitive = FALSE)
-#     expect_equal(as.vector(tmp[, c("christmas", "country")]), c(0, 0, 0, 0))
-#     # regex v. glob format
-#     tmp <- dfm_lookup(myDfm, myDict, valuetype = "glob", case_insensitive = TRUE)
-#     expect_equal(as.vector(tmp[, c("taxglob", "taxregex")]), c(1, 1, 0, 0))
-#     tmp <- dfm_lookup(myDfm, myDict, valuetype = "regex", case_insensitive = TRUE)
-#     expect_equal(as.vector(tmp[, c("taxglob", "taxregex")]), c(1, 2, 0, 1))
-#     # note: "united_states" is a regex match for "tax*"!!
-# 
-#     tmp <- dfm_lookup(myDfm, myDict, valuetype = "fixed")
-#     expect_equal(as.vector(tmp[, c("taxglob", "taxregex", "country")]), c(0, 0, 0, 0, 0, 2))
-#     tmp <- dfm_lookup(myDfm, myDict, valuetype = "fixed", case_insensitive = FALSE)
-#     expect_equal(as.vector(tmp[, c("taxglob", "taxregex", "country")]), c(0, 0, 0, 0, 0, 0))
-# 
-# })
+data(data_corpus_irishbudget2010, package = "quanteda.textmodels")
 
 test_that("test c.corpus", {
     expect_equal(
@@ -560,7 +495,7 @@ test_that("dfm head, tail work as expected", {
 
 test_that("dfm print works with options as expected", {
     dfmt <- dfm(data_corpus_irishbudget2010,
-               remove_punct = FALSE, remove_numbers = FALSE, split_hyphens = TRUE)
+                remove_punct = FALSE, remove_numbers = FALSE, split_hyphens = TRUE)
     expect_output(
         print(dfmt, max_ndoc = 6, max_nfeat = 10, show_summary = TRUE),
         paste0("^Document-feature matrix of: 14 documents, 5,055 features \\(80\\.9% sparse\\) and 6 docvars\\.",
@@ -578,6 +513,16 @@ test_that("dfm print works with options as expected", {
         paste0("^Document-feature matrix of: 5 documents, 5 features \\(28\\.0% sparse\\) and 6 docvars\\.",
                ".*",
                "Cowen, Brian \\(FF\\)\\s+4\\s+17\\s+0\\s+394\\s+0$")
+    )
+    expect_output(
+        print(dfmt[1:5, 1:5], max_ndoc = 0, max_nfeat = -1, show_summary = TRUE),
+        "^Document-feature matrix of: 5 documents, 5 features \\(28\\.0% sparse\\) and 6 docvars\\.$"
+    )
+    expect_output(
+        print(dfmt[1:5, 1:5], max_ndoc = -1, max_nfeat = 0, show_summary = TRUE),
+        paste0("^Document-feature matrix of: 5 documents, 5 features \\(28\\.0% sparse\\) and 6 docvars\\.",
+               "\\n",
+               "\\[ reached max_nfeat \\.\\.\\. 5 more features ]$")
     )
     expect_output(
         print(dfmt, max_ndoc = 6, max_nfeat = 10, show_summary = FALSE),
@@ -602,6 +547,10 @@ test_that("cannot supply remove and select in one call (#793)", {
     )
     expect_error(
         dfm(toks, select = "one", remove = "two"),
+        "only one of select and remove may be supplied at once"
+    )
+    expect_error(
+        dfm(dfm(toks), select = "one", remove = "two"),
         "only one of select and remove may be supplied at once"
     )
 })
@@ -1078,5 +1027,97 @@ test_that("dfm feature and document names have encoding", {
     mt4 <- dfm_trim(mt, min_termfreq = 2)
     expect_true(all(Encoding(colnames(mt4)) == "UTF-8"))
     #expect_true(all(Encoding(rownames(mt4)) == "UTF-8")) fix in new corpus
+})
+
+test_that("dfm verbose = TRUE works as expected", {
+    expect_message(
+        tmp <- dfm(data_corpus_inaugural[1:3], verbose = TRUE),
+        "Creating a dfm from a corpus input"
+    )
+    expect_message(
+        tmp <- dfm(data_corpus_inaugural[1:3], verbose = TRUE),
+        "Finished constructing a 3 x 1,\\d{3} sparse dfm"
+    )
+    expect_message(
+        tmp <- dfm(data_corpus_inaugural[1:3], dictionary = data_dictionary_LSD2015, verbose = TRUE),
+        "applying a dictionary consisting of 4 keys"
+    )
+    expect_message(
+        tmp <- dfm(dfm(data_corpus_inaugural[1:3]), dictionary = data_dictionary_LSD2015, verbose = TRUE),
+        "applying a dictionary consisting of 4 keys"
+    )
+    expect_message(
+        tmp <- dfm(data_corpus_inaugural[1:3], groups = "President", verbose = TRUE),
+        "grouping texts"
+    )
+    expect_message(
+        tmp <- dfm(data_corpus_inaugural[1:2], stem = TRUE, verbose = TRUE),
+        "stemming types \\(English\\)"
+    )
+    expect_message(
+        tmp <- dfm(dfm(data_corpus_inaugural[1:2]), stem = TRUE, verbose = TRUE),
+        "stemming features \\(English\\)"
+    )
+    expect_message(
+        tmp <- dfm(dfm(data_corpus_inaugural[1:3]), groups = "President", verbose = TRUE),
+        "grouping texts"
+    )
+    expect_error(
+        dfm("one two three", remove = "one", select = "three"),
+        "only one of select and remove may be supplied at once"
+    )
+    
+    toks <- tokens(c("one two", "two three four"))
+    attributes(toks)$types[4] <- NA
+    dfm(toks)
+})
+
+test_that("dfm_sort works as expected", {
+    dfmat <- dfm(c(d1 = "z z x y a b", d3 = "x y y y c", d2 = "a z"))
+    expect_identical(
+        featnames(dfm_sort(dfmat, margin = "features", decreasing = TRUE)),
+        c("y", "z", "x", "a", "b", "c")
+    )
+    expect_identical(
+        featnames(dfm_sort(dfmat, margin = "features", decreasing = FALSE)),
+        c("b", "c", "x", "a", "z", "y")
+    )
+    expect_identical(
+        docnames(dfm_sort(dfmat, margin = "documents", decreasing = TRUE)),
+        c("d1", "d3", "d2")
+    )
+    expect_identical(
+        docnames(dfm_sort(dfmat, margin = "documents", decreasing = FALSE)),
+        rev(c("d1", "d3", "d2"))
+    )
+})
+
+# test_that("make_ngram_pattern()", {
+#     expect_equal(
+#         quanteda:::make_ngram_pattern(c("one", "two"), "glob", "_"),
+#         c("(\\b|(\\w+_)+)one(\\b|(_\\w+)+)", "(\\b|(\\w+_)+)two(\\b|(_\\w+)+)"),
+#         fixed = TRUE
+#     )
+# })
+
+test_that("test dfm transpose for #1903", {
+    dfmat <- dfm(c(d1 = "one two three", d2 = "two two three"))
+    dfmat_t <- t(dfmat)
+    expect_equal(
+        names(dimnames(dfmat_t)),
+        c("features", "docs")
+    )
+    expect_equal(
+        docnames(dfmat_t), 
+        c("one", "two", "three")
+    )
+    expect_equal(
+        dfmat_t@docvars$docname_,
+        c("one", "two", "three")
+    )
+    expect_equal(
+        names(dfmat_t@meta),
+        c("system", "object", "user")
+    )
 })
 

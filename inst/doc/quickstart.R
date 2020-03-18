@@ -60,6 +60,7 @@ summary(corp_uk)
 texts(data_corpus_inaugural)[2]
 
 ## -----------------------------------------------------------------------------
+data(data_corpus_irishbudget2010, package = "quanteda.textmodels")
 summary(data_corpus_irishbudget2010)
 
 ## ---- fig.width = 8-----------------------------------------------------------
@@ -217,6 +218,7 @@ lapply(as.list(tstat_sim), head, 10)
 
 ## ----fig.width = 7, fig.height = 5--------------------------------------------
 dfmat_ire <- dfm(data_corpus_irishbudget2010)
+library("quanteda.textmodels")
 # tmod_wf <- textmodel_wordfish(dfmat_ire, dir = c(2, 1))
 
 # plot the Wordfish estimates by party

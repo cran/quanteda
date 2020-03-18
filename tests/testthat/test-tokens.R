@@ -179,12 +179,12 @@ test_that("defunct remove_twitter warning works", {
     txt <- "they: #stretched, @ @@ in,, a # ## never-ending @line."
     expect_warning(
         tokens(txt, remove_twitter = TRUE),
-        "'remove_twitter' is deprecated; for FALSE, use 'what = \"word2\"' instead.",
+        "'remove_twitter' is deprecated; for FALSE, use 'what = \"word\"' instead.",
         fixed = TRUE
     )
     expect_warning(
         tokens(txt, remove_twitter = FALSE),
-        "'remove_twitter' is deprecated; for FALSE, use 'what = \"word2\"' instead.",
+        "'remove_twitter' is deprecated; for FALSE, use 'what = \"word\"' instead.",
         fixed = TRUE
     )
     expect_identical(
@@ -805,7 +805,7 @@ test_that("tokens.tokens(x, remove_separators = TRUE, verbose = TRUE) works as e
     )
     expect_message(
         tokens(tokens("Removing separators", remove_separators = TRUE), verbose = TRUE),
-        c("total elapsed:  .+ seconds")
+        c("elapsed time:  .+ seconds")
     )
 })
 
@@ -882,7 +882,7 @@ test_that("test that what = \"word\" works the same as \"word2\"", {
 
 
 test_that("tokens printing works", {
-
+    data(data_corpus_irishbudget2010, package = "quanteda.textmodels")
     toks <- tokens(data_corpus_irishbudget2010)
     expect_silent(
         print(toks, max_ndoc = 0, max_ntoken = 0, show_summary = FALSE)
@@ -1084,5 +1084,41 @@ test_that("preserve_special works", {
     expect_identical(
         quanteda:::preserve_special1(txt, split_tags = TRUE),
         txt
+    )
+})
+
+test_that("output is correct for word1", {
+    expect_message(
+        tmp <- tokens(data_char_ukimmig2010, what = "word1", split_hyphens = FALSE, verbose = TRUE),
+        "preserving hyphens"
+    )
+    expect_message(
+        tmp <- tokens(data_char_ukimmig2010, what = "word1", split_hyphens = FALSE, verbose = TRUE),
+        "Finished constructing tokens from 9 documents"
+    )
+    expect_message(
+        tmp <- tokens(data_char_ukimmig2010, what = "word1", split_hyphens = FALSE, verbose = TRUE),
+        "^Creating a tokens object from a character input"
+    )
+    expect_message(
+        tmp <- tokens(data_char_ukimmig2010, what = "sentence", verbose = TRUE),
+        "segmenting into sentences"
+    )
+})
+
+test_that("remove_numbers functions correctly", {
+    txt <- "1 and 12 123 1975 12345 100,000 $1,000.00 123,123,456 and 50¢ 1.200,34 
+            100bn 20-year-old 4ever gr8"
+    toks1 <- tokens(txt, remove_numbers = TRUE)
+    toks2 <- tokens(txt, what = "fasterword", remove_numbers = TRUE)
+
+    expect_identical(
+        as.character(toks1),
+        c("and","$", "and", "¢", "100bn", "20-year-old", "4ever", "gr8")
+    )
+
+    expect_identical(
+        as.character(toks2),
+        c("and", "and", "100bn", "20-year-old", "4ever", "gr8")
     )
 })
