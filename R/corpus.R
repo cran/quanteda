@@ -120,8 +120,12 @@ corpus.character <- function(x, docnames = NULL, docvars = NULL,
                              meta = list(), unique_docnames = TRUE, ...) {
 
     unused_dots(...)
-    x[is.na(x)] <- ""
-
+    is_na <- is.na(x)
+    if (any(is.na(x))) {
+        warning("NA is replaced by empty string", call. = FALSE)
+        x[is_na] <- ""
+    }
+    
     if (!is.null(docnames)) {
         if (length(docnames) != length(x))
             stop(message_error("docnames_mismatch"))
@@ -141,19 +145,6 @@ corpus.character <- function(x, docnames = NULL, docvars = NULL,
 
     # normalize Unicode
     x <- stri_trans_nfc(x)
-
-    # convert the dreaded "curly quotes" to ASCII equivalents
-    x <- stri_replace_all_fixed(x,
-                                c("\u201C", "\u201D", "\u201F",
-                                  "\u2018", "\u201B", "\u2019"),
-                                c("\"", "\"", "\"",
-                                  "\'", "\'", "\'"), vectorize_all = FALSE)
-
-    # replace all hyphens with simple hyphen
-    x <- stri_replace_all_fixed(x, c("\u2012", "\u2013", "\u2014", "\u2015", "\u2053"), "--", 
-                                vectorize_all = FALSE)
-    x <- stri_replace_all_regex(x, c("\\p{Pd}", "\\p{Pd}{2,}"), c("-", " - "), 
-                                vectorize_all = FALSE)
 
     # normalize EOL
     x <- stri_replace_all_fixed(x, "\r\n", "\n") # Windows
@@ -290,7 +281,6 @@ corpus.kwic <- function(x, split_context = TRUE, extract_keyword = TRUE, meta = 
 #' @rdname corpus
 #' @export
 corpus.Corpus <- function(x, ...) {
-
     unused_dots(...)
 
     if (inherits(x, what = "VCorpus")) {
@@ -301,7 +291,7 @@ corpus.Corpus <- function(x, ...) {
         docvars <- data.frame()
         for (i in seq_along(docs)) {
             doc <- docs[[i]]
-            txt <- c(txt, doc$content)
+            txt <- c(txt, paste(doc$content, collapse = "\n\n"))
             l <- lengths(doc$meta)
             meta <- rep(list(NA), length(l))
             names(meta) <- names(doc$meta)

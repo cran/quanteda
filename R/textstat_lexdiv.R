@@ -188,13 +188,13 @@ textstat_lexdiv.dfm <- function(x,
     if (remove_hyphens)
         x <- dfm_split_hyphenated_features(x)
     # other removals
-    removals <- compile_removals_regex(#remove_separators = FALSE,
-                                       remove_punct = remove_punct,
-                                       remove_symbols = remove_symbols,
-                                       remove_numbers = remove_numbers,
-                                       remove_url = TRUE)
-    if (length(removals$regex_to_remove)) {
-        x <- dfm_remove(x, paste(removals$regex_to_remove, collapse = "|"),
+    removals <- removals_regex(separators = FALSE,
+                               punct = remove_punct,
+                               symbols = remove_symbols,
+                               numbers = remove_numbers,
+                               url = TRUE)
+    if (length(removals)) {
+        x <- dfm_remove(x, paste(unlist(removals), collapse = "|"),
                            valuetype = "regex")
     }
 
@@ -364,6 +364,7 @@ compute_lexdiv_dfm_stats <- function(x, measure = NULL, log.base = 10) {
     result <- data.frame(document = docnames(x), stringsAsFactors = FALSE)
     if (length(measure))
         result <- cbind(result, as.data.frame(temp[, measure, with = FALSE]))
+    result[is.na(result)] <- NA
     class(result) <- c("lexdiv", "textstat", "data.frame")
     return(result)
 }
@@ -388,6 +389,7 @@ compute_lexdiv_tokens_stats <- function(x, measure = c("MATTR", "MSTTR"),
 
     # reorder output as originally supplied
     result <- result[, c("document", measure), drop = FALSE]
+    result[is.na(result)] <- NA
     class(result) <- c("lexdiv", "textstat", "data.frame")
     return(result)
 }

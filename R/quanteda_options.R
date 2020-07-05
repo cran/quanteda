@@ -27,7 +27,12 @@
 #' created by matrix factorization} 
 #' \item{`language_stemmer`}{character; language option for [char_wordstem], 
 #' [tokens_wordstem], and [dfm_wordstem]} 
-#' }
+#' \item{`pattern_hashtag`, `pattern_username`}{character; regex patterns for
+#' (social media) hashtags and usernames respectively, used to avoid segmenting
+#' these in the default internal "word" tokenizer}
+#' \item{`tokens_block_size`}{integer; specifies the
+#'   number of documents to be tokenized at a time in blocked tokenization.
+#'   When the number is large, tokenization becomes faster but also memory-intensive.}}
 #' @return When called using a `key = value` pair (where `key` can be
 #' a label or quoted character name)), the option is set and `TRUE` is
 #' returned invisibly.
@@ -60,15 +65,13 @@ quanteda_options <- function(..., reset = FALSE, initialize = FALSE) {
         args <- args[[1]]
     
     # initialize automatically it not yet done so
-    if (is.null(options('quanteda_initialized')) || !"package:quanteda" %in% search())
+    if (is.null(getOption('quanteda_initialized')) || !"package:quanteda" %in% search())
         quanteda_initialize()
         
     if (initialize) {
-        quanteda_initialize()
-        return(invisible(TRUE))
+        return(invisible(quanteda_initialize()))
     } else if (reset) {
-        quanteda_reset()
-        return(invisible(TRUE))
+        return(invisible(quanteda_reset()))
     } else if (!length(args)) {
         # return all option values with names
         opts_names <- names(get_options_default())
@@ -93,7 +96,7 @@ quanteda_initialize <- function() {
         if (is.null(getOption(paste0("quanteda_", key))))
             set_option_value(key, opts[[key]])
     }
-    options('quanteda_initialized' = TRUE)
+    unlist(options('quanteda_initialized' = TRUE), use.names = FALSE)
 }
 
 quanteda_reset <- function() {
@@ -101,7 +104,7 @@ quanteda_reset <- function() {
     for (key in names(opts)) {
         set_option_value(key, opts[[key]])
     }
-    options('quanteda_initialized' = TRUE)
+    unlist(options('quanteda_initialized' = TRUE), use.names = FALSE)
 }
 
 set_option_value <- function(key, value) {
@@ -151,6 +154,9 @@ get_options_default <- function(){
                  base_docname = "text",
                  base_featname = "feat",
                  base_compname = "comp",
-                 language_stemmer = "english")
+                 language_stemmer = "english",
+                 pattern_hashtag = "#\\w+#?",
+                 pattern_username = "@[a-zA-Z0-9_]+",
+                 tokens_block_size = 10000L)
     return(opts)
 }

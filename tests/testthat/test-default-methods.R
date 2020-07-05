@@ -392,7 +392,7 @@ test_that("test default textplot methods", {
     )
     expect_error(
         textplot_wordcloud(TRUE),
-        "textplot_wordcloud\\(\\) only works on dfm objects"
+        "textplot_wordcloud\\(\\) only works on dfm, keyness objects"
     )
     expect_error(
         textplot_xray(TRUE),
@@ -420,3 +420,20 @@ test_that("friendly_class_undefined_message for featfreq()", {
         "featfreq\\(\\) only works on dfm objects"
     )
 })
+
+test_that("friendly_class_undefined_message for char_select()", {
+    expect_error(
+        char_select(tokens(data_char_sampletext)),
+        "char_select() only works on character objects",
+        fixed = TRUE
+    )
+})
+
+test_that("friendly_class_undefined_message for textstat_summary()", {
+    expect_error(
+        textstat_summary(data_char_sampletext),
+        "textstat_summary() only works on corpus, dfm, tokens objects",
+        fixed = TRUE
+    )
+})
+

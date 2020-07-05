@@ -1,6 +1,7 @@
 ## ---- echo = FALSE------------------------------------------------------------
 knitr::opts_chunk$set(collapse = FALSE,
-                      comment = "##")
+                      comment = "##",
+                      tidy = TRUE)
 
 ## ---- eval = FALSE------------------------------------------------------------
 #  install.packages("quanteda")
@@ -60,8 +61,7 @@ summary(corp_uk)
 texts(data_corpus_inaugural)[2]
 
 ## -----------------------------------------------------------------------------
-data(data_corpus_irishbudget2010, package = "quanteda.textmodels")
-summary(data_corpus_irishbudget2010)
+summary(data_corpus_inaugural, n = 5)
 
 ## ---- fig.width = 8-----------------------------------------------------------
 tokeninfo <- summary(data_corpus_inaugural)
@@ -86,7 +86,7 @@ summary(corp3)
 summary(corpus_subset(data_corpus_inaugural, Year > 1990))
 summary(corpus_subset(data_corpus_inaugural, President == "Adams"))
 
-## ---- tidy=TRUE---------------------------------------------------------------
+## -----------------------------------------------------------------------------
 kwic(data_corpus_inaugural, pattern = "terror")
 
 ## -----------------------------------------------------------------------------
@@ -162,11 +162,11 @@ textplot_wordcloud(dfmat_uk, min_count = 6, random_order = FALSE,
                    color = RColorBrewer::brewer.pal(8, "Dark2"))
 
 ## -----------------------------------------------------------------------------
-dfmat_ire <- dfm(data_corpus_irishbudget2010, groups = "party",
+dfmat_pres <- dfm(tail(data_corpus_inaugural, 20), groups = "Party",
                   remove = stopwords("english"), remove_punct = TRUE)
 
 ## -----------------------------------------------------------------------------
-dfm_sort(dfmat_ire)[, 1:10]
+dfm_sort(dfmat_pres)
 
 ## -----------------------------------------------------------------------------
 corp_inaug_post1991 <- corpus_subset(data_corpus_inaugural, Year > 1991)
@@ -185,22 +185,26 @@ dfmat_inaug_post1991_dict
 #  dfmat_inaug_subset <- dfm(data_corpus_inaugural[52:58], dictionary = dictliwc)
 #  dfmat_inaug_subset[, 1:10]
 
-## ----fig.width = 6------------------------------------------------------------
+## ----fig.width = 6, fig.height = 3--------------------------------------------
 dfmat_inaug_post1980 <- dfm(corpus_subset(data_corpus_inaugural, Year > 1980),
                             remove = stopwords("english"), stem = TRUE, remove_punct = TRUE)
 tstat_obama <- textstat_simil(dfmat_inaug_post1980,
                               dfmat_inaug_post1980[c("2009-Obama", "2013-Obama"), ],
                               margin = "documents", method = "cosine")
 tstat_obama
-# dotchart(as.list(tstat_obama)$"2009-Obama", xlab = "Cosine similarity")
+dotchart(as.list(tstat_obama)$"2013-Obama", xlab = "Cosine similarity", pch = 19)
 
-## ---- fig.width = 10, fig.height = 7, eval = TRUE-----------------------------
-data_corpus_sotu <- readRDS(url("https://quanteda.org/data/data_corpus_sotu.rds"))
-dfmat_sotu <- dfm(corpus_subset(data_corpus_sotu, Date > as.Date("1980-01-01")),
-               stem = TRUE, remove_punct = TRUE,
-               remove = stopwords("english"))
-dfmat_sotu <- dfm_trim(dfmat_sotu, min_termfreq = 5, min_docfreq = 3)
+## ---- eval = FALSE------------------------------------------------------------
+#  data_corpus_sotu <- readRDS(url("https://quanteda.org/data/data_corpus_sotu.rds"))
+#  dfmat_sotu <- dfm(corpus_subset(data_corpus_sotu, Date > as.Date("1980-01-01")),
+#                    stem = TRUE, remove_punct = TRUE,
+#                    remove = stopwords("english"))
+#  dfmat_sotu <- dfm_trim(dfmat_sotu, min_termfreq = 5, min_docfreq = 3)
 
+## ----echo = FALSE-------------------------------------------------------------
+load("../tests/data/dfmat_sotu.rda")
+
+## ---- fig.width = 8, fig.height = 5-------------------------------------------
 # hierarchical clustering - get distances on normalized dfm
 tstat_dist <- textstat_dist(dfm_weight(dfmat_sotu, scheme = "prop"))
 # hiarchical clustering the distance object
@@ -217,12 +221,13 @@ tstat_sim <- textstat_simil(dfmat_sotu, dfmat_sotu[, c("fair", "health", "terror
 lapply(as.list(tstat_sim), head, 10)
 
 ## ----fig.width = 7, fig.height = 5--------------------------------------------
-dfmat_ire <- dfm(data_corpus_irishbudget2010)
-library("quanteda.textmodels")
-# tmod_wf <- textmodel_wordfish(dfmat_ire, dir = c(2, 1))
-
-# plot the Wordfish estimates by party
-# textplot_scale1d(tmod_wf, groups = docvars(dfmat_ire, "party"))
+if (require("quanteda.textmodels")) {
+  dfmat_ire <- dfm(data_corpus_irishbudget2010)
+  tmod_wf <- textmodel_wordfish(dfmat_ire, dir = c(2, 1))
+  
+  # plot the Wordfish estimates by party
+  textplot_scale1d(tmod_wf, groups = docvars(dfmat_ire, "party"))
+}
 
 ## -----------------------------------------------------------------------------
 quant_dfm <- dfm(data_corpus_irishbudget2010, 
@@ -231,6 +236,7 @@ quant_dfm <- dfm(data_corpus_irishbudget2010,
 quant_dfm <- dfm_trim(quant_dfm, min_termfreq = 4, max_docfreq = 10)
 quant_dfm
 
+## ----fig.width = 7, fig.height = 5--------------------------------------------
 set.seed(100)
 if (require("stm")) {
     my_lda_fit20 <- stm(quant_dfm, K = 20, verbose = FALSE)

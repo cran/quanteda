@@ -26,14 +26,14 @@ print.corpus <- function(x, max_ndoc = quanteda_options("print_corpus_max_ndoc")
 
     if (show_summary) {
         cat("Corpus consisting of ", format(ndoc, big.mark = ","), " document",
-            if (ndoc(x) > 1L) "s" else "", sep = "")
+            if (ndoc(x) != 1L) "s" else "", sep = "")
         if (ncol(docvars))
             cat(" and ", format(ncol(docvars), big.mark = ","), " docvar",
                 if (ncol(docvars) == 1L) "" else "s", sep = "")
         cat(".\n")
     }
 
-    if (max_ndoc > 0) {
+    if (max_ndoc > 0 && ndoc(x) > 0) {
         x <- head(texts(x), max_ndoc)
         label <- paste0(names(x), " :")
         x <- stri_replace_all_regex(x, "[\\p{C}]+", " ")
@@ -62,71 +62,6 @@ print.corpus <- function(x, max_ndoc = quanteda_options("print_corpus_max_ndoc")
 #' @export
 is.corpus <- function(x) {
     "corpus" %in% class(x)
-}
-
-#' Summarize a corpus
-#'
-#' Displays information about a corpus, including attributes and metadata such
-#' as date of number of texts, creation and source.
-#'
-#' @param object corpus to be summarized
-#' @param n maximum number of texts to describe, default=100
-#' @param showmeta set to `TRUE` to include document-level
-#'   meta-data
-#' @param tolower convert texts to lower case before counting types
-#' @param ... additional arguments passed through to [tokens()]
-#' @export
-#' @method summary corpus
-#' @keywords internal corpus
-#' @examples
-#' summary(data_corpus_inaugural)
-#' summary(data_corpus_inaugural, n = 10)
-#' corp <- corpus(data_char_ukimmig2010,
-#'                docvars = data.frame(party=names(data_char_ukimmig2010)))
-#' summary(corp, showmeta = TRUE) # show the meta-data
-#' sumcorp <- summary(corp) # (quietly) assign the results
-#' sumcorp$Types / sumcorp$Tokens # crude type-token ratio
-summary.corpus <- function(object, n = 100, tolower = FALSE, showmeta = TRUE, ...) {
-    object <- as.corpus(object)
-    ndoc_all <- ndoc(object)
-    object <- head(object, n)
-    ndoc_show <- ndoc(object)
-    result <- if (!is.null(meta(object, "summary", type = "system"))) {
-        get_summary_metadata(object, ...)
-    } else {
-        summarize_texts(texts(object), tolower = tolower, ...)
-    }
-    if (showmeta)
-        result <- cbind(result, docvars(object))
-    attr(result, "ndoc_all") <- ndoc_all
-    attr(result, "ndoc_show") <- ndoc_show
-    class(result) <- c("summary.corpus", "data.frame")
-    return(result)
-}
-
-#' @export
-#' @rdname corpus-class
-#' @method print summary.corpus
-print.summary.corpus <- function(x, ...) {
-
-    ndoc_all <- attr(x, "ndoc_all")
-    ndoc_show <- attr(x, "ndoc_show")
-
-    cat("Corpus consisting of ", ndoc_all, " document", if (ndoc_all > 1) "s" else "", sep = "")
-    if (!is.null(ndoc_show))
-        cat(", showing ", ndoc_show, " document", if (ndoc_show > 1) "s" else "", sep = "")
-    cat(":\n\n")
-    print.data.frame(x, row.names = FALSE)
-    cat("\n")
-}
-
-#' @noRd
-#' @export
-#' @method [ summary.corpus
-`[.summary.corpus` <- function(x, i, j, ...) {
-    class(x) <- "data.frame"
-    row.names(x) <- NULL
-    NextMethod("[")
 }
 
 #' Return the first or last part of a corpus
@@ -267,7 +202,7 @@ c.corpus <- function(..., recursive = FALSE) {
 
     build_corpus(
         unclass(x)[index],
-        docvars = subset_docvars(attrs[["docvars"]], index),
+        docvars = reshape_docvars(attrs[["docvars"]], index),
         meta = attrs[["meta"]],
         class = attrs[["class"]]
     )

@@ -1,7 +1,5 @@
 context("test corpus")
 
-data(data_corpus_irishbudget2010, package = "quanteda.textmodels")
-
 test_that("test show.corpus", {
     expect_output(
         print(corpus(c("The"))),
@@ -222,7 +220,7 @@ test_that("corpus works for texts with duplicate filenames", {
 })
 
 test_that("create a corpus on a corpus", {
-    corp <- data_corpus_irishbudget2010
+    corp <- data_corpus_inaugural
     expect_equivalent(
         as.corpus(corp),
         corpus(corp)
@@ -373,13 +371,17 @@ test_that("corpus.data.frame sets docnames correctly", {
     )
 })
 
-test_that("corpus handles NA correctly (#1372)", {
+test_that("corpus handles NA correctly (#1372, #1969)", {
+    txt <- c("a b c", NA, "d e f")
     expect_true(!any(
-        is.na(texts(corpus(c("a b c", NA, "d e f"))))
+        is.na(texts(corpus(txt)))
     ))
+    expect_warning(
+        corpus(txt),
+        "NA is replaced by empty string"
+    )
     expect_true(!any(
-        is.na(texts(corpus(data.frame(text = c("a b c", NA, "d e f"),
-                                      stringsAsFactors = FALSE))))
+        is.na(texts(corpus(data.frame(text = txt, stringsAsFactors = FALSE))))
     ))
 })
 
@@ -455,17 +457,11 @@ test_that("upgrade_corpus is working", {
     expect_true(all(!c("_document", "texts") %in% names(attr(corp1, "docvars"))))
     expect_true(is.factor(attr(corp1, "docvars")[["docid_"]]))
 
-    corp2 <- quanteda:::upgrade_corpus(as.corpus(data_corpus_irishbudget2010))
+    corp2 <- quanteda:::upgrade_corpus(as.corpus(data_corpus_inaugural))
     expect_true(is.character(corp2))
     expect_true(all(c("docname_", "docid_", "segid_") %in% names(attr(corp2, "docvars"))))
     expect_true(all(!c("_document", "texts") %in% names(attr(corp2, "docvars"))))
     expect_true(is.factor(attr(corp2, "docvars")[["docid_"]]))
-
-    corp3 <- quanteda:::upgrade_corpus(data_corpus_inaugural)
-    expect_true(is.character(corp3))
-    expect_true(all(c("docname_", "docid_", "segid_") %in% names(attr(corp3, "docvars"))))
-    expect_true(all(!c("_document", "texts") %in% names(attr(corp3, "docvars"))))
-    expect_true(is.factor(attr(corp3, "docvars")[["docid_"]]))
 })
 
 test_that("raise error when docnames or docvars are invalid", {
@@ -495,40 +491,40 @@ test_that("[.corpus out of bounds generates expected error", {
 })
 
 test_that("corpus printing works", {
-    corp <- data_corpus_irishbudget2010
+    corp <- data_corpus_inaugural[1:14]
     expect_silent(
         print(corp, max_ndoc = 0, max_nchar = 0, show_summary = FALSE)
     )
     expect_output(
         print(corp, max_ndoc = 0, max_nchar = 0, show_summary = TRUE),
-        "Corpus consisting of 14 documents and 6 docvars.",
+        "Corpus consisting of 14 documents and 4 docvars.",
         fixed = TRUE
     )
     expect_output(
         print(corp, max_ndoc = 2, max_nchar = 10, show_summary = TRUE),
-        paste0('Corpus consisting of 14 documents and 6 docvars.\n',
-               'Lenihan, Brian (FF) :\n',
-               '"When I pre..."\n\n',
-               'Bruton, Richard (FG) :\n',
-               '"This draco..."\n\n',
+        paste0('Corpus consisting of 14 documents and 4 docvars.\n',
+               '1789-Washington :\n',
+               '"Fellow-Cit..."\n\n',
+               '1793-Washington :\n',
+               '"Fellow cit..."\n\n',
                '[ reached max_ndoc ... 12 more documents ]'),
         fixed = TRUE
     )
     expect_output(
         print(corp, max_ndoc = 2, max_nchar = 10, show_summary = FALSE),
-        paste0('Lenihan, Brian (FF) :\n',
-               '"When I pre..."\n\n',
-               'Bruton, Richard (FG) :\n',
-               '"This draco..."\n\n',
+        paste0('1789-Washington :\n',
+               '"Fellow-Cit..."\n\n',
+               '1793-Washington :\n',
+               '"Fellow cit..."\n\n',
                '[ reached max_ndoc ... 12 more documents ]'),
         fixed = TRUE
     )
     expect_output(
         print(corp[1:2], max_ndoc = 2, max_nchar = 10, show_summary = FALSE),
-        paste0('Lenihan, Brian (FF) :\n',
-               '"When I pre..."\n\n',
-               'Bruton, Richard (FG) :\n',
-               '"This draco..."\n'),
+        paste0('1789-Washington :\n',
+               '"Fellow-Cit..."\n\n',
+               '1793-Washington :\n',
+               '"Fellow cit..."\n'),
         fixed = TRUE
     )
     expect_output(
@@ -583,35 +579,30 @@ test_that("as.corpus correctly sets metadata on pre-v2 corpus", {
 
 test_that("corpus indexing works as expected", {
     corp <- corpus(c(d1 = "one two three", d2 = "four five six", d3 = "seven eight"))
-    
+
     expect_equal(corp[[1]], "one two three")
-    expect_equal(as.character(corp[c(FALSE, TRUE, TRUE)]), 
+    expect_equal(as.character(corp[c(FALSE, TRUE, TRUE)]),
                  c(d2 = "four five six", d3 = "seven eight")
     )
-    expect_equal(as.character(corp[c(2, 3)]), 
+    expect_equal(as.character(corp[c(2, 3)]),
                  c(d2 = "four five six", d3 = "seven eight")
     )
-    expect_equal(as.character(corp[c("d2", "d3")]), 
+    expect_equal(as.character(corp[c("d2", "d3")]),
                  c(d2 = "four five six", d3 = "seven eight")
     )
-    expect_equal(as.character(corp[c(-2, -3)]), 
+    expect_equal(as.character(corp[c(-2, -3)]),
                  c(d1 = "one two three")
-    ) 
+    )
     expect_error(corp[4], "Subscript out of bounds")
     expect_error(corp[1:4], "Subscript out of bounds")
     expect_error(corp["d4"], "Subscript out of bounds")
     expect_error(corp[c("d1", "d4")], "Subscript out of bounds")
 })
 
-test_that("corpus normalize dashes and hyphens", {
-  corp <- corpus(c(d1 = "thanks--great, good-bye",
-                   d2 = "100‒200, maybe ⁓150", 
-                   d3 = "cut here –––––––––"))
-  
-  expect_equal(texts(corp), 
-               c(d1 = "thanks - great, good-bye",
-                 d2 = "100 - 200, maybe  - 150", 
-                 d3 = "cut here  - ")
-  )
+test_that("printing a corpus works that has no documents", {
+    corp <- corpus(c("one", "two", "three"), docvars = data.frame(dv = 1:3))
+    expect_output(
+      print(corpus_subset(corp, rep(FALSE, 3))),
+      "Corpus consisting of 0 documents and 1 docvar."
+    )
 })
-

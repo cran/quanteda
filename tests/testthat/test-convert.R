@@ -91,7 +91,6 @@ test_that("test austin package converter", {
 
 test_that("test lsa converter", {
     skip_if_not_installed("lsa")
-    skip_on_cran()
     require(lsa)
     # create some files
     td <- tempfile()
@@ -102,12 +101,14 @@ test_that("test lsa converter", {
     # read them, create a document-term matrix
     lsamat <- lsa::textmatrix(td)
 
-    lsamat2 <- convert(dfm(tokens(c(D1 = c("cat dog mouse"),
-                                    D2 = c("hamster mouse sushi"),
-                                    D3 = c("dog monster monster")))),
-                       to = "lsa")
+    dfmat <- dfm(tokens(c(D1 = c("cat dog mouse"),
+                          D2 = c("hamster mouse sushi"),
+                          D3 = c("dog monster monster"))))
+    # guarantee sort order
+    # was temporarily required when tests broke following release of R 4.0
+    # dfmat <- dfmat[, sort(featnames(dfmat))]
+    lsamat2 <- convert(dfmat, to = "lsa")
     expect_equivalent(lsamat, lsamat2)
-
 })
 
 test_that("test stm converter: under extreme situations ", {
@@ -162,8 +163,8 @@ test_that("lsa converter works under extreme situations", {
 })
 
 test_that("topicmodels converter works under extreme situations", {
-  skip_on_os("mac") 
-  skip_if_not_installed("topicmodels")
+    skip_on_os("mac") 
+    skip_if_not_installed("topicmodels")
     require(topicmodels)
     #zero-count document
     mydfm <- as.dfm(matrix(c(1, 0, 2, 0,
@@ -342,3 +343,36 @@ test_that("convert.corpus works", {
 
     })
 
+test_that("convert to = data.frame works", {
+    dfmat <- dfm(c(d1 = "this is a fine document",
+                   d2 = "this is a fine feature"))
+    expect_identical(
+        convert(dfmat, to = "data.frame"),
+        data.frame(
+            doc_id = c("d1", "d2"),
+            this = c(1, 1),
+            is = c(1, 1),
+            a = c(1, 1),
+            fine = c(1, 1),
+            document = c(1, 0),
+            feature = c(0, 1), stringsAsFactors = FALSE
+        )
+    )
+    expect_identical(
+      convert(dfmat, to = "data.frame", docid_field = "__document"),
+      data.frame(
+        "__document" = c("d1", "d2"),
+        this = c(1, 1),
+        is = c(1, 1),
+        a = c(1, 1),
+        fine = c(1, 1),
+        document = c(1, 0),
+        feature = c(0, 1), 
+        stringsAsFactors = FALSE, check.names = FALSE
+      )
+    )
+    expect_error(
+        convert(dfmat, to = "data.frame", docid_field = "document"),
+        "'document' matches a feature in the dfm; use a different docid_field value"
+    )
+})
