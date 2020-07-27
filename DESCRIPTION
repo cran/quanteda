@@ -1,5 +1,5 @@
 Package: quanteda
-Version: 2.1.0
+Version: 2.1.1
 Title: Quantitative Analysis of Textual Data
 Description: A fast, flexible, and comprehensive framework for 
     quantitative text analysis in R.  Provides functionality for corpus management,
@@ -27,7 +27,7 @@ Authors@R: c(
     person("European Research Council", role = "fnd", comment = "ERC-2011-StG 283794-QUANTESS")
     )
 License: GPL-3
-Depends: R (>= 3.5.0), methods
+Depends: R (>= 3.1.0), methods
 Imports: data.table (>= 1.9.6), extrafont, fastmatch, ggplot2 (>=
         2.2.0), ggrepel, jsonlite, magrittr, Matrix (>= 1.2), network,
         Rcpp (>= 0.12.12), RcppParallel, sna, SnowballC, stopwords,
@@ -73,10 +73,10 @@ Collate: 'RcppExports.R' 'View.R' 'meta.R' 'quanteda-documentation.R'
         'tokens_replace.R' 'tokens_sample.R' 'tokens_segment.R'
         'tokens_select.R' 'tokens_split.R' 'tokens_subset.R' 'utils.R'
         'wordstem.R' 'zzz.R'
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 SystemRequirements: C++11
 NeedsCompilation: yes
-Packaged: 2020-07-02 15:24:51 UTC; kbenoit
+Packaged: 2020-07-26 15:13:04 UTC; kbenoit
 Author: Kenneth Benoit [cre, aut, cph]
     (<https://orcid.org/0000-0002-0797-564X>),
   Kohei Watanabe [aut] (<https://orcid.org/0000-0001-6519-5265>),
@@ -95,4 +95,4 @@ Author: Kenneth Benoit [cre, aut, cph]
   European Research Council [fnd] (ERC-2011-StG 283794-QUANTESS)
 Maintainer: Kenneth Benoit <kbenoit@lse.ac.uk>
 Repository: CRAN
-Date/Publication: 2020-07-05 04:50:09 UTC
+Date/Publication: 2020-07-27 05:10:09 UTC

@@ -1,6 +1,6 @@
-ff9cc19f3cadb8e241487a4f48163174 *DESCRIPTION
+404cb52f1b44e405749e96d87a1a0ab3 *DESCRIPTION
 3138063ec2b701c9e8d737efabb385d7 *NAMESPACE
-3a3d3b88228d61fd876754ad0688335d *NEWS.md
+3bf8b65e9a88c670214bbc3e7dbb0a0a *NEWS.md
 a4bc7ffe248d947a25b5e73f83dc9eba *R/RcppExports.R
 4fb7d6474216d37180dcf7dedfcc9ab9 *R/View.R
 7afeeaffe831e95cd2c8a35fc3ff63f8 *R/aaa.R
@@ -12,9 +12,9 @@ bc2ac45a52683c11ab2847251deb0858 *R/corpus-addsummary-metadata.R
 508fd418855d9f1a6fd7c64a943decdc *R/corpus-methods-base.R
 c786b11a29204d3899e5af9f1eca3d97 *R/corpus-methods-quanteda.R
 b7e5119f513eeb7998f8ad2e58df0591 *R/corpus.R
-7d0824b97a42078409be0ef24b300311 *R/corpus_reshape.R
+27409c763791c83c5c7b45f734ba7584 *R/corpus_reshape.R
 2fc163f6c389672bc6340d38b0236b11 *R/corpus_sample.R
-ff096f3c7549c9702d644dde0d3b4a40 *R/corpus_segment.R
+afb859451f6b4d6481645c10875ceb14 *R/corpus_segment.R
 ea8f8383f075dac379536960835ebeb1 *R/corpus_subset.R
 bf20e44e7f2bb1c0b275b958d61da322 *R/corpus_trim.R
 8f5979d552339246e5e538299cec2a42 *R/data-documentation.R
@@ -34,7 +34,7 @@ ab022fe86f9478341db77a29a65fda8b *R/dfm_sample.R
 eccbccb3ee462264cf47c6623f40d1f7 *R/dfm_subset.R
 7c1ae28ee3e494f3a411e52a747b96ee *R/dfm_trim.R
 56c193f99afc33149fc921309a320443 *R/dfm_weight.R
-4c476fa213d1ec5d38a344461671ab8a *R/dictionaries.R
+5edb2e9e41a370c5d57a8d7f03475d66 *R/dictionaries.R
 b15a6826849e491d9ace777b7cb6eaa1 *R/dictionary_edit.R
 a48b64a141d9a7ac13b8f1a36d94c733 *R/dimnames.R
 6cef995b3a55b4c4419056a873a26386 *R/directionchange-functions.R
@@ -56,7 +56,7 @@ d0d891d381d192c7d3cd1db078f6b8e3 *R/nsyllable.R
 b9f905d6bae7b24059948df67cee561d *R/pattern2fixed.R
 c13bc1fa84e309dc9a17dee65967a2e6 *R/phrases.R
 da65f9aed819d96422b9b7f5409162a5 *R/quanteda-documentation.R
-1573d5100026903e00b5d0a71f1b43cc *R/quanteda_options.R
+b19704a36e0a0a5b8bc1b31ce2f44013 *R/quanteda_options.R
 725979d85cc0307d4d78b702a8245ed4 *R/readtext-methods.R
 e3ef3186db511e201174bd54b85b6b42 *R/spacyr-methods.R
 9039b497c7ca6045f11411b9638171d8 *R/stopwords.R
@@ -74,8 +74,8 @@ baba8c3d24c0a8933f9861d675ab0c0f *R/textstat_keyness.R
 c1de4e6334ba05b67960ee290acc12e3 *R/textstat_lexdiv.R
 2b035822f04e2c2b1c3c2faad7dfa9df *R/textstat_readability.R
 e3506416f8c16539e70ae66293394178 *R/textstat_simil.R
-081c6d6cac534ab410922a638d1f5bae *R/textstat_summary.R
-b4f2cd7913ba691d5b8e9af454c8ead5 *R/tokenizers.R
+13284476107f5064fa5b6adb0acb1b54 *R/textstat_summary.R
+cd9f6126aa4f4f1519f44bb74b8b26d5 *R/tokenizers.R
 5a01fc24ca10aaa324e7c9f2b2812b84 *R/tokens-methods-base.R
 fea3cdaeae88df376f591b7e47444400 *R/tokens.R
 e5cf8a0154cd9330493ec27ec266ad68 *R/tokens_chunk.R
@@ -89,7 +89,7 @@ b7c579d9e0a272bfe045198bef1ded3e *R/tokens_sample.R
 99ccd999cd5175ac2f612c0edd95a0f7 *R/tokens_select.R
 98e0a5617a492221fca377f58c935d47 *R/tokens_split.R
 cd14a7495375bb9bcf932a95e891f8de *R/tokens_subset.R
-48fd74507f83556ac6a155c0a92c679a *R/utils.R
+f64070e49da0fc3d344a8ef010efe8c8 *R/utils.R
 fdd954bc89fa2b0200448f1f84ef306e *R/wordstem.R
 06c4322f2ca25c1b81249826577cafe4 *R/zzz.R
 42dd19a4cd70f1269af6eb42a01d3654 *README.md
@@ -105,7 +105,7 @@ f54ac184c35a5bc801209268e1f489b5 *data/data_dfm_LBGexample.rda
 3f75907bb9fa13a64d792df14a7da731 *inst/WORDLIST
 4ab574cb3162214ec16750222f6cc637 *inst/doc/quickstart.R
 0f3d37fa2b9e7f17526bfeb38039079c *inst/doc/quickstart.Rmd
-b560c42212ecc53e772f97b58707c77c *inst/doc/quickstart.html
+f12f000709a20af3f814101f9797e2f7 *inst/doc/quickstart.html
 ae85a11c59c3d7b869807fd05459023b *inst/extdata/LSD2015.lc3
 d8eb86c619a87ab01d1ea0fc2f79fb75 *inst/extdata/RID.cat
 41f59bf6227e672988becca34cc74e74 *inst/extdata/laver_garry.ykd
@@ -185,7 +185,7 @@ ebe0d0e09ea9a19a97b540d9de2df678 *man/fcm_sort.Rd
 eec5ddbcc49eb4cb0672a92c2136e784 *man/featfreq.Rd
 ff9598adf78e6f8255090eb3af6b583f *man/featnames.Rd
 ce009eca2a7d2d2d424eaeb1c09f3605 *man/field_system.Rd
-e74b5ab90b9332e4174a6f50d4bad8b0 *man/flatten_dictionary.Rd
+04beae99b57937bd76f6dfdd3485da56 *man/flatten_dictionary.Rd
 995ee1bcd22ade3115d681a6afb7c644 *man/format_sparsity.Rd
 9132a7c4f8ebc00f6b3ded5f571cad2f *man/friendly_class_undefined_message.Rd
 7aab394fbdb9fe687d966003341b611f *man/generate_groups.Rd
@@ -227,7 +227,7 @@ de88c1a11883fe68129fd56e47f347ac *man/pattern.Rd
 e8e21032ed029685f8731ac78cba1b2c *man/print-quanteda.Rd
 6a9a0f3dfb239a816215c41f4082cd5e *man/print.phrases.Rd
 54aeac250d28a651bb716d10f623b910 *man/quanteda-package.Rd
-3655d974a8d93b7333ceb544126c0fd8 *man/quanteda_options.Rd
+3350a6079cabafcd6cb67f5fc261aa76 *man/quanteda_options.Rd
 d01eb0736eda94569536da416cecc44d *man/read_dict_functions.Rd
 4513113ec0c91cb28e8ecfd975abe8a4 *man/reexports.Rd
 8e012cb9b3f6af99667bda064addf186 *man/remove_empty_keys.Rd
@@ -261,7 +261,7 @@ e83bfc77890ef6ecc96f52aa55e5c267 *man/textstat_proxy.Rd
 5102b03718e7bb8784d71e1dec6afaf9 *man/textstat_readability.Rd
 e221ad87ee03d6cbc6db0c43e4648f0a *man/textstat_select.Rd
 ced066b791a6ba2914775d880c36256a *man/textstat_simil.Rd
-21ac18d2a7334706cf80c66fae17888b *man/textstat_summary.Rd
+cf117c189ce7414dc25f90931aac69ac *man/textstat_summary.Rd
 f6e0f87da3c244af82cbc0e6cadbe636 *man/tokenize_internal.Rd
 ff5582e22d40c584f358328f7e9b251d *man/tokens.Rd
 bad84865203f29f34ae68448c9d63093 *man/tokens_chunk.Rd
@@ -321,7 +321,7 @@ aad60e4fd503574413a169b3d5abbef8 *tests/data/Dail_noconfidence.zip
 338fcca3a4b6c5218728b64db48c6668 *tests/data/data_char_stopwords.rda
 4f9cdf3c90381be5d266ddf7cc4e2848 *tests/data/data_spacy_parsed.rda
 1e7f1d4846caf65f01f3ca879fd5db8f *tests/data/data_spacy_parsed2.rda
-0c5dd5cd7db71582710c3f62253af57d *tests/data/dfmat_sotu.rda
+722df90fa18b12acd9c076d6fd9d0dbb *tests/data/dfmat_sotu.rda
 a247d86e9c7067068616ea826df9134d *tests/data/dictionaries/actually_ykd.cat
 914c52a9dda565a218a95a1c36672bfa *tests/data/dictionaries/euc-jp.cat
 4dfda3cf8199e6af5e51b737ddb79dfd *tests/data/dictionaries/iso-8859-1.cat
@@ -362,12 +362,12 @@ a6e16a8841cc3c491d9d613c6ba7df19 *tests/testthat/sample_text.txt
 9886796bb600c0b66a23486669668991 *tests/testthat/test-as.dictionary.R
 fc4b2cef993558a8bf2dcebf59b53ef0 *tests/testthat/test-attributes.R
 2e046d6b781c2d9a0bff8b66b34eefff *tests/testthat/test-bootstrap.R
-c48df999f6c12a58fad72a32fe086540 *tests/testthat/test-cache.R
+09a0e21383169ce243998e2d658fef8f *tests/testthat/test-cache.R
 0b2272071541195102714f6c774e6870 *tests/testthat/test-casechanges.R
 8e3a5ee6f74831a0abf1aed802501235 *tests/testthat/test-char_select.R
 d3a3bbde9ca5fe0af6b09612f83bca21 *tests/testthat/test-convert.R
 c5cc99fe2f93e0373a9a18b78a853671 *tests/testthat/test-corpus.R
-f6629f4c9829d49d5fcf6bc7c680598c *tests/testthat/test-corpus_reshape.R
+28fb7064f1dcdde316cca97ff6a22876 *tests/testthat/test-corpus_reshape.R
 f34bea0489b970130e948033ae636ff1 *tests/testthat/test-corpus_sample.R
 9edf038aaa189f9cd99e5932451fed46 *tests/testthat/test-corpus_segment.R
 85d530deefd5f05ff00e8810abc4b1df *tests/testthat/test-corpus_subset.R
@@ -385,7 +385,7 @@ f6418c0c633604185cefadd9d6201fc5 *tests/testthat/test-dfm_lookup.R
 f876b09812cd3d3f5edc803d715f3b85 *tests/testthat/test-dfm_subset.R
 5f15499f0e3eb1a139343d5f32032dd4 *tests/testthat/test-dfm_trim.R
 f82a1c856242bc020ded6c024d3b36c4 *tests/testthat/test-dfm_weight.R
-a02d5d397bcc02956ee2c875f5ac247a *tests/testthat/test-dictionaries.R
+1388894592f734508f775c872c93cb6a *tests/testthat/test-dictionaries.R
 a770a4b15912c4f72caf534101e35b09 *tests/testthat/test-directionchange.R
 1018abddf37a51a4baee34bf388a7802 *tests/testthat/test-docnames.R
 9e8a204ea28430b8fa46ede9ba2e13cc *tests/testthat/test-docvars.R
@@ -396,7 +396,7 @@ a770a4b15912c4f72caf534101e35b09 *tests/testthat/test-directionchange.R
 e902658805555f69c824d40dddebe449 *tests/testthat/test-indexing.R
 134096e2eb2f268ce185ecf8cd41cdc5 *tests/testthat/test-kwic.R
 cb146a932612b0a17862de88cd4c1045 *tests/testthat/test-meta.R
-709239f82f371466f6c390fa58a3af84 *tests/testthat/test-nfunctions.R
+43a6f3aa376fe52e27b6396ea85bb50a *tests/testthat/test-nfunctions.R
 ad9e364ecd2d35e7a996f8a8bd0bdd1a *tests/testthat/test-nscrabble.R
 80beb76f111c13b6bb811e158f5930dd *tests/testthat/test-nsyllable.R
 530c7238dee8881991170f0e75528a50 *tests/testthat/test-object-builders.R
@@ -420,7 +420,7 @@ ac117afb5ddad1de92d280fc5edfb4aa *tests/testthat/test-textstat_keyness.R
 54898043a6bc99119f98245293295211 *tests/testthat/test-textstat_proxy.R
 121bcf6f2aa617db98672a05872566af *tests/testthat/test-textstat_readability.R
 46baf572dfa095ea54e43a64980a1141 *tests/testthat/test-textstat_simil.R
-a21397c43ecef76a7bc92a2173855c55 *tests/testthat/test-textstat_summary.R
+ef9c98df49010756b8a55ca9554e7932 *tests/testthat/test-textstat_summary.R
 bbf18136e1e53a6fc891ca430aadff60 *tests/testthat/test-tokens.R
 646ae146de758e2eb9ec4c6000d65861 *tests/testthat/test-tokens_chunk.R
 fdbf254e89bc5a83de96060b9bf764d5 *tests/testthat/test-tokens_compound.R

@@ -388,7 +388,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ##        LibDem   251    483        14
 ##            PC    77    114         5
 ##           SNP    88    134         4
-##          UKIP   346    722        27</code></pre>
+##          UKIP   346    722        26</code></pre>
 <p>If we wanted, we could add some document-level variables – what quanteda calls <em>docvars</em> – to this corpus.</p>
 <p>We can do this using the R’s <code>names()</code> function to get the names of the character vector <code>data_char_ukimmig2010</code>, and assign this to a document variable (<em>docvar</em>).</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">docvars</span>(corp_uk, <span class="st">&quot;Party&quot;</span>) &lt;-<span class="st"> </span><span class="kw">names</span>(data_char_ukimmig2010)</span>
@@ -405,7 +405,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ##        LibDem   251    483        14       LibDem 2010
 ##            PC    77    114         5           PC 2010
 ##           SNP    88    134         4          SNP 2010
-##          UKIP   346    722        27         UKIP 2010</code></pre>
+##          UKIP   346    722        26         UKIP 2010</code></pre>
 </div>
 <div id="loading-in-files-using-the-readtext-package" class="section level3">
 <h3>Loading in files using the readtext package</h3>
