@@ -7,8 +7,8 @@
 tokens_compound(
   x,
   pattern,
-  concatenator = "_",
   valuetype = c("glob", "regex", "fixed"),
+  concatenator = "_",
   window = 0,
   case_insensitive = TRUE,
   join = TRUE
@@ -17,19 +17,18 @@ tokens_compound(
 \arguments{
 \item{x}{an input \link{tokens} object}
 
-\item{pattern}{a character vector, list of character vectors,
-\link{dictionary}, or \link{collocations} object.  See \link{pattern} for
-details.}
+\item{pattern}{a character vector, list of character vectors, \link{dictionary},
+or collocations object.  See \link{pattern} for details.}
+
+\item{valuetype}{the type of pattern matching: \code{"glob"} for "glob"-style
+wildcard expressions; \code{"regex"} for regular expressions; or \code{"fixed"} for
+exact matching. See \link{valuetype} for details.}
 
 \item{concatenator}{the concatenation character that will connect the words
 making up the multi-word sequences.  The default \verb{_} is recommended since
 it will not be removed during normal cleaning and tokenization (while
 nearly all other punctuation characters, at least those in the Unicode
 punctuation class \verb{[P]} will be removed).}
-
-\item{valuetype}{the type of pattern matching: \code{"glob"} for "glob"-style
-wildcard expressions; \code{"regex"} for regular expressions; or \code{"fixed"} for
-exact matching. See \link{valuetype} for details.}
 
 \item{window}{integer; a vector of length 1 or 2 that specifies size of the
 window of tokens adjacent to \code{pattern} that will be compounded with matches
@@ -87,11 +86,6 @@ tokens_compound(toks, dictionary(list(key1 = "United Kingdom",
                                       key2 = "European Union")))
 # pattern as dictionaries with glob matches
 tokens_compound(toks, dictionary(list(key1 = c("U* K*"))), valuetype = "glob")
-
-# supplied as collocations - is compounded
-colls <- tokens("The new European Union is not the old European Union.") \%>\%
-    textstat_collocations(size = 2, min_count = 1, tolower = FALSE)
-tokens_compound(toks, colls, case_insensitive = FALSE)
 
 # note the differences caused by join = FALSE
 compounds <- list(c("the", "European"), c("European", "Union"))

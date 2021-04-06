@@ -63,7 +63,7 @@ as.dfm <- function(x) {
 
 #' @export
 as.dfm.default <- function(x) {
-    stop(friendly_class_undefined_message(class(x), "as.dfm"))
+    check_class(class(x), "as.dfm")
 }
 
 #' @noRd
@@ -119,7 +119,7 @@ as.dfm.TermDocumentMatrix <- function(x) {
     as.dfm(
         sparseMatrix(i = x$j, j = x$i, x = x$v,
                      dims = rev(dim(x)),
-                     dimnames = list(docs = colnames(x), 
+                     dimnames = list(docs = colnames(x),
                                      features = rownames(x))))
 }
 
@@ -150,28 +150,6 @@ matrix2dfm <- function(x, docvars = NULL, meta = NULL) {
     )
 }
 
-#' Set values to a dfm's S4 slots
-#' @param x a dfm
-#' @param exceptions names of slots to be ignored
-#' @param value a list of values extracted using `attributes` and to be assigned to slots
-#' @keywords internal
-"set_dfm_slots<-" <- function(x, exceptions = NULL, value) {
-    if (is.null(value)) return(x)
-    sname <- setdiff(slotNames("dfm"), c(slotNames("dgCMatrix"), exceptions))
-    for (s in sname) {
-        try({
-            slot(x, s) <- value[[s]]
-        }, silent = TRUE)
-    }
-    return(x)
-}
-
-#' @rdname set_dfm_slots-set
-get_dfm_slots <- function(x) {
-    sname <- setdiff(slotNames("dfm"), c(slotNames("dgCMatrix")))
-    attributes(x)[sname]
-}
-
 #' @rdname as.dfm
 #' @return
 #' `is.dfm` returns `TRUE` if and only if its argument is a [dfm].
@@ -199,8 +177,9 @@ is.dfm <- function(x) {
 #'   feature labels, or a list of these if `groups` is given.
 #' @examples
 #' dfmat1 <- corpus_subset(data_corpus_inaugural, Year > 1980) %>%
-#'     dfm(remove_punct = TRUE)
-#' dfmat2 <- dfm_remove(dfmat1, stopwords("english"))
+#'     tokens(remove_punct = TRUE) %>%
+#'     dfm()
+#' dfmat2 <- dfm_remove(dfmat1, stopwords("en"))
 #'
 #' # most frequent features
 #' topfeatures(dfmat1)
@@ -213,7 +192,7 @@ is.dfm <- function(x) {
 #' topfeatures(dfmat2, n = 5, groups = docnames(dfmat2))
 #'
 #' # grouping by president last name
-#' topfeatures(dfmat2, n = 5, groups = "President")
+#' topfeatures(dfmat2, n = 5, groups = President)
 #'
 #' # features by document frequencies
 #' tail(topfeatures(dfmat1, scheme = "docfreq", n = 200))
@@ -226,7 +205,7 @@ topfeatures <- function(x, n = 10, decreasing = TRUE,
 #' @export
 topfeatures.default <- function(x, n = 10, decreasing = TRUE,
                                 scheme = c("count", "docfreq"), groups = NULL) {
-    stop(friendly_class_undefined_message(class(x), "topfeatures"))
+    check_class(class(x), "topfeatures")
 }
 
 #' @export
@@ -240,9 +219,10 @@ topfeatures.dfm <- function(x, n = 10, decreasing = TRUE,
     if (!is.numeric(n)) stop("n must be a number")
     scheme <- match.arg(scheme)
 
-    if (!is.null(groups)) {
+    if (!missing(groups) && !is.null(substitute(groups))) {
+        groupsub <- substitute(groups)
         result <- list()
-        x <- dfm_group(x, groups)
+        x <- dfm_group(x, eval(groupsub), force = TRUE)
         for (i in seq_len(ndoc(x))) {
             result[[i]] <- topfeatures(x[i, ], n = n, scheme = scheme,
                                        decreasing = decreasing, groups = NULL)
@@ -280,7 +260,7 @@ sparsity <- function(x) {
 
 #' @export
 sparsity.default <- function(x) {
-    stop(friendly_class_undefined_message(class(x), "sparsity"))
+    check_class(class(x), "sparsity")
 }
 
 #' @export

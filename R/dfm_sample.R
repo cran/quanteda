@@ -1,55 +1,44 @@
-#' Randomly sample documents or features from a dfm
+#' Randomly sample documents from a dfm
 #'
-#' Sample randomly from a dfm object, from documents or features.
-#' @param x the [dfm] object whose documents or features will be sampled
-#' @param size a positive number, the number of documents or features to select.
-#'   The default is the number of documents or the number of features, for
-#'   `margin = "documents"` and `margin = "features"` respectively.
-#' @param replace logical; should sampling be with replacement?
-#' @param prob a vector of probability weights for obtaining the elements of the
-#'   vector being sampled.
-#' @param margin dimension (of a [dfm]) to sample: can be `documents` or
-#'   `features`
+#' Take a random sample of documents of the specified size from a dfm, with
+#' or without replacement, optionally by grouping variables or with probability
+#' weights.
+#' @param x the [dfm] object whose documents will be sampled
+#' @inheritParams corpus_sample
 #' @export
-#' @return A dfm object with number of documents or features equal to `size`, drawn
-#'   from the dfm `x`.
+#' @return a [dfm] object (re)sampled on the documents, containing the document
+#'   variables for the documents sampled.
 #' @seealso [sample]
 #' @keywords dfm
 #' @examples
 #' set.seed(10)
-#' dfmat <- dfm(c("a b c c d", "a a c c d d d"))
-#' head(dfmat)
-#' head(dfm_sample(dfmat))
-#' head(dfm_sample(dfmat, replace = TRUE))
-#' head(dfm_sample(dfmat, margin = "features"))
-#' head(dfm_sample(dfmat, margin = "features", replace = TRUE))
-dfm_sample <- function(x, size = ifelse(margin == "documents", ndoc(x), nfeat(x)),
-                       replace = FALSE, prob = NULL,
-                       margin = c("documents", "features")) {
+#' dfmat <- dfm(tokens(c("a b c c d", "a a c c d d d", "a b b c")))
+#' dfmat
+#' dfm_sample(dfmat)
+#' dfm_sample(dfmat, replace = TRUE)
+#'
+#' # by groups
+#' dfmat <- dfm(tokens(data_corpus_inaugural[50:58]))
+#' dfm_sample(dfmat, by = Party, size = 2)
+dfm_sample <- function(x, size = NULL, replace = FALSE, prob = NULL, by = NULL) {
     UseMethod("dfm_sample")
 }
 
 #' @export
-dfm_sample.default <- function(x, size = ifelse(margin == "documents", ndoc(x), nfeat(x)),
-                       replace = FALSE, prob = NULL,
-                       margin = c("documents", "features")) {
-    stop(friendly_class_undefined_message(class(x), "dfm_sample"))
+dfm_sample.default <- function(x, size = NULL, replace = FALSE, prob = NULL, by = NULL) {
+    check_class(class(x), "dfm_sample")
 }
     
 #' @export
-dfm_sample.dfm <- function(x, size = ifelse(margin == "documents", ndoc(x), nfeat(x)),
-                       replace = FALSE, prob = NULL,
-                       margin = c("documents", "features")) {
+dfm_sample.dfm <- function(x, size = NULL, replace = FALSE, prob = NULL, by = NULL) {
     x <- as.dfm(x)
-    margin <- match.arg(margin)
-    if (margin == "documents") {
-        if (size > ndoc(x) && !replace)
-            stop("size cannot exceed the number of documents (", ndoc(x), ")")
-        x <- x[sample(ndoc(x), size, replace, prob), ]
-    } else if (margin == "features") {
-        if (size > nfeat(x) && !replace)
-            stop("size cannot exceed the number of features (", nfeat(x), ")")
-        x <- x[, sample(nfeat(x), size, replace, prob)]
+
+    if (!missing(by)) {
+        by <- eval(substitute(by), get_docvars(x, user = TRUE, system = TRUE), parent.frame())
+        if (is.factor(by)) by <- droplevels(by)
     }
-    return(x)
+
+    i <- resample(seq_len(ndoc(x)), size = size, replace = replace, prob = prob, by = by)
+
+    return(x[i, ])
 }

@@ -2,9 +2,9 @@
 #'
 #' Returns document subsets of a tokens that meet certain conditions, including
 #' direct logical operations on docvars (document-level variables).
-#' `tokens_subset` functions identically to
-#' [subset.data.frame()], using non-standard evaluation to evaluate
-#' conditions based on the [docvars] in the tokens.
+#' `tokens_subset()` functions identically to [subset.data.frame()], using
+#' non-standard evaluation to evaluate conditions based on the [docvars] in the
+#' tokens.
 #'
 #' @param x [tokens] object to be subsetted
 #' @inheritParams corpus_subset
@@ -23,23 +23,22 @@
 #' tokens_subset(toks, grp > 1)
 #' # selecting on a supplied vector
 #' tokens_subset(toks, c(TRUE, FALSE, TRUE, FALSE))
-tokens_subset <- function(x, subset, ...) {
+tokens_subset <- function(x, subset, drop_docid = TRUE, ...) {
     UseMethod("tokens_subset")
 }
     
 #' @export
-tokens_subset.default <- function(x, subset, ...) {
-    stop(friendly_class_undefined_message(class(x), "tokens_subset"))
+tokens_subset.default <- function(x, subset, drop_docid = TRUE, ...) {
+    check_class(class(x), "tokens_subset")
 }
     
 #' @export
-tokens_subset.tokens <- function(x, subset, ...) {
-    
-    unused_dots(...)
+tokens_subset.tokens <- function(x, subset, drop_docid = TRUE, ...) {
     
     x <- as.tokens(x)
+    check_dots(...)
+    
     attrs <- attributes(x)
-    #sys <- select_docvars(attr(x, "docvars"), system = TRUE)
     docvar <- get_docvars(x, user = TRUE, system = TRUE)
     r <- if (missing(subset)) {
         rep_len(TRUE, ndoc(x))
@@ -48,12 +47,5 @@ tokens_subset.tokens <- function(x, subset, ...) {
         r <- eval(e, docvar, parent.frame())
         r & !is.na(r)
     }
-    # vars <- if (missing(select)) 
-    #     rep_len(TRUE, ncol(usr))
-    # else {
-    #     nl <- as.list(seq_along(usr))
-    #     names(nl) <- names(usr)
-    #     eval(substitute(select), nl, parent.frame())
-    # }
-    return(x[r])
+    return(x[r, drop_docid = drop_docid])
 }

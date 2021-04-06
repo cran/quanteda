@@ -1,5 +1,3 @@
-context("test char_select functions")
-
 test_that("test character selection", {
     txt <- c("natural", "National", "denatured", "other")
     
@@ -131,18 +129,5 @@ test_that("char_select works with dictionary pattern", {
     expect_identical(
         char_remove(txt, patt), 
         c(c1 = "aa", c2 = "ab", c3 = "aa")
-    )
-})
-
-test_that("char_select works with collocations pattern", {
-    txt <- c(c1 = "aa bb", c2 = "ab", c3 = "aa bc", c4 = "bcd", c5 = "bcd")
-    patt <- textstat_collocations("aa bb aa bb aa bc bcd", min_count = 1)
-    expect_identical(
-        char_keep(txt, patt),
-        c(c1 = "aa bb", c3 = "aa bc")
-    )
-    expect_identical(
-        char_remove(txt, patt), 
-        c(c2 = "ab", c4 = "bcd", c5 = "bcd")
     )
 })

@@ -1,9 +1,7 @@
-context("test dfm_select")
-
 txt <- c(doc1 = "a B c D e",
          doc2 = "a BBB c D e",
          doc3 = "Aaaa BBB cc")
-testdfm <- dfm(txt, tolower = FALSE)
+testdfm <- dfm(tokens(txt), tolower = FALSE)
 
 test_that("test dfm_select, fixed", {
     expect_equal(
@@ -128,7 +126,7 @@ test_that("longer selection than longer than features that exist (related to #44
 })
 
 test_that("test dfm_select with ngrams #589", {
-    ngramdfm <- dfm(c("of_the", "in_the", "to_the", "of_our", "and_the", " it_is", "by_the", "for_the"))
+    ngramdfm <- dfm(tokens(c("of_the", "in_the", "to_the", "of_our", "and_the", " it_is", "by_the", "for_the")))
     expect_equal(featnames(dfm_select(ngramdfm, pattern = c("of_the", "in_the"), valuetype = "fixed")),
                  c("of_the", "in_the"))
     expect_equal(featnames(dfm_select(ngramdfm, pattern = "*_the", valuetype = "glob")),
@@ -136,7 +134,7 @@ test_that("test dfm_select with ngrams #589", {
 })
 
 test_that("test dfm_select with ngrams concatenated with whitespace", {
-    ngramdfm <- dfm(c("of_the", "in_the", "to_the", "of_our", "and_the", " it_is", "by_the", "for_the"))
+    ngramdfm <- dfm(tokens(c("of_the", "in_the", "to_the", "of_our", "and_the", " it_is", "by_the", "for_the")))
     colnames(ngramdfm) <- stringi::stri_replace_all_fixed(colnames(ngramdfm), "_", " ")
     expect_equal(
         featnames(dfm_select(ngramdfm, pattern = c("of the", "in the"), valuetype = "fixed")),
@@ -150,16 +148,14 @@ test_that("test dfm_select with ngrams concatenated with whitespace", {
 
 test_that("dfm_select on a dfm returns equal feature sets", {
     txts <- c(d1 = "This is text one", d2 = "The second text", d3 = "This is text three")
-    dfmt1 <- dfm(txts[1:2])
-    dfmt2 <- dfm(txts[2:3])
-    expect_warning({
+    dfmt1 <- dfm(tokens(txts[1:2]))
+    dfmt2 <- dfm(tokens(txts[2:3]))
+    expect_error({
         dfmt3 <- dfm_select(dfmt1, dfmt2)
-    }, "pattern = dfm is deprecated")
-    expect_true(setequal(featnames(dfmt2), featnames(dfmt3)))
+    }, "dfm cannot be used as pattern; use 'dfm_match' instead")
 })
 
 test_that("dfm_select removes padding", {
-
     txts <- c(d1 = "This is text one", d2 = "The second text", d3 = "This is text three")
     toks <- tokens(txts)
     toks <- tokens_remove(toks, stopwords(), padding = TRUE)
@@ -184,7 +180,7 @@ test_that("dfm_select returns empty dfm when not maching features", {
 
 test_that("dfm_remove works even when it does not remove anything, issue 711", {
     txts <- c(d1 = "This is text one", d2 = "The second text", d3 = "This is text three")
-    testdfm <- dfm(txts)
+    testdfm <- dfm(tokens(txts))
 
     expect_silent(dfm_remove(testdfm, c("xxx", "yyy", "x y")))
     expect_equal(featnames(dfm_remove(testdfm, c("xxx", "yyy", "x y"))),
@@ -192,7 +188,7 @@ test_that("dfm_remove works even when it does not remove anything, issue 711", {
 })
 
 test_that("dfm_select errors when dictionary has multi-word features, issue 775", {
-    dfm_inaug <- dfm(data_corpus_inaugural[50:58])
+    dfm_inaug <- dfm(tokens(data_corpus_inaugural[50:58]))
     testdict1 <- dictionary(list(eco = c("compan*", "factory worker*"),
                                  pol = c("political part*", "election*")),
                             separator = " ")
@@ -218,34 +214,34 @@ test_that("dfm_select errors when dictionary has multi-word features, issue 775"
 })
 
 
-test_that("dfm_select works when selecting on collocations", {
-    txt <- c(d1 = "a b c d e g h",  d2 = "a b e g h i j")
-    toks_uni <- tokens(txt)
-    dfm_uni <- dfm(toks_uni)
-    toks_bi <- tokens(txt) %>% tokens_ngrams(n = 2, concatenator = " ")
-    dfm_bi <- dfm(toks_bi)
-    coll_bi <- textstat_collocations(toks_uni, size = 2, min_count = 2)
-    coll_tri <- textstat_collocations(toks_uni, size = 3, min_count = 2)
-
-    expect_equal(
-        dim(dfm_select(dfm_uni, coll_bi)),
-        c(2, 0)
-    )
-    expect_equal(
-        dim(dfm_select(dfm_uni, coll_tri)),
-        c(2, 0)
-    )
-
-    expect_equal(sum(dfm_select(dfm_bi, coll_bi)), 6)
-    expect_equal(featnames(dfm_select(dfm_bi, coll_bi)), c("a b", "e g", "g h"))
-
-    # wrong
-    expect_equal(dim(dfm_select(dfm_bi, coll_tri)), c(2, 0))
-    expect_equal(featnames(dfm_select(dfm_bi, coll_tri)), character())
-})
+# test_that("dfm_select works when selecting on collocations", {
+#     txt <- c(d1 = "a b c d e g h",  d2 = "a b e g h i j")
+#     toks_uni <- tokens(txt)
+#     dfm_uni <- dfm(toks_uni)
+#     toks_bi <- tokens(txt) %>% tokens_ngrams(n = 2, concatenator = " ")
+#     dfm_bi <- dfm(toks_bi)
+#     coll_bi <- textstat_collocations(toks_uni, size = 2, min_count = 2)
+#     coll_tri <- textstat_collocations(toks_uni, size = 3, min_count = 2)
+#
+#     expect_equal(
+#         dim(dfm_select(dfm_uni, coll_bi)),
+#         c(2, 0)
+#     )
+#     expect_equal(
+#         dim(dfm_select(dfm_uni, coll_tri)),
+#         c(2, 0)
+#     )
+#
+#     expect_equal(sum(dfm_select(dfm_bi, coll_bi)), 6)
+#     expect_equal(featnames(dfm_select(dfm_bi, coll_bi)), c("a b", "e g", "g h"))
+#
+#     # wrong
+#     expect_equal(dim(dfm_select(dfm_bi, coll_tri)), c(2, 0))
+#     expect_equal(featnames(dfm_select(dfm_bi, coll_tri)), character())
+# })
 
 test_that("shortcut functions works", {
-    testdfm <- dfm(data_corpus_inaugural[1:5])
+    testdfm <- dfm(tokens(data_corpus_inaugural[1:5]))
     expect_equal(dfm_select(testdfm, stopwords("english"), selection = "keep"),
                  dfm_keep(testdfm, stopwords("english")))
     expect_equal(dfm_select(testdfm, stopwords("english"), selection = "remove"),
@@ -265,27 +261,17 @@ test_that("dfm_remove/keep fail if selection argument is used", {
 })
 
 test_that("dfm_remove works when selection is a dfm (#1320)", {
-    d1 <- dfm("a b b c c c d d d d")
-    d2 <- dfm("d d d a a")
-
-    expect_warning({
+    d1 <- dfm(tokens("a b b c c c d d d d"))
+    d2 <- dfm(tokens("d d d a a"))
+    expect_error({
         d3 <- dfm_remove(d1, pattern = d2)
-    }, "pattern = dfm is deprecated")
-    expect_identical(
-        featnames(d3),
-        c("b", "c")
-    )
-
-    expect_warning({
+    }, "dfm cannot be used as pattern; use 'dfm_match' instead")
+    expect_error({
         d4 <- dfm_select(d1, pattern = d2, selection = "remove")
-    }, "pattern = dfm is deprecated")
-    expect_identical(
-        featnames(d4),
-        c("b", "c")
-    )
+    }, "dfm cannot be used as pattern; use 'dfm_match' instead")
 })
 
 test_that("really long words are not removed in tokens() (#1713)", {
-    dfmat <- dfm("one two DonaudampfschiffahrtselektrizittenhauptbetriebswerkbauunterbeamtengesellschaftXXX")
+    dfmat <- dfm(tokens("one two DonaudampfschiffahrtselektrizittenhauptbetriebswerkbauunterbeamtengesellschaftXXX"))
     expect_equivalent(nfeat(dfmat), 3)
 })

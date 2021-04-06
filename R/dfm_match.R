@@ -29,17 +29,25 @@
 #' 
 #' # matching one dfm to another
 #' txt <- c("This is text one", "The second text", "This is text three")
-#' (dfmat1 <- dfm(txt[1:2]))
-#' (dfmat2 <- dfm(txt[2:3]))
+#' (dfmat1 <- dfm(tokens(txt[1:2])))
+#' (dfmat2 <- dfm(tokens(txt[2:3])))
 #' (dfmat3 <- dfm_match(dfmat1, featnames(dfmat2)))
 #' setequal(featnames(dfmat2), featnames(dfmat3))
 #' @export
 dfm_match <- function(x, features) {
+    UseMethod("dfm_match")
+}
+
+#' @export
+dfm_match.default <- function(x, features) {
+    check_class(class(x), "dfm_match")
+}
+
+#' @export
+dfm_match.dfm <- function(x, features) {
     x <- as.dfm(x)
-    if (!is.character(features))
-        stop("features must be a character vector")
-    slots <- get_dfm_slots(x)
+    features <- check_character(features, min_len = 0, max_len = Inf)
+    attrs <- attributes(x)
     x <- pad_dfm(x, features)
-    set_dfm_slots(x) <- slots
-    return(x)
+    rebuild_dfm(x, attrs)
 }

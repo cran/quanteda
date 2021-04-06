@@ -66,10 +66,10 @@
 #'   [stri_split_boundaries(x, type = "word")][stringi::stri_split_boundaries]
 #'   but by default preserves infix hyphens (e.g. "self-funding"), URLs, and
 #'   social media "tag" characters (#hashtags and @usernames), and email
-#'   addresses.  The rules defining a valid "tag" can be found
-#'   [here](https://www.hashtags.org/featured/what-characters-can-a-hashtag-include/)
-#'   for hashtags and
-#'   [here](https://help.twitter.com/en/managing-your-account/twitter-username-rules)
+#'   addresses.  The rules defining a valid "tag" can be found at
+#'   https://www.hashtags.org/featured/what-characters-can-a-hashtag-include/
+#'   for hashtags and at
+#'   https://help.twitter.com/en/managing-your-account/twitter-username-rules
 #'   for usernames.
 #'
 #'   In versions < 2, the argument `remove_twitter` controlled whether social
@@ -160,7 +160,7 @@ tokens_env$START_TIME <- NULL
 #' @noRd
 #' @export
 tokens.default <- function(x, ...) {
-    stop(friendly_class_undefined_message(class(x), "tokens"))
+    check_class(class(x), "tokens")
 }
 
 #' @rdname tokens
@@ -235,23 +235,20 @@ tokens.corpus <- function(x,
                           verbose = quanteda_options("verbose"),
                           ...)  {
     x <- as.corpus(x)
-    attrs <- attributes(x)
-
-    dots <- list(...)
     what <- match.arg(what, c("word", "word1", "sentence", "character",
                               "fasterword", "fastestword"))
-    # deprecated arguments
-    if ("remove_hyphens" %in% names(dots)) {
-        split_hyphens <- dots[["remove_hyphens"]]
-        .Deprecated(msg = "'remove_hyphens' is deprecated, use 'split_hyphens' instead.")
-        dots$remove_hyphens <- NULL
-    }
-    if ("remove_twitter" %in% names(dots)) {
-        warning("'remove_twitter' is defunct; see 'quanteda Tokenizers' in ?tokens",
-                call. = FALSE)
-        dots$remove_twitter <- NULL
-    }
-    check_dots(dots, c(names(formals(tokens))))
+    remove_punct <- check_logical(remove_punct)
+    remove_symbols <- check_logical(remove_symbols)
+    remove_numbers <- check_logical(remove_numbers)
+    remove_url <- check_logical(remove_url)
+    remove_separators <- check_logical(remove_separators)
+    split_hyphens <- check_logical(split_hyphens)
+    include_docvars <- check_logical(include_docvars)
+    padding <- check_logical(padding)
+    verbose <- check_logical(verbose)
+    check_dots(..., method = "tokens")
+    
+    attrs <- attributes(x)
 
     # call the appropriate tokenizer function
     if (verbose) catm(" ...starting tokenization\n")
@@ -268,7 +265,7 @@ tokens.corpus <- function(x,
         warning("remove_separators is always TRUE for this type")
 
     # split x into smaller blocks to reduce peak memory consumption
-    x <- texts(x)
+    x <- as.character(x)
     x <- split(x, factor(ceiling(seq_along(x) / quanteda_options("tokens_block_size"))))
     x <- lapply(x, function(y) {
         if (verbose)
@@ -337,21 +334,17 @@ tokens.tokens <-  function(x,
                            verbose = quanteda_options("verbose"),
                            ...) {
     x <- as.tokens(x)
-    dots <- list(...)
-
-    # deprecated arguments
-    if ("remove_hyphens" %in% names(dots)) {
-        split_hyphens <- dots[["remove_hyphens"]]
-        .Deprecated(msg = "'remove_hyphens' is deprecated, use 'split_hyphens' instead.")
-        dots$remove_hyphens <- NULL
-
-    }
-    if ("remove_twitter" %in% names(dots)) {
-        .Deprecated(msg = "'remove_twitter' is deprecated and inactive for tokens.tokens()")
-        dots$remove_twitter <- NULL
-    }
-    check_dots(dots, c(names(formals(tokens))))
-
+    remove_punct <- check_logical(remove_punct)
+    remove_symbols <- check_logical(remove_symbols)
+    remove_numbers <- check_logical(remove_numbers)
+    remove_url <- check_logical(remove_url)
+    remove_separators <- check_logical(remove_separators)
+    split_hyphens <- check_logical(split_hyphens)
+    include_docvars <- check_logical(include_docvars)
+    padding <- check_logical(padding)
+    verbose <- check_logical(verbose)
+    check_dots(..., method = "tokens")
+    
     # splits
     if (split_hyphens) {
         if (verbose) catm(" ...splitting hyphens\n")
@@ -437,10 +430,9 @@ as.tokens <- function(x, concatenator = "_", ...) {
 
 #' @export
 as.tokens.default <- function(x, concatenator = "", ...) {
-    stop(friendly_class_undefined_message(class(x), "as.tokens"))
+    check_class(class(x), "as.tokens")
 }
 
-#' @rdname as.tokens
 #' @importFrom stringi stri_trans_nfc
 #' @export
 as.tokens.list <- function(x, concatenator = "_", ...) {
@@ -454,7 +446,6 @@ as.tokens.list <- function(x, concatenator = "_", ...) {
     )
 }
 
-#' @rdname as.tokens
 #' @export
 as.tokens.tokens <- function(x, ...) {
     upgrade_tokens(x)
@@ -497,7 +488,7 @@ removals_regex <- function(separators = FALSE,
     if (separators)
         regex[["separators"]] <- "^[\\p{Z}\\p{C}]+$"
     if (punct)
-        regex[["punct"]] <- "^\\p{P}+$"
+        regex[["punct"]] <- "^\\p{P}$"
     if (symbols)
         regex[["symbols"]] <- "^\\p{S}$"
     if (numbers) # includes currency amounts and those containing , or . digit separators, and 100bn
@@ -649,7 +640,7 @@ types <- function(x) {
 
 #' @export
 types.default <- function(x) {
-    stop(friendly_class_undefined_message(class(x), "types"))
+    check_class(class(x), "types")
 }
 
 #' @export

@@ -1,26 +1,27 @@
-#' @rdname print-quanteda
+#' @rdname print-methods
 #' @export
 setMethod("print", signature(x = "fcm"), 
           function(x, max_nfeat = quanteda_options("print_dfm_max_nfeat"), 
                    show_summary = TRUE, ...) {
               if (show_summary) {
                 cat("Feature co-occurrence matrix of: ",
-                    format(ndoc(x), big.mark = ","), " by ",
-                    format(nfeat(x), big.mark = ","), " feature",
-                    if (nfeat(x) != 1L) "s" else "",
+                    format(nrow(x), big.mark = ","), " by ",
+                    format(ncol(x), big.mark = ","), " feature",
+                    if (nrow(x) != 1L || col(x) != 1L) "s" else "",
                     ".\n", sep = "")
               }
               print_fcm(x, max_nfeat, show_summary, ...)
           })
 
-#' @rdname print-quanteda
+#' @noRd
 setMethod("show", signature(object = "fcm"), function(object) print(object))
 
 # internal function for print.fcm
 print_fcm <- function(x, max_nfeat, show_summary, ...) {
   
-    unused_dots(...)
     x <- as.fcm(x)
+    check_dots(...)
+    
     nrow <- nrow(x)
     ncol <- ncol(x)
     if (max_nfeat < 0 || max_nfeat > nrow) {

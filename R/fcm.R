@@ -1,12 +1,11 @@
-
 #' Create a feature co-occurrence matrix
 #'
 #' Create a sparse feature co-occurrence matrix, measuring co-occurrences of
 #' features within a user-defined context. The context can be defined as a
 #' document or a window within a collection of documents, with an optional
 #' vector of weights applied to the co-occurrence counts.
-#' @param x character, [corpus], [tokens], or [dfm] object from
-#'   which to generate the feature co-occurrence matrix
+#' @param x a [tokens], or [dfm] object from which to generate the feature
+#'   co-occurrence matrix
 #' @param context the context in which to consider term co-occurrence:
 #'   `"document"` for co-occurrence counts within document; `"window"`
 #'   for co-occurrence within a defined window of words, which requires a
@@ -28,11 +27,13 @@
 #' @param weights a vector of weights applied to each distance from
 #'   `1:window`, strictly decreasing by default; can be a custom-defined
 #'   vector of the same length as `window`
-#' @param ordered if `TRUE` the number of times that a term appears before
-#'   or after the target feature are counted separately. Only makes sense for
-#'   context = "window".
+#' @param ordered if `TRUE`, count only the forward co-occurrences for each
+#'   target token for bigram models, so that the `i, j` cell of the fcm is the
+#'   number of times that token `j` occurs before the target token `i` within
+#'   the window. Only makes sense for `context = "window"`, and when `ordered =
+#'   TRUE`, the argument `tri` has no effect.
 #' @param tri if `TRUE` return only upper triangle (including diagonal).
-#'   Ignored if `ordered = TRUE`
+#'   Ignored if `ordered = TRUE`.
 #' @param ... not used here
 #' @author Kenneth Benoit (R), Haiyan Wang (R, C++), Kohei Watanabe (C++)
 #' @import Matrix
@@ -79,25 +80,23 @@
 #'  *Computational Linguistics*, 16(1), 22-29.
 #' @examples
 #' # see http://bit.ly/29b2zOA
-#' txt1 <- "A D A C E A D F E B A C E D"
-#' fcm(txt1, context = "window", window = 2)
-#' fcm(txt1, context = "window", count = "weighted", window = 3)
-#' fcm(txt1, context = "window", count = "weighted", window = 3,
-#'              weights = c(3, 2, 1), ordered = TRUE, tri = FALSE)
+#' toks1 <- tokens(c("A D A C E A D F E B A C E D"))
+#' fcm(toks1, context = "window", window = 2)
+#' fcm(toks1, context = "window", count = "weighted", window = 3)
+#' fcm(toks1, context = "window", count = "weighted", window = 3,
+#'     weights = c(3, 2, 1), ordered = TRUE, tri = FALSE)
 #'
 #' # with multiple documents
-#' txt2 <- c("a a a b b c", "a a c e", "a c e f g")
-#' fcm(txt2, context = "document", count = "frequency")
-#' fcm(txt2, context = "document", count = "boolean")
-#' fcm(txt2, context = "window", window = 2)
+#' toks2 <- tokens(c("a a a b b c", "a a c e", "a c e f g"))
+#' fcm(toks2, context = "document", count = "frequency")
+#' fcm(toks2, context = "document", count = "boolean")
+#' fcm(toks2, context = "window", window = 2)
 #'
-#'
-#' # from tokens
 #' txt3 <- c("The quick brown fox jumped over the lazy dog.",
 #'          "The dog jumped and ate the fox.")
-#' toks <- tokens(char_tolower(txt3), remove_punct = TRUE)
-#' fcm(toks, context = "document")
-#' fcm(toks, context = "window", window = 3)
+#' toks3 <- tokens(char_tolower(txt3), remove_punct = TRUE)
+#' fcm(toks3, context = "document")
+#' fcm(toks3, context = "window", window = 3)
 fcm <- function(x, context = c("document", "window"),
                 count = c("frequency", "boolean", "weighted"),
                 window = 5L,
@@ -109,23 +108,24 @@ fcm <- function(x, context = c("document", "window"),
 
 #' @export
 fcm.default <- function(x, ...) {
-    stop(friendly_class_undefined_message(class(x), "fcm"))
+    check_class(class(x), "fcm")
 }
 
 #' @noRd
 #' @export
 fcm.character <- function(x, ...) {
-    fcm(tokens(x), ...)
+    .Deprecated(msg = "'fcm.character()' is deprecated. Use 'tokens()' or 'dfm()' first.")
+    fcm(corpus(x), ...)
 }
 
 #' @noRd
 #' @export
 fcm.corpus <- function(x, ...) {
+    .Deprecated(msg = "'fcm.corpus()' is deprecated. Use 'tokens()' or 'dfm()' first.")
     fcm(tokens(x), ...)
 }
 
 #' @noRd
-#' @import Matrix
 #' @export
 fcm.dfm <- function(x, context = c("document", "window"),
                        count = c("frequency", "boolean", "weighted"),
@@ -133,62 +133,58 @@ fcm.dfm <- function(x, context = c("document", "window"),
                        weights = NULL,
                        ordered = FALSE,
                        tri = TRUE, ...) {
-
+    
+    x <- as.dfm(x)
     context <- match.arg(context)
     count <- match.arg(count)
-    window <- as.integer(window)
-    x <- as.dfm(x)
-    margin <- colSums(x)
-
+    window <- check_integer(window, min = 1)
+    ordered <- check_logical(ordered)
+    tri <- check_logical(tri)
+    
+    attrs <- attributes(x)
     if (!nfeat(x)) {
-        result <- new("fcm", as(make_null_dfm(), "dgCMatrix"), count = count,
-                      context = context, margin = margin, weights = 1, tri = tri)
+        result <- build_fcm(
+            as(make_null_dfm(), "dgCMatrix"), featnames(x), 
+            count = count, context = context, margin = featfreq(x), 
+            weights = 1, tri = tri,
+            meta = attrs[["meta"]])
+        
         return(result)
     }
 
     if (context != "document")
         stop("fcm.dfm only works on context = \"document\"")
-
-    if (count == "boolean") {
-        temp <- x > 1
-        x <- dfm_weight(x, "boolean")
-    } else if (count == "frequency") {
-        temp <- x
-        temp@x <- choose(temp@x, 2)
-    } else {
+    
+    if (count == "weighted")
         stop("Cannot have weighted counts with context = \"document\"")
+    if (count == "boolean") {
+        m <- Matrix::colSums(x > 1)
+        x <- dfm_weight(x, "boolean")
+    } else {
+        m <- Matrix::colSums(x)
     }
+    temp <- Matrix::crossprod(x)
+    
+    # correct self-cooccuerrace
+    if (count == "boolean") {
+        Matrix::diag(temp) <- m
+    } else {
+        Matrix::diag(temp) <- (Matrix::diag(temp) - m) / 2    
+    }
+    if (tri) 
+        temp <- Matrix::triu(temp)
 
-    # compute co_occurrence of the diagonal elements
-    sum_col <- colSums(temp) # apply(temp, MARGIN = 2, sum)
-    feature <- sum_col >= 1
-    index_diag <- which(feature)
-    length_feature <- length(feature)
-    temp <- Matrix::sparseMatrix(i = index_diag,
-                                 j = index_diag,
-                                 x = sum_col[feature],
-                                 dims = c(length_feature, length_feature))
-
-    result <- Matrix::crossprod(x)
-    diag(result) <- 0
-    result <- result + temp
-    result <- result[rownames(result), colnames(result)]
-
-    # discard the lower diagonal if tri == TRUE
-    if (tri) result <- triu(result)
-
-    # create a new feature context matrix
-    result <- new("fcm", as(result, "dgCMatrix"), count = count,
-                  context = context, margin = margin, weights = 1,
-                  tri = tri)
-    set_fcm_slots(result) <- attributes(x)
-    set_fcm_dimnames(result) <- list(rownames(result), colnames(result))
+    result <- build_fcm(
+        as(temp, "dgCMatrix"), featnames(x), 
+        count = count, context = context, margin = featfreq(x), 
+        weights = 1, tri = tri,
+        meta = attrs[["meta"]])
+    
     return(result)
 }
 
 
 #' @noRd
-#' @importFrom data.table data.table
 #' @import Matrix
 #' @export
 fcm.tokens <- function(x, context = c("document", "window"),
@@ -201,57 +197,45 @@ fcm.tokens <- function(x, context = c("document", "window"),
     x <- as.tokens(x)
     context <- match.arg(context)
     count <- match.arg(count)
-    window <- as.integer(window)
+    window <- check_integer(window, min = 1)
+    ordered <- check_logical(ordered)
+    tri <- check_logical(tri)
+    
+    attrs <- attributes(x)
     if (ordered)
         tri <- FALSE
     if (context == "document") {
         result <- fcm(dfm(x, tolower = FALSE, verbose = FALSE), count = count, tri = tri)
     } else {
-        if (any(window < 1L))
-            stop("window size must be at least 1")
         if (count == "weighted") {
-            if (is.null(weights))
+            if (!is.null(weights)) {
+                weights <- check_double(weights, max_len = Inf)
+                if (length(weights) != window)
+                    stop("The length of weights must be equal to the window size")
+            } else {
                 weights <- 1 / seq_len(window)
-            if (length(weights) != window) {
-                stop("weights length must be equal to the window size")
             }
         } else {
             weights <- rep(1, window)
         }
         type <- types(x)
         boolean <- count == "boolean"
-        result <- as(qatd_cpp_fcm(x, length(type), weights, boolean, ordered),
-                     "dgCMatrix")
+        temp <- qatd_cpp_fcm(x, length(type), weights, boolean, ordered)
+        temp <- as(temp, "dgCMatrix")
         if (!ordered) {
             if (tri) {
-                result <- triu(result)
+                temp <- Matrix::triu(temp)
             } else {
-                result <- forceSymmetric(result)
+                temp <- Matrix::forceSymmetric(temp)
             }
         }
-        # create a new feature context matrix
-        result <- new("fcm", as(result, "dgCMatrix"), count = count,
-                      context = context, window = window, margin = colSums(dfm(x)),
-                      weights = weights, tri = tri, ordered = ordered)
-        set_fcm_slots(result) <- attributes(x)
-        set_fcm_dimnames(result) <- list(type, type)
+        result <- build_fcm(
+            as(temp, "dgCMatrix"), type,
+            count = count, context = context, margin = featfreq(dfm(x)), 
+            weights = weights, ordered = ordered, tri = tri, 
+            meta = attrs[["meta"]])
     }
     return(result)
-}
-
-
-#' @noRd
-#' @method head fcm
-#' @export
-head.fcm <- function(x, n = 6L, nfeature = 6L, ...) {
-    head.dfm(x, n, nfeature, ...)
-}
-
-#' @noRd
-#' @method tail fcm
-#' @export
-tail.fcm <- function(x, n = 6L, nfeature = 6L, ...) {
-    head.dfm(x, n, nfeature, ...)
 }
 
 #' @noRd

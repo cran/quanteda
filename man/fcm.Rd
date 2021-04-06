@@ -17,8 +17,8 @@ fcm(
 )
 }
 \arguments{
-\item{x}{character, \link{corpus}, \link{tokens}, or \link{dfm} object from
-which to generate the feature co-occurrence matrix}
+\item{x}{a \link{tokens}, or \link{dfm} object from which to generate the feature
+co-occurrence matrix}
 
 \item{context}{the context in which to consider term co-occurrence:
 \code{"document"} for co-occurrence counts within document; \code{"window"}
@@ -45,12 +45,13 @@ target feature}
 \code{1:window}, strictly decreasing by default; can be a custom-defined
 vector of the same length as \code{window}}
 
-\item{ordered}{if \code{TRUE} the number of times that a term appears before
-or after the target feature are counted separately. Only makes sense for
-context = "window".}
+\item{ordered}{if \code{TRUE}, count only the forward co-occurrences for each
+target token for bigram models, so that the \verb{i, j} cell of the fcm is the
+number of times that token \code{j} occurs before the target token \code{i} within
+the window. Only makes sense for \code{context = "window"}, and when \code{ordered = TRUE}, the argument \code{tri} has no effect.}
 
 \item{tri}{if \code{TRUE} return only upper triangle (including diagonal).
-Ignored if \code{ordered = TRUE}}
+Ignored if \code{ordered = TRUE}.}
 
 \item{...}{not used here}
 }
@@ -88,25 +89,23 @@ type \link{fcm}.
 }
 \examples{
 # see http://bit.ly/29b2zOA
-txt1 <- "A D A C E A D F E B A C E D"
-fcm(txt1, context = "window", window = 2)
-fcm(txt1, context = "window", count = "weighted", window = 3)
-fcm(txt1, context = "window", count = "weighted", window = 3,
-             weights = c(3, 2, 1), ordered = TRUE, tri = FALSE)
+toks1 <- tokens(c("A D A C E A D F E B A C E D"))
+fcm(toks1, context = "window", window = 2)
+fcm(toks1, context = "window", count = "weighted", window = 3)
+fcm(toks1, context = "window", count = "weighted", window = 3,
+    weights = c(3, 2, 1), ordered = TRUE, tri = FALSE)
 
 # with multiple documents
-txt2 <- c("a a a b b c", "a a c e", "a c e f g")
-fcm(txt2, context = "document", count = "frequency")
-fcm(txt2, context = "document", count = "boolean")
-fcm(txt2, context = "window", window = 2)
+toks2 <- tokens(c("a a a b b c", "a a c e", "a c e f g"))
+fcm(toks2, context = "document", count = "frequency")
+fcm(toks2, context = "document", count = "boolean")
+fcm(toks2, context = "window", window = 2)
 
-
-# from tokens
 txt3 <- c("The quick brown fox jumped over the lazy dog.",
          "The dog jumped and ate the fox.")
-toks <- tokens(char_tolower(txt3), remove_punct = TRUE)
-fcm(toks, context = "document")
-fcm(toks, context = "window", window = 3)
+toks3 <- tokens(char_tolower(txt3), remove_punct = TRUE)
+fcm(toks3, context = "document")
+fcm(toks3, context = "window", window = 3)
 }
 \references{
 Momtazi, S., Khudanpur, S., & Klakow, D. (2010). "\href{https://www.aclweb.org/anthology/N10-1046/}{A comparative study of word co-occurrence for term clustering in language model-based sentence retrieval.}" \emph{Human Language

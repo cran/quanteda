@@ -1,5 +1,3 @@
-context("test tokens_split")
-
 test_that("tokens_split works", {
     toks <- tokens("a-a b+b B*B cc DD ee", what = "fastestword")
     expect_equal(as.list(tokens_split(toks, separator = "-", remove_separator = FALSE)),
@@ -24,7 +22,7 @@ test_that("tokens_split works", {
 test_that("tokens_split error when more than one separator is given", {
     toks <- tokens("a-a b+b B*B cc DD ee", what = "fastestword")
     expect_error(tokens_split(toks, c("-", "+")),
-                 "separator must be a character")
+                 "The length of separator must be 1")
 })
 
 test_that("tokens_split works in the same way as tokens", {

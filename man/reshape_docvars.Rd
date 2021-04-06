@@ -4,12 +4,14 @@
 \alias{reshape_docvars}
 \title{Internal function to subset or duplicate docvar rows}
 \usage{
-reshape_docvars(x, i = NULL)
+reshape_docvars(x, i = NULL, drop_docid = TRUE)
 }
 \arguments{
 \item{x}{docvar data.frame}
 
 \item{i}{numeric or logical vector for subsetting/duplicating rows}
+
+\item{drop_docid}{if \code{TRUE}, drop unused names of documents.}
 }
 \description{
 Internal function to subset or duplicate docvar rows

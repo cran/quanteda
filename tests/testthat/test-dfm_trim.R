@@ -1,8 +1,5 @@
-context("test dfm_trim")
-
 test_that("dfm_trim", {
-    
-    mydfm <- dfm(c(d1 = "a b c d e", d2 = "a a b b e f", d3 = "b c e e f f f"))
+    mydfm <- dfm(tokens(c(d1 = "a b c d e", d2 = "a a b b e f", d3 = "b c e e f f f")))
     s <- sum(mydfm)
     
     expect_equal(nfeat(dfm_trim(mydfm, min_termfreq = 0.5, termfreq_type = "quantile")), 4)
@@ -36,7 +33,8 @@ test_that("dfm_trim", {
 })
 
 test_that("dfm_trim works as expected", {
-    mydfm <- dfm(c("This is a sentence.", "This is a second sentence.", "Third sentence.", "Fouth sentence.", "Fifth sentence."))
+    mydfm <- dfm(tokens(c("This is a sentence.", "This is a second sentence.", 
+                          "Third sentence.", "Fouth sentence.", "Fifth sentence.")))
     expect_message(dfm_trim(mydfm, min_termfreq = 2, min_docfreq = 2, verbose = TRUE),
                    regexp = "Removing features occurring:")
     expect_message(dfm_trim(mydfm, min_termfreq = 2, min_docfreq = 2, verbose = TRUE),
@@ -48,7 +46,8 @@ test_that("dfm_trim works as expected", {
 })
 
 test_that("dfm_trim works as expected", {
-    mydfm <- dfm(c("This is a sentence.", "This is a second sentence.", "Third sentence.", "Fouth sentence.", "Fifth sentence."))
+    mydfm <- dfm(tokens(c("This is a sentence.", "This is a second sentence.", 
+                          "Third sentence.", "Fouth sentence.", "Fifth sentence.")))
     expect_message(dfm_trim(mydfm, max_termfreq = 2, max_docfreq = 2, verbose = TRUE),
                    regexp = "more than 2 times: 2")
     expect_message(dfm_trim(mydfm, max_termfreq = 2, max_docfreq = 2, verbose = TRUE),
@@ -59,13 +58,13 @@ test_that("dfm_trim works as expected", {
 })
 
 test_that("dfm_trim works without trimming arguments #509", {
-    mydfm <- dfm(c("This is a sentence.", "This is a second sentence.", "Third sentence."))
+    mydfm <- dfm(tokens(c("This is a sentence.", "This is a second sentence.", "Third sentence.")))
     expect_equal(dim(mydfm[-2, ]), c(2, 7))
     expect_equal(dim(dfm_trim(mydfm[-2, ], verbose = FALSE)), c(2, 6))
 })
 
 test_that("dfm_trim doesn't break because of duplicated feature names (#829)", {
-    mydfm <- dfm(c(d1 = "a b c d e", d2 = "a a b b e f", d3 = "b c e e f f f"))
+    mydfm <- dfm(tokens(c(d1 = "a b c d e", d2 = "a a b b e f", d3 = "b c e e f f f")))
     colnames(mydfm)[3] <- "b"
     expect_equal(
         as.matrix(dfm_trim(mydfm, min_termfreq = 1)),
@@ -85,8 +84,7 @@ test_that("dfm_trim doesn't break because of duplicated feature names (#829)", {
 })
 
 test_that("dfm_trim works with min_termfreq larger than total number (#1181)", {
-    
-    testdfm <- dfm(c(d1 = "a a a a b b", d2 = "a b b c"))
+    testdfm <- dfm(tokens(c(d1 = "a a a a b b", d2 = "a b b c")))
     expect_equal(dimnames(dfm_trim(testdfm, min_termfreq = 6)), 
                 list(docs = c("d1", "d2"), features = character())
     )
@@ -97,13 +95,13 @@ test_that("dfm_trim works with min_termfreq larger than total number (#1181)", {
 })
 
 test_that("dfm_trim works on previously weighted dfms (#1237)", {
-    dfm1 <- dfm(c("the quick brown fox jumps over the lazy dog", 
-                  "the quick brown foxy ox jumps over the lazy god"))
+    dfm1 <- dfm(tokens(c("the quick brown fox jumps over the lazy dog", 
+                  "the quick brown foxy ox jumps over the lazy god")))
     dfm2 <- dfm_tfidf(dfm1)
     expect_equal(
         suppressWarnings(
-            dfm_trim(dfm2, min_termfreq = 0, min_docfreq = .5, termfreq_type = "prop") %>% 
-                as.matrix()
+            as.matrix(dfm_trim(dfm2, min_termfreq = 0, min_docfreq = .5, 
+                               termfreq_type = "prop", docfreq_type = "prop"))
         ),
         matrix(c(.30103, 0, .30103, 0, 0, .30103, 0, .30103, 0, .30103), nrow = 2,
                dimnames = list(docs = c("text1", "text2"), 
@@ -125,22 +123,79 @@ test_that("dfm_trim works on previously weighted dfms (#1237)", {
     )
 })
 
-test_that("dfm_trim warn when termfreq is termfreq_type = 'count' (#1254)", {
-    dfm1 <- dfm(c("the quick brown fox jumps over the lazy dog", 
-                  "the quick brown foxy ox jumps over the lazy god"))
-    #dfm2 <- dfm_tfidf(dfm1)
-    expect_warning(
-        dfm_trim(dfm1, min_termfreq = 0.001, termfreq_type = "count"),
-        "use termfreq_type = 'prop' for fractional term frequency"
+test_that("dfm_trim error with invalid input", {
+    dfmat <- dfm(tokens(c("the quick brown fox jumps over the lazy dog", 
+                  "the quick brown foxy ox jumps over the lazy god")))
+    
+    # min_termfreq
+    expect_error(
+        dfm_trim(dfmat, min_termfreq = -1, termfreq_type = "count"),
+        "The value of min_termfreq must be between 0 and Inf"
     )
-    #expect_silent(
-    #    dfm_trim(dfm2, min_termfreq = 0.001, termfreq_type = "count")
-    #)
-    expect_warning(
-        dfm_trim(dfm1, max_termfreq = 0.001, termfreq_type = "count"),
-        "use termfreq_type = 'prop' for fractional term frequency"
+    expect_error(
+        dfm_trim(dfmat, min_termfreq = 1.1, termfreq_type = "prop"),
+        "The value of min_termfreq must be between 0 and 1"
     )
-    #expect_silent(
-    #    dfm_trim(dfm2, max_termfreq = 0.001, termfreq_type = "count")
-    #)
+    expect_error(
+        dfm_trim(dfmat, min_termfreq = 1.1, termfreq_type = "quantile"),
+        "The value of min_termfreq must be between 0 and 1"
+    )
+    expect_error(
+        dfm_trim(dfmat, min_termfreq = 0, termfreq_type = "rank"),
+        "The value of min_termfreq must be between 1 and Inf"
+    )
+    
+    # max_termfreq
+    expect_error(
+        dfm_trim(dfmat, max_termfreq = -1, termfreq_type = "count"),
+        "The value of max_termfreq must be between 0 and Inf"
+    )
+    expect_error(
+        dfm_trim(dfmat, max_termfreq = 1.1, termfreq_type = "prop"),
+        "The value of max_termfreq must be between 0 and 1"
+    )
+    expect_error(
+        dfm_trim(dfmat, max_termfreq = 1.1, termfreq_type = "quantile"),
+        "The value of max_termfreq must be between 0 and 1"
+    )
+    expect_error(
+        dfm_trim(dfmat, max_termfreq = 0, termfreq_type = "rank"),
+        "The value of max_termfreq must be between 1 and Inf"
+    )
+    
+    # min_docfreq
+    expect_error(
+        dfm_trim(dfmat, min_docfreq = -1, docfreq_type = "count"),
+        "The value of min_docfreq must be between 0 and Inf"
+    )
+    expect_error(
+        dfm_trim(dfmat, min_docfreq = 1.1, docfreq_type = "prop"),
+        "The value of min_docfreq must be between 0 and 1"
+    )
+    expect_error(
+        dfm_trim(dfmat, min_docfreq = 1.1, docfreq_type = "quantile"),
+        "The value of min_docfreq must be between 0 and 1"
+    )
+    expect_error(
+        dfm_trim(dfmat, min_docfreq = 0, docfreq_type = "rank"),
+        "The value of min_docfreq must be between 1 and Inf"
+    )
+    
+    # max_docfreq
+    expect_error(
+        dfm_trim(dfmat, max_docfreq = -1, docfreq_type = "count"),
+        "The value of max_docfreq must be between 0 and Inf"
+    )
+    expect_error(
+        dfm_trim(dfmat, max_docfreq = 1.1, docfreq_type = "prop"),
+        "The value of max_docfreq must be between 0 and 1"
+    )
+    expect_error(
+        dfm_trim(dfmat, max_docfreq = 1.1, docfreq_type = "quantile"),
+        "The value of max_docfreq must be between 0 and 1"
+    )
+    expect_error(
+        dfm_trim(dfmat, max_docfreq = 0, docfreq_type = "rank"),
+        "The value of max_docfreq must be between 1 and Inf"
+    )
 })

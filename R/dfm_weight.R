@@ -67,65 +67,32 @@
 #' @references  Manning, C.D., Raghavan, P., & Schütze, H. (2008).
 #'   *An Introduction to Information Retrieval*. Cambridge: Cambridge University Press.
 #'   <https://nlp.stanford.edu/IR-book/pdf/irbookonlinereading.pdf>
-dfm_weight <- function(
-    x,
-    scheme = c("count", "prop", "propmax", "logcount", "boolean", "augmented", 
-               "logave", "logsmooth"),
-    weights = NULL,
-    base = 10,
-    k = 0.5,
-    smoothing = 0.5,
-    force = FALSE) {
+dfm_weight <- function(x,
+                       scheme = c("count", "prop", "propmax", "logcount", "boolean", "augmented", "logave"),
+                       weights = NULL, base = 10, k = 0.5, smoothing = 0.5,
+                       force = FALSE) {
     UseMethod("dfm_weight")
 }
 
 #' @export
-dfm_weight.default <- function(
-    x,
-    scheme = c("count", "prop", "propmax", "logcount", "boolean", "augmented", 
-               "logave", "logsmooth"),
-    weights = NULL,
-    base = 10,
-    k = 0.5,
-    smoothing = 0.5,
-    force = FALSE) {
-    stop(friendly_class_undefined_message(class(x), "dfm_weight"))
+dfm_weight.default <- function(x,
+                               scheme = c("count", "prop", "propmax", "logcount", "boolean", "augmented", "logave"),
+                               weights = NULL, base = 10, k = 0.5, smoothing = 0.5,
+                               force = FALSE) {
+    check_class(class(x), "dfm_weight")
 }
 
 #' @export
-dfm_weight.dfm <- function(
-    x,
-    scheme = c("count", "prop", "propmax", "logcount", "boolean", "augmented", "logave"),
-    weights = NULL,
-    base = 10,
-    k = 0.5,
-    smoothing = 0.5,
-    force = FALSE) {
-
-    # traps for deprecated scheme values
-    if (!missing(scheme)) {
-        scheme <- tolower(scheme)
-        if (scheme == "frequency") {
-            .Deprecated(msg = 'scheme = "frequency" is deprecated; use dfm_weight(x, scheme = "count") instead')
-            return(dfm_weight(x, scheme = "count", base = base, weights = weights))
-        } else if (scheme == "relfreq") {
-            .Deprecated(msg = 'scheme = "relfreq" is deprecated; use dfm_weight(x, scheme = "prop") instead')
-            return(dfm_weight(x, scheme = "prop", base = base, weights = weights))
-        } else if (scheme == "relmaxfreq") {
-            .Deprecated(msg = 'scheme = "relmaxfreq" is deprecated; use dfm_weight(x, scheme = "propmax") instead')
-            return(dfm_weight(x, scheme = "propmax", base = base, weights = weights))
-        } else if (scheme == "logfreq") {
-            .Deprecated(msg = 'scheme = "logfreq" is deprecated; use dfm_weight(x, scheme = "logcount") instead')
-            return(dfm_weight(x, scheme = "logcount", base = base, weights = weights))
-        } else if (scheme == "tfidf") {
-            .Deprecated(msg = 'scheme = "tfidf" is deprecated; use dfm_tfidf(x) instead')
-            return(dfm_tfidf(x, base = base))
-        } else if (scheme == "logsmooth") {
-            return(as.dfm(log(dfm_smooth(x, smoothing), base = base)))
-        }
-    }
-
+dfm_weight.dfm <- function(x,
+                           scheme = c("count", "prop", "propmax", "logcount", "boolean", "augmented", "logave"),
+                           weights = NULL, base = 10, k = 0.5, smoothing = 0.5,
+                           force = FALSE) {
     x <- as.dfm(x)
+    base <- check_double(base)
+    k <- check_double(k, min = 0, max = 1.0)
+    smoothing <- check_double(smoothing)
+    force <- check_logical(force)
+    
     if (!nfeat(x) || !ndoc(x)) return(x)
     attrs <- attributes(x)
 
@@ -159,8 +126,6 @@ dfm_weight.dfm <- function(
 
         if ("k" %in% names(args) && scheme != "augmented")
             warning("k not used for this scheme")
-        if (k < 0 || k > 1.0)
-            stop("k must be in the [0, 1] interval")
 
         if (!force) {
             if (field_object(attrs, "weight_tf")$scheme != "count" ||
@@ -226,12 +191,15 @@ dfm_smooth <- function(x, smoothing = 1) {
 
 #' @export
 dfm_smooth.default <- function(x, smoothing = 1) {
-    stop(friendly_class_undefined_message(class(x), "dfm_smooth"))
+    check_class(class(x), "dfm_smooth")
 }
 
 #' @export
 dfm_smooth.dfm <- function(x, smoothing = 1) {
+    
     x <- as.dfm(x)
+    smoothing <- check_double(smoothing)
+    
     if (!nfeat(x) || !ndoc(x)) return(x)
     attrs <- attributes(x)
     field_object(attrs, "smooth") <- field_object(attrs, "smooth") + smoothing
@@ -305,7 +273,7 @@ docfreq <- function(x, scheme = c("count", "inverse", "inversemax",
 docfreq.default <- function(x, scheme = c("count", "inverse", "inversemax",
                                           "inverseprob", "unary"),
                     base = 10, smoothing = 0, k = 0, threshold = 0) {
-    stop(friendly_class_undefined_message(class(x), "docfreq"))
+    check_class(class(x), "docfreq")
 }
 
 
@@ -364,7 +332,7 @@ featfreq <- function(x) {
 
 #' @export
 featfreq.default <- function(x) {
-    stop(friendly_class_undefined_message(class(x), "featfreq"))
+    check_class(class(x), "featfreq")
 }
 
 #' @export
@@ -433,7 +401,7 @@ dfm_tfidf <- function(x, scheme_tf = "count", scheme_df = "inverse",
 #' @export
 dfm_tfidf.default <- function(x, scheme_tf = "count", scheme_df = "inverse",
                               base = 10, force = FALSE, ...) {
-    stop(friendly_class_undefined_message(class(x), "dfm_tfidf"))
+    check_class(class(x), "dfm_tfidf")
 }
 
 #' @export

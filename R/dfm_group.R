@@ -1,60 +1,57 @@
 #' Combine documents in a dfm by a grouping variable
 #'
-#' Combine documents in a [dfm] by a grouping variable, which can also be
-#' one of the [docvars] attached to the dfm. This is identical in
-#' functionality to using the `"groups"` argument in [dfm()].
+#' Combine documents in a [dfm] by a grouping variable, by summing the cell
+#' frequencies within group and creating new "documents" with the group labels.
 #' @param x a [dfm]
 #' @inheritParams groups
-#' @param force logical; if `TRUE`, group by summing existing counts, even
-#'   if the dfm has been weighted.  This can result in invalid sums, such as
-#'   adding log counts (when a dfm has been weighted by `"logcount"` for
-#'   instance using [dfm_weight()]).  Does not apply to the term
-#'   weight schemes "count" and "prop".
-#' @param fill logical; if `TRUE` and `groups` is a factor, then use
-#'   all levels of the factor when forming the new "documents" of the grouped
-#'   dfm.  This will result in documents with zero feature counts for levels not
-#'   observed.  Has no effect if the `groups` variable(s) are not factors.
+#' @param force logical; if `TRUE`, group by summing existing counts, even if
+#'   the dfm has been weighted.  This can result in invalid sums, such as adding
+#'   log counts (when a dfm has been weighted by `"logcount"` for instance using
+#'   [dfm_weight()]).  Not needed when the term weight schemes "count" and
+#'   "prop".
 #' @return `dfm_group` returns a [dfm] whose documents are equal to
 #'   the unique group combinations, and whose cell values are the sums of the
 #'   previous values summed by group. Document-level variables that have no
 #'   variation within groups are saved in [docvars].  Document-level
 #'   variables that are lists are dropped from grouping, even when these exhibit
 #'   no variation within groups.
-#'
-#'   Setting the `fill = TRUE` offers a way to "pad" a dfm with document
-#'   groups that may not have been observed, but for which an empty document is
-#'   needed, for various reasons.  If `groups` is a factor of dates, for
-#'   instance, then using `fill = TRUE` ensures that the new documents will
-#'   consist of one row of the dfm per date, regardless of whether any documents
-#'   previously existed with that date.
 #' @export
 #' @examples
 #' corp <- corpus(c("a a b", "a b c c", "a c d d", "a c c d"),
 #'                docvars = data.frame(grp = c("grp1", "grp1", "grp2", "grp2")))
-#' dfmat <- dfm(corp)
-#' dfm_group(dfmat, groups = "grp")
+#' dfmat <- dfm(tokens(corp))
+#' dfm_group(dfmat, groups = grp)
 #' dfm_group(dfmat, groups = c(1, 1, 2, 2))
 #'
-#' # equivalent
-#' dfm(dfmat, groups = "grp")
-#' dfm(dfmat, groups = c(1, 1, 2, 2))
-dfm_group <- function(x, groups = NULL, fill = FALSE, force = FALSE) {
+#' # with fill = TRUE
+#' dfm_group(dfmat, fill = TRUE,
+#'           groups = factor(c("A", "A", "B", "C"), levels = LETTERS[1:4]))
+dfm_group <- function(x, groups = docid(x), fill = FALSE, force = FALSE) {
     UseMethod("dfm_group")
 }
 
 #' @export
-dfm_group.default <- function(x, groups = NULL, fill = FALSE, force = FALSE) {
-    stop(friendly_class_undefined_message(class(x), "dfm_group"))
+dfm_group.default <- function(x, groups, fill = FALSE, force = FALSE) {
+    check_class(class(x), "dfm_group")
 }
     
 #' @export
-dfm_group.dfm <- function(x, groups = NULL, fill = FALSE, force = FALSE) {
-
+dfm_group.dfm <- function(x, groups = docid(x), fill = FALSE, force = FALSE) {
     x <- as.dfm(x)
-    attrs <- attributes(x)
+    fill <- check_logical(fill)
+    force <- check_logical(force)
 
-    if (is.null(groups))
+    attrs <- attributes(x)
+    if (missing(groups)) {
+        field <- NULL
         groups <- docid(x)
+    } else {
+        field <- deparse(substitute(groups))
+        groups <- eval(substitute(groups), get_docvars(x, user = TRUE, system = TRUE), parent.frame())
+        if (!field %in% names(get_docvars(x)) || !is.factor(groups))
+            field <- NULL
+        groups <- as.factor(groups)
+    }
 
     if (!force) {
         if ((!field_object(attrs, "weight_tf")[["scheme"]] %in% c("count", "prop") &&
@@ -65,37 +62,21 @@ dfm_group.dfm <- function(x, groups = NULL, fill = FALSE, force = FALSE) {
         }
     }
     if (!nfeat(x) || !ndoc(x)) return(x)
-    if (!is.factor(groups))
-        groups <- generate_groups(x, groups)
     if (!fill)
         groups <- droplevels(groups)
+    if (ndoc(x) != length(groups))
+        stop("groups must have length ndoc(x)", call. = FALSE)
 
     # remove NA groups
     x <- dfm_subset(x, !is.na(groups))
     groups <- groups[!is.na(groups)]
-    
-    group_dfm(x, documents = groups, fill = fill)
-}
 
-
-#' Generate a grouping vector from docvars
-#'
-#' Internal function to generate a grouping vector from docvars used in
-#' dfm.corpus, dfm.tokens, dfm.group, and tokens_group
-#' @param x corpus, tokens or dfm
-#' @param groups names of docvars or vector that can be coerced to a factor
-#' @return a factor
-#' @keywords internal
-generate_groups <- function(x, groups, drop = FALSE) {
-    docvar <- get_docvars(x, user = TRUE, system = TRUE)
-    if (is.character(groups) && all(groups %in% names(docvar))) {
-        groups <- interaction(docvar[groups], drop = FALSE)
-    } else {
-        if (length(groups) != ndoc(x))
-            stop("groups must name docvars or provide data matching the documents in x")
-        groups <- factor(groups)
-    }
-    return(groups)
+    x <- group_matrix(x, documents = groups, fill = fill)
+    build_dfm(x, colnames(x),
+              unit = "documents",
+              docvars = group_docvars(attrs[["docvars"]], groups, field),
+              meta = attrs[["meta"]]
+    )
 }
 
 # check if values are uniform within groups
@@ -109,10 +90,9 @@ is_grouped <- function(x, group) {
     }
 }
 
-# internal code to perform dfm compression and grouping
+# internal code to perform sparse matrix compression and grouping
 # on features and/or documents
-group_dfm <- function(x, documents = NULL, features = NULL, fill = FALSE,
-                      use_docvars = TRUE) {
+group_matrix <- function(x, documents = NULL, features = NULL, fill = FALSE) {
 
     if (!length(features) && !length(documents))
         return(x)
@@ -135,24 +115,14 @@ group_dfm <- function(x, documents = NULL, features = NULL, fill = FALSE,
         i <- x@i + 1L
     } else {
         if (!is.factor(documents))
-            documents <- factor(documents, levels = unique(features))
+            documents <- factor(documents, levels = unique(documents))
         if (!fill)
             documents <- droplevels(documents)
         docname <- levels(documents)
         i <- as.integer(documents)
         i <- i[x@i + 1L]
     }
-    if (use_docvars) {
-        attrs[["docvars"]] <- select_docvars(attrs[["docvars"]], user = TRUE, system = TRUE)
-    } else {
-        attrs[["docvars"]] <- select_docvars(attrs[["docvars"]], user = FALSE, system = TRUE)
-    }
-    build_dfm(
-        sparseMatrix(i = i, j = j, x = x@x,
-                     dims = c(length(docname), length(featname))),
-        features = featname,
-        unit = "documents",
-        docvars = group_docvars(attrs[["docvars"]], documents),
-        meta = attrs[["meta"]]
-    )
+    sparseMatrix(i = i, j = j, x = x@x, 
+                 dims = c(length(docname), length(featname)),
+                 dimnames = list(docname, featname))
 }

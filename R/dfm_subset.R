@@ -26,26 +26,26 @@
 #' corp <- corpus(c(d1 = "a b c d", d2 = "a a b e",
 #'                  d3 = "b b c e", d4 = "e e f a b"),
 #'                docvars = data.frame(grp = c(1, 1, 2, 3)))
-#' dfmat <- dfm(corp)
+#' dfmat <- dfm(tokens(corp))
 #' # selecting on a docvars condition
 #' dfm_subset(dfmat, grp > 1)
 #' # selecting on a supplied vector
 #' dfm_subset(dfmat, c(TRUE, FALSE, TRUE, FALSE))
-dfm_subset <- function(x, subset, ...) {
+dfm_subset <- function(x, subset, drop_docid = TRUE, ...) {
     UseMethod("dfm_subset")
 }
     
 #' @export
-dfm_subset.default <- function(x, subset, ...) {
-    stop(friendly_class_undefined_message(class(x), "dfm_subset"))
+dfm_subset.default <- function(x, subset, drop_docid = TRUE, ...) {
+    check_class(class(x), "dfm_subset")
 }
     
 #' @export
-dfm_subset.dfm <- function(x, subset, ...) {
-    
-    unused_dots(...)
+dfm_subset.dfm <- function(x, subset, drop_docid = TRUE, ...) {
     
     x <- as.dfm(x)
+    check_dots(...)
+    
     #sys <- select_docvars(x@docvars, system = TRUE)
     docvar <- get_docvars(x, user = TRUE, system = TRUE)
     r <- if (missing(subset)) {
@@ -62,5 +62,5 @@ dfm_subset.dfm <- function(x, subset, ...) {
     #     names(nl) <- names(usr)
     #     eval(substitute(select), nl, parent.frame())
     # }
-    return(x[r,])
+    return(x[r,,drop_docid = drop_docid])
 }

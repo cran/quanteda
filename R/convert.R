@@ -14,7 +14,13 @@
 #'   [lda.collapsed.gibbs.sampler][lda::lda.collapsed.gibbs.sampler] from the
 #'   \pkg{lda} package}
 #'   \item{`"tm"`}{a \link[tm:matrix]{DocumentTermMatrix} from the \pkg{tm}
-#'   package}
+#'   package.  Note: The \pkg{tm} package version of `as.TermDocumentMatrix()`
+#'   allows a `weighting` argument, which supplies a weighting function for
+#'   \code{\link[tm:matrix]{TermDocumentMatrix()}}.  Here the default is for
+#'   term frequency weighting. If you want a different weighting, apply the
+#'   weights after converting using one of the \pkg{tm} functions. For other
+#'   available weighting functions from the \pkg{tm} package, see
+#'   \link[tm:matrix]{TermDocumentMatrix}.}
 #'   \item{`"stm"`}{the  format for the \pkg{stm} package} \item{`"austin"`}{the
 #'   `wfm` format from the **austin** package}
 #'   \item{`"topicmodels"`}{the "dtm" format as used by the \pkg{topicmodels}
@@ -49,8 +55,9 @@
 #' @examples
 #' ## convert a dfm
 #'
-#' corp <- corpus_subset(data_corpus_inaugural, Year > 1970)
-#' dfmat1 <- dfm(corp)
+#' toks <- corpus_subset(data_corpus_inaugural, Year > 1970) %>%
+#'     tokens()
+#' dfmat1 <- dfm(toks)
 #'
 #' # austin's wfm format
 #' identical(dim(dfmat1), dim(convert(dfmat1, to = "austin")))
@@ -81,7 +88,7 @@ convert <- function(x, to, ...) {
 #' @noRd
 #' @export
 convert.default <- function(x, to, ...) {
-    stop(friendly_class_undefined_message(class(x), "convert"))
+    check_class(class(x), "convert")
 }
 
 #' @rdname convert
@@ -90,11 +97,16 @@ convert.dfm <- function(x, to = c("lda", "tm", "stm", "austin", "topicmodels",
                                   "lsa", "matrix", "data.frame", "tripletlist"),
                         docvars = NULL, omit_empty = TRUE, docid_field = "doc_id", 
                         ...) {
-    unused_dots(...)
+
     x <- as.dfm(x)
     to <- match.arg(to)
+    if (!missing(omit_empty)) {
+        omit_empty <- check_logical(omit_empty)
+    }
+    docid_field <- check_character(docid_field)
+    check_dots(...)
+    
     attrs <- attributes(x)
-
     if (!is.null(docvars)) {
         if (!is.data.frame(docvars))
             stop("docvars must be a data.frame")
@@ -102,36 +114,34 @@ convert.dfm <- function(x, to = c("lda", "tm", "stm", "austin", "topicmodels",
             stop("docvars must have the same number of rows as ndoc(x)")
     }
 
-    if ((to %in% c("stm", "lda", "topicmodels")) &&
-        (field_object(attrs, "weight_tf")$scheme != "count" || field_object(attrs, "weight_df")$scheme != "unary")) {
-        stop("cannot convert a non-count dfm to a topic model format")
+    if (to %in% c("stm", "lda", "topicmodels")) {
+        if (field_object(attrs, "weight_tf")$scheme != "count" || field_object(attrs, "weight_df")$scheme != "unary")
+            stop("cannot convert a non-count dfm to a topic model format")
     }
 
-    if (!to %in% c("lda", "topicmodels") && !missing(omit_empty) && omit_empty) {
+    if (!to %in% c("lda", "topicmodels") && !missing(omit_empty)) {
         warning("omit_empty not used for 'to = \"", to, "\"'")
     }
 
-    if (to == "tm")
+    if (to == "tm") {
         return(dfm2tm(x))
-    else if (to == "lda")
+    } else if (to == "lda") {
         return(dfm2lda(x, omit_empty = omit_empty))
-    else if (to == "stm")
+    } else if (to == "stm") {
         return(dfm2stm(x, docvars, omit_empty = TRUE))
-    else if (to == "austin")
+    } else if (to == "austin") {
         return(dfm2austin(x))
-    else if (to == "topicmodels")
+    } else if (to == "topicmodels") {
         return(dfm2dtm(x, omit_empty = omit_empty))
-    else if (to == "lsa")
+    } else if (to == "lsa") {
         return(dfm2lsa(x))
-    else if (to == "data.frame")
+    } else if (to == "data.frame") {
         return(dfm2dataframe(x, docid_field = docid_field))
-    else if (to == "matrix")
+    } else if (to == "matrix") {
         return(as.matrix(x))
-    else if (to == "tripletlist")
+    } else if (to == "tripletlist") {
         return(dfm2tripletlist(x))
-    else
-        stop("invalid \"to\" format")
-
+    }
 }
 
 #' @rdname convert
@@ -147,20 +157,20 @@ convert.dfm <- function(x, to = c("lda", "tm", "stm", "austin", "topicmodels",
 #' convert(corp, to = "data.frame")
 #' convert(corp, to = "json")
 convert.corpus <- function(x, to = c("data.frame", "json"), pretty = FALSE, ...) {
-    unused_dots(...)
+    
     to <- match.arg(to)
-
+    pretty <- check_logical(pretty)
+    check_dots(...)
+    
     if (to == "data.frame") {
-        df <- data.frame(doc_id = docnames(x),
-                         text = texts(x),
+        result <- data.frame(doc_id = docnames(x),
+                         text = as.character(x, use.names = FALSE),
                          stringsAsFactors = FALSE,
                          row.names = NULL)
-        df <- cbind(df, docvars(x))
-        return(df)
+        result <- cbind(result, docvars(x))
+        return(result)
     } else if (to == "json") {
         return(jsonlite::toJSON(convert(x, to = "data.frame"), pretty = pretty))
-    } else {
-        stop("invalid \"to\" format")
     }
 }
 
@@ -187,64 +197,18 @@ convert.corpus <- function(x, to = c("data.frame", "json"), pretty = FALSE, ...)
 #' @name convert-wrappers
 #' @keywords internal
 #' @examples
-#' corp <- corpus_subset(data_corpus_inaugural, Year > 1970)
-#' dfmat <- dfm(corp)
+#' dfmat <- corpus_subset(data_corpus_inaugural, Year > 1970) %>%
+#'     tokens() %>%
+#'     dfm()
 #'
 NULL
-
-#' @rdname convert-wrappers
-#' @details `as.wfm` converts a quanteda [dfm] into the
-#' `wfm` format used by the `austin` package.
-#' @export
-#' @examples
-#' # shortcut conversion to austin package's wfm format
-#' identical(as.wfm(dfmat), convert(dfmat, to = "austin"))
-#'
-as.wfm <- function(x) {
-    UseMethod("as.wfm")
-}
-
-#' @rdname convert-wrappers
-#' @method as.wfm dfm
-#' @export
-as.wfm.dfm <- function(x) {
-    convert(as.dfm(x), to = "austin")
-}
-
-#' @export
-#' @rdname convert-wrappers
-#' @details `as.DocumentTermMatrix` will convert a quanteda [dfm] into the
-#'   \pkg{tm} package's \link[tm:matrix]{DocumentTermMatrix} format. Note: The
-#'   \pkg{tm} package version of `as.TermDocumentMatrix()` allows a `weighting`
-#'   argument, which supplies a weighting function for
-#'   \code{\link[tm:matrix]{TermDocumentMatrix()}}.  Here the default is for
-#'   term frequency weighting. If you want a different weighting, apply the
-#'   weights after converting using one of the \pkg{tm} functions. For other
-#'   available weighting functions from the \pkg{tm} package, see
-#'   \link[tm:matrix]{TermDocumentMatrix}.
-#' @examples
-#' \dontrun{
-#' # shortcut conversion to tm package's DocumentTermMatrix format
-#' identical(as.DocumentTermMatrix(dfmat), convert(dfmat, to = "tm"))
-#' }
-#'
-as.DocumentTermMatrix <- function(x) {
-    UseMethod("as.DocumentTermMatrix")
-}
-
-#' @rdname convert-wrappers
-#' @method as.DocumentTermMatrix dfm
-#' @export
-as.DocumentTermMatrix.dfm <- function(x) {
-    convert(as.dfm(x), to = "tm")
-}
 
 #' @rdname convert-wrappers
 dfm2austin <- function(x) {
     result <- as.matrix(as(x, "dgeMatrix"))
     names(dimnames(result))[2] <- "words"
     class(result) <- c("wfm", "matrix")
-    result
+    return(result)
 }
 
 #' @rdname convert-wrappers
@@ -393,8 +357,8 @@ ijv.to.doc <- function(i, j, v) {
 #' @param x dfm to be converted
 #' @examples
 #' \dontrun{
-#' (dfmat <- dfm(c(d1 = "this is a first matrix",
-#'                 d2 = "this is second matrix as example")))
+#' (dfmat <- dfm(tokens(c(d1 = "this is a first matrix",
+#'                        d2 = "this is second matrix as example"))))
 #' lsa::lsa(convert(dfmat, to = "lsa"))
 #' }
 #' @keywords internal
@@ -421,14 +385,14 @@ dfm2dataframe <- function(x, row.names = NULL, ..., document = docnames(x),
                           docid_field = "doc_id", check.names = FALSE) {
     if (!(is.character(document) || is.null(document)))
         stop("document must be character or NULL")
-    df <- data.frame(as.matrix(x), row.names = row.names,
-                     check.names = check.names)
+    result <- data.frame(as.matrix(x), row.names = row.names,
+                         check.names = check.names)
     if (!is.null(document)) {
-        if (docid_field %in% names(df)) {
+        if (docid_field %in% names(result)) {
             stop("'", docid_field, "' matches a feature in the dfm; use a different docid_field value")
         }
-        df <- cbind(document, df, stringsAsFactors = FALSE)
-        names(df)[1] <- docid_field
+        result <- cbind(document, result, stringsAsFactors = FALSE)
+        names(result)[1] <- docid_field
     }
-    df
+    return(result)
 }

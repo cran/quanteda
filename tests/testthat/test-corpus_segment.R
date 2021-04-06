@@ -1,5 +1,3 @@
-context("test corpus_segment")
-
 test_that("char_segment works with punctuations", {
     txt <- c(d1 = "Sentence one.  Second sentence is this one!\n
              Here is the third sentence.",
@@ -57,19 +55,23 @@ test_that("corpus_segment works with blank before tag", {
     expect_equal(as.character(summ[1, "Text"]), "text1.1")
 })
 
-
 test_that("corpus_segment works with use_docvars TRUE or FALSE", {
     corp <- corpus(c(d1 = "##TEST One two ##TEST2 Three",
-                     d2 = "##TEST3 Four"),
-                     docvars = data.frame(test = c("A", "B"), stringsAsFactors = FALSE))
+                     d2 = "##TEST3 Four", 
+                     d3 = ""),
+                     docvars = data.frame(test = c("A", "B", "B"), stringsAsFactors = FALSE))
     corp_seg1 <- corpus_segment(corp, "##[A-Z0-9]+", valuetype = "regex", 
                                 pattern_position = "before", extract_pattern = TRUE, 
                                 use_docvars = TRUE)
     expect_equal(docvars(corp_seg1, "test"), c("A", "A", "B"))
+    expect_equal(docid(corp_seg1), 
+                 factor(c("d1", "d1", "d2"), levels = c("d1", "d2", "d3")))
     
     corp_seg2 <- corpus_segment(corp, "##[A-Z0-9]+", valuetype = "regex", 
                                 pattern_position = "before", extract_pattern = TRUE, use_docvars = FALSE)
     expect_error(docvars(corp_seg2, "test"))
+    expect_equal(docid(corp_seg2), 
+                 factor(c("d1", "d1", "d2"), levels = c("d1", "d2", "d3")))
 })
 
 test_that("char_segment works with Japanese texts", {
@@ -91,7 +93,7 @@ test_that("corpus_segment works with position argument", {
                       d2 = "##TEST3 Four"))
     corp1_seg <- corpus_segment(corp1, '##', valuetype = 'fixed', 
                                 pattern_position = "before", extract_pattern = FALSE)
-    expect_equal(texts(corp1_seg), c("d1.1" = "##TEST One two",
+    expect_equal(as.character(corp1_seg), c("d1.1" = "##TEST One two",
                                      "d1.2" = "##TEST2 Three",
                                      "d2.1" = "##TEST3 Four"))
     
@@ -99,7 +101,7 @@ test_that("corpus_segment works with position argument", {
                       d2 = "TEST3 Four;"))
     corp2_seg <- corpus_segment(corp2, ';', valuetype = 'fixed', 
                                 pattern_position = 'after', extract_pattern = FALSE)
-    expect_equal(texts(corp2_seg), c("d1.1" = "TEST One two;",
+    expect_equal(as.character(corp2_seg), c("d1.1" = "TEST One two;",
                                      "d1.2" = "TEST2 Three;",
                                      "d2.1" = "TEST3 Four;"))
     
@@ -107,7 +109,7 @@ test_that("corpus_segment works with position argument", {
                       d2 = "??TEST3 Four"))
     corp3_seg <- corpus_segment(corp3, '[*#?]{2}', valuetype = 'regex', 
                                 pattern_position = 'before', extract_pattern = FALSE)
-    expect_equal(texts(corp3_seg), c("d1.1" = "**TEST One two",
+    expect_equal(as.character(corp3_seg), c("d1.1" = "**TEST One two",
                                      "d1.2" = "##TEST2 Three",
                                      "d2.1" = "??TEST3 Four"))
     
@@ -115,7 +117,7 @@ test_that("corpus_segment works with position argument", {
                       d2 = "TEST3 Four!"))
     corp4_seg <- corpus_segment(corp4, '[!?;]', valuetype = 'regex', pattern_position = 'after',
                                 extract_pattern = FALSE)
-    expect_equal(texts(corp4_seg), c("d1.1" = "TEST One two;",
+    expect_equal(as.character(corp4_seg), c("d1.1" = "TEST One two;",
                                      "d1.2" = "TEST2 Three?",
                                      "d2.1" = "TEST3 Four!"))
     
@@ -133,7 +135,7 @@ test_that("corpus_segment works for delimiter with remove_pattern", {
                                   pattern_position = "after",
                                   extract_pattern = FALSE)
 
-    expect_equal(texts(corp_seg1),
+    expect_equal(as.character(corp_seg1),
                  c(d1.1 = "Sentence one.",
                    d1.2 = "Second sentence is this one!",
                    d1.3 = "Here is the third sentence.",
@@ -143,7 +145,7 @@ test_that("corpus_segment works for delimiter with remove_pattern", {
     corp_seg2 <- corpus_segment(corp, pattern = '[.!?]', valuetype = 'regex',
                                   pattern_position = "after",
                                   extract_pattern = TRUE)
-    expect_equal(texts(corp_seg2),
+    expect_equal(as.character(corp_seg2),
                  c(d1.1 = "Sentence one",
                    d1.2 = "Second sentence is this one",
                    d1.3 = "Here is the third sentence",
@@ -175,25 +177,25 @@ test_that("corpus_segment works for begining and end tags", {
     
     corp_seg1 <- corpus_segment(corp, "##*", pattern_position = "before", extract_pattern = TRUE)
     expect_equal(head(docvars(corp_seg1, "pattern"), 1), "##START")
-    expect_equal(head(texts(corp_seg1), 1), c(d1.1 = ""))
+    expect_equal(head(as.character(corp_seg1), 1), c(d1.1 = ""))
     expect_equal(tail(docvars(corp_seg1, "pattern"), 1), "##END")
-    expect_equal(tail(texts(corp_seg1), 1), c(d2.4 = ""))
+    expect_equal(tail(as.character(corp_seg1), 1), c(d2.4 = ""))
     
     corp_seg2 <- corpus_segment(corp, "##*", pattern_position = "before", extract_pattern = FALSE)
     expect_error(docvars(corp_seg2, "pattern"))
-    expect_equal(head(texts(corp_seg2), 1), c(d1.1 = "##START"))
-    expect_equal(tail(texts(corp_seg2), 1), c(d2.4 = "##END"))
+    expect_equal(head(as.character(corp_seg2), 1), c(d1.1 = "##START"))
+    expect_equal(tail(as.character(corp_seg2), 1), c(d2.4 = "##END"))
     
     corp_seg3 <- corpus_segment(corp, "##*", pattern_position = "after", extract_pattern = TRUE)
     expect_equal(head(docvars(corp_seg3, "pattern"), 1), "##START")
-    expect_equal(head(texts(corp_seg3), 1), c(d1.1 = ""))
+    expect_equal(head(as.character(corp_seg3), 1), c(d1.1 = ""))
     expect_equal(tail(docvars(corp_seg3, "pattern"), 1), "##END")
-    expect_equal(tail(texts(corp_seg3), 1), c(d2.4 = "Three."))
+    expect_equal(tail(as.character(corp_seg3), 1), c(d2.4 = "Three."))
     
     corp_seg4 <- corpus_segment(corp, "##*", pattern_position = "after", extract_pattern = FALSE)
     expect_error(docvars(corp_seg4, "pattern"))
-    expect_equal(head(texts(corp_seg4), 1), c(d1.1 = "##START"))
-    expect_equal(tail(texts(corp_seg4), 1), c(d2.4 = "Three. ##END"))
+    expect_equal(head(as.character(corp_seg4), 1), c(d1.1 = "##START"))
+    expect_equal(tail(as.character(corp_seg4), 1), c(d2.4 = "Three. ##END"))
     
 })
 
@@ -208,10 +210,10 @@ test_that("corpus_segment works with multiple patterns (#1394)", {
                      c("This is a test\\n", "John Doe", "Library of Congress"))
     
     
-    expect_identical(texts(corpus_segment(corpus(txt), c("INTRODUCTION*", "CONTACT", "SOURCE"), valuetype = "glob")),
+    expect_identical(as.character(corpus_segment(corpus(txt), c("INTRODUCTION*", "CONTACT", "SOURCE"), valuetype = "glob")),
                      c(text1.1 = "This is a test\\n", text1.2 = "John Doe", text1.3 = "Library of Congress"))
     
-    expect_identical(texts(corpus_segment(corpus(txt), c("INTRODUCTION", "CONTACT", "SOURCE"), valuetype = "fixed")),
+    expect_identical(as.character(corpus_segment(corpus(txt), c("INTRODUCTION", "CONTACT", "SOURCE"), valuetype = "fixed")),
                      c(text1.1 = "This is a test\\n", text1.2 = "John Doe", text1.3 = "Library of Congress"))
     
 })
@@ -224,7 +226,7 @@ test_that("corpus_segment works can be used multiple times", {
     corp_seg2 <- corpus_segment(corp_seg, ".", valuetype = "fixed", 
                                 pattern_position = "after", extract_pattern = TRUE)
     
-    expect_equal(texts(corp_seg2), c("text1.1" = "First sentences in Doc 1",
+    expect_equal(as.character(corp_seg2), c("text1.1" = "First sentences in Doc 1",
                                      "text1.2" = "Second sentence in Doc 1",
                                      "text1.3" = "First sentences in Doc 2",
                                      "text1.4" = "Second sentence in Doc 2"))

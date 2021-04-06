@@ -1,8 +1,6 @@
-context("test dfm_compress")
-
 test_that("dfm_compress: simple test", {
-    mat <- rbind(dfm(c("b A A", "C C a b B"), tolower = FALSE, verbose = FALSE),
-                 dfm("A C C C C C", tolower = FALSE, verbose = FALSE))
+    mat <- rbind(dfm(tokens(c("b A A", "C C a b B")), tolower = FALSE, verbose = FALSE),
+                 dfm(tokens("A C C C C C"), tolower = FALSE, verbose = FALSE))
     colnames(mat) <- char_tolower(featnames(mat))
     expect_equal(as.matrix(dfm_compress(mat, margin = "documents")),
                  matrix(c(1,1,3,0,5,2,0,1,0,1), nrow = 2,
@@ -20,9 +18,8 @@ test_that("dfm_compress: simple test", {
     )
 })
 
-
 test_that("dfm_compress: no effect if no compression needed", {
-    compactdfm <- dfm(data_corpus_inaugural[1:5], tolower = TRUE, verbose = FALSE)
+    compactdfm <- dfm(tokens(data_corpus_inaugural[1:5]), tolower = TRUE, verbose = FALSE)
     expect_equal(dim(compactdfm), dim(dfm_compress(compactdfm)))
 })
 
@@ -42,32 +39,11 @@ test_that("dfm_compress: empty documents are preserved", {
     expect_equal(rowSums(dfm_compress(testdfm))[3], c(d3 = 0))
 })
 
-#test_that("dfm_compress dfmDense: simple test", {
-#    mat <- rbind(dfm(c("b A A", "C C a b B"), tolower = FALSE, verbose = FALSE),
-#                 dfm("A C C C C C", tolower = FALSE, verbose = FALSE))
-#    # make into a dense object
-#    mat <- dfm_smooth(mat)
-#    colnames(mat) <- char_tolower(featnames(mat))
-#    expect_equal(as.matrix(dfm_compress(mat, margin = "documents")),
-#                 matrix(c(3,2,5,1,7,3,2,2,2,2), nrow = 2,
-#                        dimnames = list(docs = c("text1", "text2"), features = featnames(mat))))
-#    expect_equal(
-#        as.matrix(dfm_compress(mat, margin = "features")),
-#        matrix(c(3,4,2,4,3,3,1,3,6), nrow = 3,
-#               dimnames = list(docs = docnames(mat), features = c("b", "a", "c")))
-#    )
-#    expect_equal(
-#        as.matrix(dfm_compress(mat, margin = "both")),
-#        matrix(c(5,4,7,3,7,3), nrow = 2,
-#               dimnames = list(docs = c("text1", "text2"), features = c("b", "a", "c")))
-#    )
-#})
-
 test_that("dfm_compress preserves docvars (#1506)", {
     corp <- corpus(c(d1 = "A A A b c D D",
                  d2 = "b b b b D D D"),
                docvars = data.frame(bool = c(TRUE, FALSE)))
-    thedfm <- dfm(corp)
+    thedfm <- dfm(tokens(corp))
     # this ensures the existence of _document
     docnames(thedfm) <- docnames(thedfm)
     
@@ -86,19 +62,19 @@ test_that("dfm_compress preserves docvars (#1506)", {
     )
 })
 
-test_that("add test for group_dfm with features and fill = TRUE", {
-    x <- dfm(c("a a b c d", "b c d e"))
+test_that("add test for group_matrix with features and fill = TRUE", {
+    x <- dfm(tokens(c("a a b c d", "b c d e")))
     colnames(x)[4] <- "e"
     expect_identical(
-        as.matrix(quanteda:::group_dfm(x, fill = TRUE,
-                                       features = factor(featnames(x), levels = letters[1:5]))),
+        as.matrix(quanteda:::group_matrix(x, fill = TRUE,
+                                          features = factor(featnames(x), levels = letters[1:5]))),
         matrix(c(2, 0, 1, 1, 1, 1, 0, 0, 1, 2), nrow = 2,
-               dimnames = list(docs = paste0("text", 1:2), features = c("a", "b", "c", "d", "e")))
+               dimnames = list(paste0("text", 1:2), c("a", "b", "c", "d", "e")))
     )
     expect_identical(
-        as.matrix(quanteda:::group_dfm(x, fill = FALSE,
-                                       features = factor(featnames(x), levels = letters[1:5]))),
+        as.matrix(quanteda:::group_matrix(x, fill = FALSE,
+                                          features = factor(featnames(x), levels = letters[1:5]))),
         matrix(c(2, 0, 1, 1, 1, 1, 1, 2), nrow = 2,
-               dimnames = list(docs = paste0("text", 1:2), features = c("a", "b", "c", "e")))
+               dimnames = list(paste0("text", 1:2), c("a", "b", "c", "e")))
     )
 })

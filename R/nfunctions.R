@@ -15,7 +15,7 @@
 #' ndoc(data_corpus_inaugural)
 #' ndoc(corpus_subset(data_corpus_inaugural, Year > 1980))
 #' ndoc(tokens(data_corpus_inaugural))
-#' ndoc(dfm(corpus_subset(data_corpus_inaugural, Year > 1980)))
+#' ndoc(dfm(tokens(corpus_subset(data_corpus_inaugural, Year > 1980))))
 #'
 ndoc <- function(x) {
     UseMethod("ndoc")
@@ -23,7 +23,7 @@ ndoc <- function(x) {
 
 #' @export
 ndoc.default <- function(x) {
-    stop(friendly_class_undefined_message(class(x), "ndoc"))
+    check_class(class(x), "ndoc")
 }
 
 #' @export
@@ -51,15 +51,17 @@ ndoc.tokens <- function(x) {
 #' @seealso [ntoken()]
 #' @examples
 #' # number of features
-#' nfeat(dfm(corpus_subset(data_corpus_inaugural, Year > 1980), remove_punct = FALSE))
-#' nfeat(dfm(corpus_subset(data_corpus_inaugural, Year > 1980), remove_punct = TRUE))
+#' toks1 <- tokens(corpus_subset(data_corpus_inaugural, Year > 1980), remove_punct = FALSE)
+#' toks2 <- tokens(corpus_subset(data_corpus_inaugural, Year > 1980), remove_punct = TRUE)
+#' nfeat(dfm(toks1))
+#' nfeat(dfm(toks2))
 nfeat <- function(x) {
     UseMethod("nfeat")
 }
 
 #' @export
 nfeat.default <- function(x) {
-    stop(friendly_class_undefined_message(class(x), "nfeat"))
+    check_class(class(x), "nfeat")
 }
 
 #' @export
@@ -97,8 +99,8 @@ nfeat.dfm <- function(x) {
 #' # with some real texts
 #' ntoken(corpus_subset(data_corpus_inaugural, Year < 1806), remove_punct = TRUE)
 #' ntype(corpus_subset(data_corpus_inaugural, Year < 1806), remove_punct = TRUE)
-#' ntoken(dfm(corpus_subset(data_corpus_inaugural, Year < 1800)))
-#' ntype(dfm(corpus_subset(data_corpus_inaugural, Year < 1800)))
+#' ntoken(dfm(tokens(corpus_subset(data_corpus_inaugural, Year < 1800))))
+#' ntype(dfm(tokens(corpus_subset(data_corpus_inaugural, Year < 1800))))
 #' @export
 ntoken <- function(x, ...) {
     UseMethod("ntoken")
@@ -106,7 +108,7 @@ ntoken <- function(x, ...) {
 
 #' @export
 ntoken.default <- function(x, ...) {
-    stop(friendly_class_undefined_message(class(x), "ntoken"))
+    check_class(class(x), "ntoken")
 }
 
 #' @rdname ntoken
@@ -120,13 +122,13 @@ ntype <- function(x, ...) {
 
 #' @export
 ntype.default <- function(x, ...) {
-    stop(friendly_class_undefined_message(class(x), "ntype"))
+    check_class(class(x), "ntype")
 }
 
 #' @export
 ntoken.corpus <- function(x, ...) {
     x <- as.corpus(x)
-    ntoken(texts(x), ...)
+    ntoken(as.character(x), ...)
 }
 
 #' @export
@@ -145,8 +147,10 @@ ntoken.tokens <- function(x, ...) {
 
 #' @export
 ntoken.dfm <- function(x, ...) {
+    
     x <- as.dfm(x)
-    unused_dots(...)
+    check_dots(...)
+    
     result <- as.integer(rowSums(x))
     names(result) <- docnames(x)
     result
@@ -163,13 +167,15 @@ ntype.character <- function(x, ...) {
 #' @export
 ntype.corpus <- function(x, ...) {
     x <- as.corpus(x)
-    ntype(texts(x), ...)
+    ntype(as.character(x), ...)
 }
 
 #' @export
 ntype.dfm <- function(x, ...) {
-    unused_dots(...)
+    
     x <- as.dfm(x)
+    check_dots(...)
+    
     # only returns total non-zero features
     result <- as.integer(rowSums(x > 0))
     names(result) <- docnames(x)
@@ -206,7 +212,7 @@ nsentence <- function(x) {
 
 #' @export
 nsentence.default <- function(x) {
-    stop(friendly_class_undefined_message(class(x), "nsentence"))
+    check_class(class(x), "nsentence")
 }
 
 #' @export
@@ -223,7 +229,7 @@ nsentence.character <- function(x) {
 #' @export
 nsentence.corpus <- function(x) {
     x <- as.corpus(x)
-    nsentence(texts(x))
+    nsentence(as.character(x))
 }
 
 #' @export

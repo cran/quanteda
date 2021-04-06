@@ -1,5 +1,3 @@
-context("test phrase() function")
-
 test_that("test phrase for character", {
     txt <- c("capital gains tax", "one two", "three")
     expect_equivalent(
@@ -27,16 +25,6 @@ test_that("test phrase for dictionaries", {
     expect_equivalent(
         phrase(dict),
         list(c("united", "states"), c("congress"), c("feder*", "gov*"))
-    )
-})
-
-test_that("test phrase for collocations", {
-    toks <- tokens(c("United States", "Congress", "federal government"))
-
-    colls <- textstat_collocations(toks, min_count = 1, tolower = FALSE)
-    expect_equivalent(
-        phrase(colls),
-        list(c("United", "States"), c("federal", "government"))
     )
 })
 

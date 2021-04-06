@@ -1,32 +1,7 @@
-context("test kwic")
-
-test_that("test attr(kwic, 'ntoken') with un-named texts", {
-    txt <- c(
-        "The quick brown fox jumped over the lazy dog",
-        "The quick brown fox",
-        "The quick brown dog jumped over the lazy dog",
-        NA
-    )
-    kw <- kwic(txt, "fox")
-
-    expect_equal(
-        attr(kw, "ntoken"),
-        c("text1" = 9, "text2" = 4, "text3" = 9, "text4" = 0)
-    )
-})
-
-test_that("test attr(kwic, 'ntoken') text names", {
-    kw <- kwic(data_corpus_inaugural, "american")
-    expect_equal(
-        names(attr(kw, "ntoken")),
-        names(texts(data_corpus_inaugural))
-    )
-})
-
 test_that("test kwic general", {
-    txt <- paste(LETTERS, collapse = " ")
+    txt <- tokens(paste(LETTERS, collapse = " "))
     expect_equal(
-        data.frame(kwic(txt, "D")),
+        as.data.frame(kwic(txt, "D")),
         data.frame(
             docname = c("text1"),
             from = 4L,
@@ -35,10 +10,35 @@ test_that("test kwic general", {
             keyword = "D",
             post = "E F G H I",
             pattern = factor("D"),
+            stringsAsFactors = FALSE)
+    )
+    
+    expect_equal(
+        as.data.frame(kwic(txt, "D", window = 2)),
+        data.frame(
+            docname = c("text1"),
+            from = 4L,
+            to = 4L,
+            pre = "B C",
+            keyword = "D",
+            post = "E F",
+            pattern = factor("D"),
+            stringsAsFactors = FALSE))
+    
+    expect_equal(
+        as.data.frame(kwic(txt, "D", window = 2, separator = "_")),
+        data.frame(
+            docname = c("text1"),
+            from = 4L,
+            to = 4L,
+            pre = "B_C",
+            keyword = "D",
+            post = "E_F",
+            pattern = factor("D"),
             stringsAsFactors = FALSE))
 
     expect_equal(
-        data.frame(kwic(txt, "D", separator = "")),
+        as.data.frame(kwic(txt, "D", separator = "")),
         data.frame(
             docname = c("text1"),
             from = 4L,
@@ -50,9 +50,8 @@ test_that("test kwic general", {
             stringsAsFactors = FALSE))
 })
 
-
 test_that("test kwic on first token", {
-    testkwic <- kwic(paste(LETTERS, collapse = " "), "A")
+    testkwic <- kwic(tokens(paste(LETTERS, collapse = " ")), "A")
     expect_equivalent(
         as.data.frame(testkwic),
         data.frame(
@@ -69,9 +68,9 @@ test_that("test kwic on first token", {
 })
 
 test_that("test kwic on last token", {
-    testkwic <- kwic(paste(LETTERS, collapse = " "), "Z")
+    testkwic <- kwic(tokens(paste(LETTERS, collapse = " ")), "Z")
     expect_equivalent(
-        data.frame(testkwic),
+        as.data.frame(testkwic),
         data.frame(
             docname = c("text1"),
             from = 26L,
@@ -87,9 +86,9 @@ test_that("test kwic on last token", {
 
 test_that("test kwic on two tokens", {
     txt <- "A B C D E F G D H"
-    testkwic <- kwic(txt, c("D", "E"), 3)
+    testkwic <- kwic(tokens(txt), c("D", "E"), window = 3)
     expect_equivalent(
-        testkwic,
+        as.data.frame(testkwic),
         data.frame(
             docname = "text1",
             from = c(4L, 5L, 8L),
@@ -103,7 +102,7 @@ test_that("test kwic on two tokens", {
 })
 
 test_that("test kwic on non-existent token", {
-    testkwic <- kwic(paste(LETTERS, collapse = " "), "É")
+    testkwic <- kwic(tokens(paste(LETTERS, collapse = " ")), "É")
     expect_true(is.data.frame(testkwic))
 })
 
@@ -112,9 +111,9 @@ test_that("test kwic on multiple texts", {
         paste(LETTERS[2:26], collapse = " "),
         paste(LETTERS, collapse = " ")
     ))
-    testkwic <- kwic(testcorpus, "A")
+    testkwic <- kwic(tokens(testcorpus), "A")
     expect_that(
-        data.frame(testkwic),
+        as.data.frame(testkwic),
         equals(data.frame(
             docname = c("text2"),
             from = 1L,
@@ -132,9 +131,9 @@ test_that("test kwic with multiple matches", {
     testcorpus <- corpus(c(
         paste(c(LETTERS, LETTERS), collapse = " ")
     ))
-    testkwic <- kwic(testcorpus, "A")
+    testkwic <- kwic(tokens(testcorpus), "A")
     expect_that(
-        data.frame(testkwic),
+        as.data.frame(testkwic),
         equals(data.frame(
             docname = c(c("text1", "text1")),
             from = c(1L, 27L),
@@ -143,15 +142,15 @@ test_that("test kwic with multiple matches", {
             keyword = c("A", "A"),
             post = c("B C D E F", "B C D E F"),
             pattern = factor(c("A", "A")),
-            stringsAsFactors = F
+            stringsAsFactors = FALSE
         ))
     )
 })
 
 test_that("test kwic with multiple matches, where one is the last (fixed bug)", {
-    testkwic <- kwic("what does the fox say fox", "fox")
+    testkwic <- kwic(tokens("what does the fox say fox"), "fox")
     expect_that(
-        data.frame(testkwic),
+        as.data.frame(testkwic),
         equals(data.frame(
             docname = c(c("text1", "text1")),
             from = c(4L, 6L),
@@ -167,97 +166,138 @@ test_that("test kwic with multiple matches, where one is the last (fixed bug)", 
 
 test_that("test that kwic works for glob types", {
     txt <- data_corpus_inaugural["2005-Bush"]
-    kwic_glob <- kwic(txt, "secur*", window = 3, valuetype = "glob", case_insensitive = TRUE)
+    kwic_glob <- kwic(tokens(txt), "secur*", valuetype = "glob", case_insensitive = TRUE)
     expect_true(
         setequal(c("security", "secured", "securing", "Security"),
-                 unique(kwic_glob$keyword))
+                 as.data.frame(kwic_glob)$keyword)
     )
 
-    kwic_glob2 <- kwic(txt, "secur*", window = 3, valuetype = "glob", case_insensitive = FALSE)
+    kwic_glob2 <- kwic(tokens(txt), "secur*", valuetype = "glob", case_insensitive = FALSE)
     expect_true(
         setequal(c("security", "secured", "securing"),
-                 unique(kwic_glob2$keyword))
+                 as.data.frame(kwic_glob2)$keyword)
     )
-
 })
 
 test_that("test that kwic works for regex types", {
-
     txt <- data_corpus_inaugural["2005-Bush"]
-    kwic_regex <- kwic(txt, "^secur", window = 3, valuetype = "regex", case_insensitive = TRUE)
+    kwic_regex <- kwic(tokens(txt), "^secur",valuetype = "regex", case_insensitive = TRUE)
     expect_true(
         setequal(c("security", "secured", "securing", "Security"),
-                 unique(kwic_regex$keyword))
+                 as.data.frame(kwic_regex)$keyword)
     )
 
-    kwic_regex2 <- kwic(txt, "^secur", window = 3, valuetype = "regex", case_insensitive = FALSE)
+    kwic_regex2 <- kwic(tokens(txt), "^secur", valuetype = "regex", case_insensitive = FALSE)
     expect_true(
         setequal(c("security", "secured", "securing"),
-                 unique(kwic_regex2$keyword))
+                 as.data.frame(kwic_regex2)$keyword)
     )
 
 })
 
 test_that("test that kwic works for fixed types", {
-    kwic_fixed <- kwic(data_corpus_inaugural, "security", window = 3, valuetype = "fixed",
+    kwic_fixed <- kwic(tokens(data_corpus_inaugural), "security", valuetype = "fixed",
                        case_insensitive = TRUE)
     expect_true(
         setequal(c("security", "Security"),
-                 unique(kwic_fixed$keyword))
+                 as.data.frame(kwic_fixed)$keyword)
     )
 
-    kwic_fixed2 <- kwic(data_corpus_inaugural, "security", window = 3, valuetype = "fixed",
+    kwic_fixed2 <- kwic(tokens(data_corpus_inaugural), "security", valuetype = "fixed",
                         case_insensitive = FALSE)
     expect_true(
         setequal(c("security"),
-                 unique(kwic_fixed2$keyword))
+                 as.data.frame(kwic_fixed2)$keyword)
     )
 })
 
+test_that("test that kwic works with index", {
+  toks <- tokens(data_corpus_inaugural)
+  idx <- index(toks, "security")
+  kiwc_idx <- kwic(toks, index = idx)
+  kwic_pat <- kwic(toks, pattern = "security")
+  expect_identical(kiwc_idx, kwic_pat)
+  
+  kiwc_idx2 <- kwic(toks, index = idx[c(2, 3, 1),])
+  kwic_pat2 <- kwic(toks, pattern = "security")[c(2, 3, 1),]
+  expect_identical(kiwc_idx2, kwic_pat2)
+  
+  expect_error(kwic(toks),
+               "Either pattten or index must be provided")
+  expect_error(kwic(toks, index = data.frame(1:5)),
+               "Invalid index object")
+})
+
 test_that("is.kwic works as expected", {
-    kwic1 <- kwic(data_corpus_inaugural[1:3], "provident*")
+    kwic1 <- kwic(tokens(data_corpus_inaugural[1:3]), "provident*")
     expect_true(is.kwic(kwic1))
     expect_false(is.kwic("Not a kwic"))
-    expect_false(is.kwic(kwic1[, c("pre", "post")]))
 
-    kwic2 <- kwic(data_corpus_inaugural[1:3], "abcdefg")
+    kwic2 <- kwic(tokens(data_corpus_inaugural[1:3]), "abcdefg")
     expect_true(is.kwic(kwic2))
 })
 
-test_that("textplot_xray works with new kwic, one token phrase", {
-    data_corpus_inauguralpost70 <- corpus_subset(data_corpus_inaugural, Year > 1970)
-    knew <- kwic(data_corpus_inauguralpost70, "american")
-    expect_silent(textplot_xray(knew))
-})
-
-test_that("textplot_xray works with new kwic, two token phrase", {
-    data_corpus_inauguralpost70 <- corpus_subset(data_corpus_inaugural, Year > 1970)
-    knew <- kwic(data_corpus_inauguralpost70, phrase("american people"))
-    expect_silent(textplot_xray(knew))
-})
-
 test_that("print method works as expected", {
-    testkwic <- kwic("what does the fox say fox", "fox")
-    expect_output(print(testkwic), "*\\| fox \\|*")
-    expect_output(print(testkwic), "\\[text1, 4\\]*")
-
-    testkwic <- kwic("what does the fox say fox", "foox")
-    expect_output(print(testkwic), "kwic object with 0 rows")
+    testkwic <- kwic(tokens("what does the fox say fox"), "fox")
+    expect_output(
+        print(testkwic), 
+        "Keyword-in-context with 2 matches.                                                 
+ [text1, 4]         what does the | fox | say fox
+ [text1, 6] what does the fox say | fox |",
+        fixed = TRUE
+        )
+        
+    testkwic <- kwic(tokens("what does the fox say fox"), "foox")
+    expect_output(print(testkwic), "Keyword-in-context with 0 matches.", fixed = TRUE)
+    
+    toks <- tokens(data_corpus_inaugural[1:8])
+    kw <- kwic(toks, "secure*", window = 1)
+    out <- "Keyword-in-context with 6 matches.                                                  
+      [1797-Adams, 478]   and | secure  | the     
+     [1797-Adams, 1512]   and | secured | immortal
+ [1805-Jefferson, 2367] shall | secure  | to      
+    [1817-Monroe, 1754]    To | secure  | us      
+    [1817-Monroe, 1814]    to | secure  | our     
+    [1817-Monroe, 3009]    to | secure  | economy"
+    expect_output(print(kw, max_nrow = -1), out, fixed = TRUE)
+    expect_output(print(kw, max_nrow = 6), out, fixed = TRUE)
+    expect_output(print(kw, max_nrow = 7), out, fixed = TRUE)
+    expect_output(print(kw, show_summary = FALSE),
+                  "      [1797-Adams, 478]   and | secure  | the     
+     [1797-Adams, 1512]   and | secured | immortal
+ [1805-Jefferson, 2367] shall | secure  | to      
+    [1817-Monroe, 1754]    To | secure  | us      
+    [1817-Monroe, 1814]    to | secure  | our     
+    [1817-Monroe, 3009]    to | secure  | economy", fixed = TRUE)
+    expect_output(print(kw, 3),
+                  "Keyword-in-context with 6 matches.                                                  
+      [1797-Adams, 478]   and | secure  | the     
+     [1797-Adams, 1512]   and | secured | immortal
+ [1805-Jefferson, 2367] shall | secure  | to      
+[ reached max_nrow ... 3 more matches ]", fixed = TRUE)
+    expect_output(print(kwic(toks, "secured", window = 1)),
+                  "Keyword-in-context with 1 match.                                            
+ [1797-Adams, 1512] and | secured | immortal", fixed = TRUE)
+    expect_output(print(kwic(toks, "XXX", window = 1)),
+                  "Keyword-in-context with 0 matches.", fixed = TRUE)
 })
-
 
 test_that("kwic works with padding", {
     testtoks <- tokens("what does the fox say cat")
-    expect_output(print(kwic(tokens_remove(testtoks, c("what", "the"), padding = TRUE), "fox")),
-                  "\\[text1, 4\\]  does \\| fox \\| say cat")
+    expect_output(
+        print(kwic(tokens_remove(testtoks, c("what", "the"), padding = TRUE), "fox")),
+        "Keyword-in-context with 1 match.                                
+ [text1, 4] does | fox | say cat",
+        fixed = TRUE
+ )
     expect_output(
         print(kwic(tokens_remove(testtoks, "*", padding = TRUE), "fox")),
-        "kwic object with 0 rows"
+        "Keyword-in-context with 0 matches.",
+        fixed = TRUE
     )
 })
 
 test_that("kwic works as expected with and without phrases", {
-
     txt <- c(d1 = "a b c d e g h",  d2 = "a b e g h i j")
     toks_uni <- tokens(txt)
     dfm_uni <- dfm(toks_uni)
@@ -276,13 +316,14 @@ test_that("kwic works as expected with and without phrases", {
                            stringsAsFactors = FALSE)
     class(coll_tri) <- c("collocations", "data.frame")
 
-    expect_equal(
-        kwic(txt, char_uni)$keyword,
+    suppressWarnings({
+      expect_equal(
+        as.data.frame(kwic(txt, char_uni))$keyword,
         c("a", "b", "g",
           "a", "b", "g", "j")
     )
     expect_equal(
-        kwic(txt, list_uni)$keyword,
+        as.data.frame(kwic(txt, list_uni))$keyword,
         c("a", "b", "g",
           "a", "b", "g", "j")
     )
@@ -295,46 +336,47 @@ test_that("kwic works as expected with and without phrases", {
         0
     )
     expect_equal(
-        kwic(txt, list(c("c", "d"), c("g", "h")))$keyword,
+        as.data.frame(kwic(txt, list(c("c", "d"), c("g", "h"))))$keyword,
         c("c d", "g h", "g h")
     )
     expect_equal(
-        kwic(txt, phrase(c("c d", "g h")))$keyword,
+        as.data.frame(kwic(txt, phrase(c("c d", "g h"))))$keyword,
         c("c d", "g h", "g h")
     )
 
     expect_equal(
-        kwic(txt, coll_bi)$keyword,
+        as.data.frame(kwic(txt, coll_bi))$keyword,
         c("a b", "e g", "g h",
           "a b", "e g", "g h")
     )
     expect_equal(
-        kwic(txt, coll_tri)$keyword,
+        as.data.frame(kwic(txt, coll_tri))$keyword,
         c("e g h", "e g h")
     )
 
     expect_equal(
-        kwic(txt, phrase(coll_bi))$keyword,
+        as.data.frame(kwic(txt, phrase(coll_bi)))$keyword,
         c("a b", "e g", "g h",
           "a b", "e g", "g h")
     )
     expect_equal(
-        kwic(txt, phrase(dict_bi))$keyword,
+        as.data.frame(kwic(txt, phrase(dict_bi)))$keyword,
         c("a b", "a b")
     )
     expect_equal(
-        kwic(txt, dict_bi)$keyword,
+        as.data.frame(kwic(txt, dict_bi))$keyword,
         c("a b", "a b")
     )
+    })
 
     ## on tokens
     expect_equal(
-        kwic(toks_uni, char_uni)$keyword,
+        as.data.frame(kwic(toks_uni, char_uni))$keyword,
         c("a", "b", "g",
           "a", "b", "g", "j")
     )
     expect_equal(
-        kwic(toks_uni, list_uni)$keyword,
+        as.data.frame(kwic(toks_uni, list_uni))$keyword,
         c("a", "b", "g",
           "a", "b", "g", "j")
     )
@@ -347,11 +389,11 @@ test_that("kwic works as expected with and without phrases", {
         0
     )
     expect_equal(
-        kwic(toks_uni, list(c("c", "d"), c("g", "h")))$keyword,
+        as.data.frame(kwic(toks_uni, list(c("c", "d"), c("g", "h"))))$keyword,
         c("c d", "g h", "g h")
     )
     expect_equal(
-        kwic(toks_uni, phrase(c("c d", "g h")))$keyword,
+        as.data.frame(kwic(toks_uni, phrase(c("c d", "g h"))))$keyword,
         c("c d", "g h", "g h")
     )
 
@@ -359,7 +401,7 @@ test_that("kwic works as expected with and without phrases", {
     expect_equal(nrow(kwic(toks_uni, coll_tri)), 2)
 
     expect_equal(
-        kwic(toks_uni, phrase(coll_bi))$keyword,
+        as.data.frame(kwic(toks_uni, phrase(coll_bi)))$keyword,
         c("a b", "e g", "g h", "a b", "e g", "g h")
     )
     expect_equal(
@@ -370,28 +412,27 @@ test_that("kwic works as expected with and without phrases", {
     expect_equal(nrow(kwic(toks_uni, dict_bi)), 2)
 })
 
-
 test_that("kwic error when dfm is given, #1006", {
     toks <- tokens("a b c")
-    expect_error(kwic(toks, dfm("b c d")))
+    expect_error(kwic(toks, dfm(tokens("b c d"))))
 })
 
 test_that("keywords attribute is set correctly in textplot_kwic (#1514)", {
     corp <- corpus(c(alpha1 = paste(letters, collapse = " "),
                      alpha2 = paste(LETTERS, collapse = " ")))
     toks <- tokens(corp)
-    kwic1 <- kwic(toks, "f", window = 3)
-    kwic2 <- kwic(toks, "u", window = 3)
-    kwic3 <- kwic(toks, c("u", "f"), window = 3)
+    kwic1 <- kwic(toks, "f")
+    kwic2 <- kwic(toks, "u")
+    kwic3 <- kwic(toks, c("u", "f"))
 
     expect_identical(kwic1$pattern, factor(c("f", "f")))
     expect_identical(kwic2$pattern, factor(c("u", "u")))
     expect_identical(kwic3$pattern, factor(c("f", "u", "f", "u"), levels = c("u", "f")))
 
-    kwic_dict1 <- kwic(corp, dictionary(list(ukey = "u")), window = 3)
-    kwic_dict2 <- kwic(toks, dictionary(list(ukey = "u")), window = 3)
-    kwic_dict3 <- kwic(corp, dictionary(list(ukey = "u", fkey = "f")), window = 3)
-    kwic_dict4 <- kwic(toks, dictionary(list(ukey = "u", fkey = "f")), window = 3)
+    suppressWarnings(kwic_dict1 <- kwic(corp, dictionary(list(ukey = "u"))))
+    kwic_dict2 <- kwic(toks, dictionary(list(ukey = "u")))
+    suppressWarnings(kwic_dict3 <- kwic(corp, dictionary(list(ukey = "u", fkey = "f"))))
+    kwic_dict4 <- kwic(toks, dictionary(list(ukey = "u", fkey = "f")))
 
     expect_identical(kwic_dict1, kwic_dict2)
     expect_identical(kwic_dict3, kwic_dict4)
@@ -401,7 +442,7 @@ test_that("keywords attribute is set correctly in textplot_kwic (#1514)", {
 
     col <- data.frame(collocations = c("u v", "e f"), stringsAsFactors = FALSE)
     class(col) <- c("collocations", "data.frame")
-    kwic_col <- kwic(toks, col, window = 3)
+    kwic_col <- kwic(toks, col)
     expect_identical(kwic_col$pattern, factor(c("e f", "u v", "e f", "u v"),
                                               levels = c("u v", "e f")))
 })
@@ -410,21 +451,21 @@ test_that("keywords match pattern match and map_keywords() is working as expecte
     toks <- tokens(c(alpha1 = paste(letters, collapse = " "),
                      alpha2 = paste(LETTERS, collapse = " ")))
 
-    kwic1 <- kwic(toks, dictionary(list(key1 = c("a", "b"), key2 = c("x", "y"))), window = 3)
+    kwic1 <- kwic(toks, dictionary(list(key1 = c("a", "b"), key2 = c("x", "y"))))
     expect_equal(
         kwic1$pattern,
         factor(c("key1", "key1", "key2", "key2", "key1", "key1", "key2", "key2"),
                levels = c("key1", "key2"))
     )
 
-    kwic2 <- kwic(toks, dictionary(list(key2 = c("x", "y"), key1 = c("a", "b"))), window = 3)
+    kwic2 <- kwic(toks, dictionary(list(key2 = c("x", "y"), key1 = c("a", "b"))))
     expect_equal(
         kwic2$pattern,
         factor(c("key1", "key1", "key2", "key2", "key1", "key1", "key2", "key2"),
                levels = c("key2", "key1"))
     )
 
-    kwic3 <- kwic(toks, dictionary(list(key2 = c("b", "c"), key1 = c("a", "b"))), window = 3)
+    kwic3 <- kwic(toks, dictionary(list(key2 = c("b", "c"), key1 = c("a", "b"))))
     expect_equal(
         kwic3$pattern,
         factor(c("key1", "key2", "key1", "key2", "key1", "key2", "key1", "key2"),
@@ -444,30 +485,80 @@ test_that("kwic pattern column works for phrases", {
     kw1 <- kwic(toks, c("is", "a"), valuetype = "fixed")
     expect_equal(
         as.character(kw1$pattern),
-        char_tolower(kw1$keyword)
+        char_tolower(as.data.frame(kw1)$keyword)
     )
 
     kw2 <- kwic(toks, phrase("is a"), valuetype = "fixed")
     expect_equal(
         as.character(kw2$pattern),
-        char_tolower(kw2$keyword)
+        char_tolower(as.data.frame(kw2)$keyword)
     )
 })
 
 test_that("kwic with pattern overlaps works as expected", {
     kw <- c(d2 = "one two three four", d1 = "four three two one") %>%
         tokens() %>%
-        kwic(pattern = c("two", "two", "three"), window = 1)
+        kwic(pattern = c("two", "two", "three"))
     expect_equal(
         as.character(kw$pattern),
-        char_tolower(kw$keyword)
+        char_tolower(as.data.frame(kw)$keyword)
     )
 })
 
-test_that("subsetting and printing a subsetted kwic works (#1665)", {
-    kw <- kwic(data_corpus_inaugural, "terror")
-    expect_output(print(kw[, c("pre", "keyword", "post")]), "pre keyword")
-    expect_true("kwic" %in% class(kw[1:3, ]))
-    expect_false("kwic" %in% class(kw[1:3, 1:2]))
-    expect_false("kwic" %in% class(kw[, 1:2]))
+test_that("subsetting of kwic works", {
+    kw <- kwic(tokens(data_corpus_inaugural), "terror")
+    kw2 <- kw[1:3, ]
+    expect_true("kwic" %in% class(kw2))
+    expect_output(
+        print(kw2),
+        paste0("^Keyword-in-context with 3 matches\\.")
+    )
+})
+
+test_that("pre and post for phrases are working", {
+    toks <- tokens(c(doc1 = "a a a b c d d d", doc2 = "a b c d e"))
+    expect_identical(
+        as.data.frame(kwic(toks, phrase("b c"), window = 2)),
+        structure(list(docname = c("doc1", "doc2"), 
+                       from = c(4L, 2L), to = c(5L, 3L), 
+                       pre = c("a a", "a"), keyword = c("b c", "b c"), 
+                       post = c("d d", "d e"), 
+                       pattern = structure(c(1L, 1L), .Label = "b c", class = "factor")), 
+                  class = "data.frame", row.names = c(NA, -2L))
+    )
+})
+
+test_that("kwic structure is as expected", {
+    toks <- tokens(c(doc1 = "a a a b c d d d", doc2 = "a b c d e", doc3 = "b b a a"))
+    kw <- kwic(toks, phrase("a a"), window = 2)
+    expect_identical(
+      kw,
+      structure(data.frame(docname = c("doc1", "doc1", "doc3"), 
+                           from = 1:3, to = 2:4, 
+                           pre = c("", "a", "b b"), 
+                           keyword = c("a a", "a a", "a a"), 
+                           post = c("a b", "b c", ""), 
+                           pattern = factor(rep("a a", 3)),
+                           stringsAsFactors = FALSE),
+                class = c("kwic", "data.frame"), 
+                ntoken = c(doc1 = 8L, doc3 = 4L))
+    )
+})
+
+test_that("kwic deprecations work as expected", {
+    txt <- "A b c d e."
+    expect_warning(
+      kwic(txt, "c", window = 1),
+      "'kwic.character()' is deprecated. Use 'tokens()' first.",
+      fixed = TRUE
+    )
+    expect_warning(
+      kwic(corpus(txt), "c", window = 1),
+      "'kwic.corpus()' is deprecated. Use 'tokens()' first.",
+      fixed = TRUE
+    )
+    expect_warning(
+      kwic(tokens(txt), "e", window = 2, remove_punct = TRUE),
+      "remove_punct argument is not used"
+    )
 })

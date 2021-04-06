@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{is_regex}
 \alias{is_regex}
-\title{Internal function for \code{select_types()} to check if a string is a regular expression}
+\title{Check if a string is a regular expression}
 \usage{
 is_regex(x)
 }

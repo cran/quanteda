@@ -3,6 +3,7 @@
 \name{kwic}
 \alias{kwic}
 \alias{is.kwic}
+\alias{as.data.frame.kwic}
 \title{Locate keywords-in-context}
 \usage{
 kwic(
@@ -12,43 +13,40 @@ kwic(
   valuetype = c("glob", "regex", "fixed"),
   separator = " ",
   case_insensitive = TRUE,
+  index = NULL,
   ...
 )
 
 is.kwic(x)
+
+\method{as.data.frame}{kwic}(x, ...)
 }
 \arguments{
 \item{x}{a character, \link{corpus}, or \link{tokens} object}
 
-\item{pattern}{a character vector, list of character vectors,
-\link{dictionary}, or \link{collocations} object.  See \link{pattern} for
-details.}
+\item{pattern}{a character vector, list of character vectors, \link{dictionary},
+or collocations object.  See \link{pattern} for details.}
 
-\item{window}{the number of context words to be displayed around the keyword.}
+\item{window}{the number of context words to be displayed around the keyword}
 
 \item{valuetype}{the type of pattern matching: \code{"glob"} for "glob"-style
 wildcard expressions; \code{"regex"} for regular expressions; or \code{"fixed"} for
 exact matching. See \link{valuetype} for details.}
 
-\item{separator}{character to separate words in the output}
+\item{separator}{a character to separate words in the output}
 
 \item{case_insensitive}{logical; if \code{TRUE}, ignore case when matching a
 \code{pattern} or \link{dictionary} values}
 
-\item{...}{additional arguments passed to \link{tokens}, for applicable
-object types}
+\item{index}{an \link{index} object to specify keywords}
+
+\item{...}{unused}
 }
 \value{
 A \code{kwic} classed data.frame, with the document name
-(\code{docname}), the token index positions (\code{from} and \code{to},
+(\code{docname}) and the token index positions (\code{from} and \code{to},
 which will be the same for single-word patterns, or a sequence equal in
-length to the number of elements for multi-word phrases), the context
-before (\code{pre}), the keyword in its original format (\code{keyword},
-preserving case and attached punctuation), and the context after
-(\code{post}).  The return object has its own \code{print} method, plus
-some special attributes that are hidden in the print view.  If you want to
-turn this into a simple data.frame, simply wrap the result in
-\code{data.frame}.
+length to the number of elements for multi-word phrases).
 }
 \description{
 For a text or a collection of texts (in a quanteda corpus object), return a
@@ -60,23 +58,36 @@ delimiters.)
 \note{
 \code{pattern} will be a keyword pattern or phrase, possibly multiple
 patterns, that may include punctuation.  If a pattern contains whitespace,
-it is best to wrap it in \code{\link[=phrase]{phrase()}} to make this explicit.
-However if \code{pattern} is a \link[=textstat_collocations]{collocations}
-or \link{dictionary} object, then the collocations or multi-word dictionary
-keys will automatically be considered phrases where each
-whitespace-separated element matches a token in sequence.
+it is best to wrap it in \code{\link[=phrase]{phrase()}} to make this explicit. However if
+\code{pattern} is a \link[quanteda.textstats:textstat_collocations]{collocations} or
+\link{dictionary} object, then the collocations or multi-word dictionary keys
+will automatically be considered phrases where each whitespace-separated
+element matches a token in sequence.
 }
 \examples{
-head(kwic(data_corpus_inaugural, pattern = "secure*", window = 3, valuetype = "glob"))
-head(kwic(data_corpus_inaugural, pattern = "secur", window = 3, valuetype = "regex"))
-head(kwic(data_corpus_inaugural, pattern = "security", window = 3, valuetype = "fixed"))
+# single token matching
+toks <- tokens(data_corpus_inaugural[1:8])
+kwic(toks, pattern = "secure*", valuetype = "glob", window = 3)
+kwic(toks, pattern = "secur", valuetype = "regex", window = 3)
+kwic(toks, pattern = "security", valuetype = "fixed", window = 3)
 
-toks <- tokens(data_corpus_inaugural)
-kwic(data_corpus_inaugural, pattern = phrase("war against"))
-kwic(data_corpus_inaugural, pattern = phrase("war against"), valuetype = "regex")
+# phrase matching
+kwic(toks, pattern = phrase("secur* against"), window = 2)
+kwic(toks, pattern = phrase("war against"), valuetype = "regex", window = 2)
 
-kw <- kwic(data_corpus_inaugural, "provident*")
+# use index
+idx <- index(toks, phrase("secur* against"))
+kwic(toks, index = idx, window = 2)
+kw <- kwic(tokens(data_corpus_inaugural[1:20]), "provident*")
 is.kwic(kw)
 is.kwic("Not a kwic")
 is.kwic(kw[, c("pre", "post")])
+
+toks <- tokens(data_corpus_inaugural[1:8])
+kw <- kwic(toks, pattern = "secure*", valuetype = "glob", window = 3)
+as.data.frame(kw)
+
+}
+\seealso{
+\link{print-methods}
 }

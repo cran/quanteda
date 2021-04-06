@@ -51,14 +51,14 @@ summary(corp_uk)
 #                    textfield = "COMMON")
 #  summary(corpus(dat_xml), 5)
 #  # csv file
-#  write.csv(data.frame(inaug_speech = texts(data_corpus_inaugural),
+#  write.csv(data.frame(inaug_speech = as.character(data_corpus_inaugural),
 #                       docvars(data_corpus_inaugural)),
 #            file = "/tmp/inaug_texts.csv", row.names = FALSE)
 #  dat_csv <- readtext("/tmp/inaug_texts.csv", textfield = "inaug_speech")
 #  summary(corpus(dat_csv), 5)
 
 ## -----------------------------------------------------------------------------
-texts(data_corpus_inaugural)[2]
+as.character(data_corpus_inaugural)[2]
 
 ## -----------------------------------------------------------------------------
 summary(data_corpus_inaugural, n = 5)
@@ -87,16 +87,17 @@ summary(corpus_subset(data_corpus_inaugural, Year > 1990))
 summary(corpus_subset(data_corpus_inaugural, President == "Adams"))
 
 ## -----------------------------------------------------------------------------
-kwic(data_corpus_inaugural, pattern = "terror")
+data_tokens_inaugural <- tokens(data_corpus_inaugural)
+kwic(data_tokens_inaugural, pattern = "terror")
 
 ## -----------------------------------------------------------------------------
-kwic(data_corpus_inaugural, pattern = "terror", valuetype = "regex")
+kwic(data_tokens_inaugural, pattern = "terror", valuetype = "regex")
 
 ## -----------------------------------------------------------------------------
-kwic(data_corpus_inaugural, pattern = "communist*")
+kwic(data_tokens_inaugural, pattern = "communist*")
 
 ## -----------------------------------------------------------------------------
-kwic(data_corpus_inaugural, pattern = phrase("United States")) %>%
+kwic(data_tokens_inaugural, pattern = phrase("United States")) %>%
     head() # show context of the first six occurrences of "United States"
 
 ## -----------------------------------------------------------------------------
@@ -133,7 +134,8 @@ tokens("New York City is located in the United States.") %>%
 corp_inaug_post1990 <- corpus_subset(data_corpus_inaugural, Year > 1990)
 
 # make a dfm
-dfmat_inaug_post1990 <- dfm(corp_inaug_post1990)
+dfmat_inaug_post1990 <- tokens(corp_inaug_post1990) %>%
+  dfm()
 dfmat_inaug_post1990[, 1:5]
 
 ## -----------------------------------------------------------------------------
@@ -149,7 +151,9 @@ head(stopwords("ru"), 10)
 head(stopwords("ar", source = "misc"), 10)
 
 ## ----warning=FALSE, fig.width = 8, fig.height = 8-----------------------------
-dfmat_uk <- dfm(data_char_ukimmig2010, remove = stopwords("english"), remove_punct = TRUE)
+dfmat_uk <- tokens(data_char_ukimmig2010, remove_punct = TRUE) %>%
+  tokens_remove(stopwords("en")) %>%
+  dfm()
 dfmat_uk
 
 ## -----------------------------------------------------------------------------
@@ -157,13 +161,17 @@ topfeatures(dfmat_uk, 20) # 20 most frequent words
 
 ## ----warning=FALSE, fig.width = 7, fig.height = 7-----------------------------
 set.seed(100)
+library("quanteda.textplots")
 textplot_wordcloud(dfmat_uk, min_count = 6, random_order = FALSE,
                    rotation = .25,
                    color = RColorBrewer::brewer.pal(8, "Dark2"))
 
 ## -----------------------------------------------------------------------------
-dfmat_pres <- dfm(tail(data_corpus_inaugural, 20), groups = "Party",
-                  remove = stopwords("english"), remove_punct = TRUE)
+dfmat_pres <- tail(data_corpus_inaugural, 20) %>%
+  tokens(remove_punct = TRUE) %>%
+  tokens_remove(stopwords("en")) %>%
+  dfm() %>%
+  dfm_group(groups = Party)
 
 ## -----------------------------------------------------------------------------
 dfm_sort(dfmat_pres)
@@ -176,53 +184,60 @@ dict <- dictionary(list(terror = c("terrorism", "terrorists", "threat"),
                         economy = c("jobs", "business", "grow", "work")))
 
 ## -----------------------------------------------------------------------------
-dfmat_inaug_post1991_dict <- dfm(corp_inaug_post1991, dictionary = dict)
+dfmat_inaug_post1991_dict <- tokens(corp_inaug_post1991) %>%
+  tokens_lookup(dictionary = dict) %>%
+  dfm()
 dfmat_inaug_post1991_dict
 
 ## ---- eval = FALSE------------------------------------------------------------
-#  dictliwc <- dictionary(file = "~/Dropbox/QUANTESS/dictionaries/LIWC/LIWC2001_English.dic",
-#                         format = "LIWC")
-#  dfmat_inaug_subset <- dfm(data_corpus_inaugural[52:58], dictionary = dictliwc)
+#  dictliwc <- dictionary(file = "LIWC2001_English.dic", format = "LIWC")
+#  dfmat_inaug_subset <- dfm(tokens(data_corpus_inaugural[52:58]), dictionary = dictliwc)
 #  dfmat_inaug_subset[, 1:10]
 
-## ----fig.width = 6, fig.height = 3--------------------------------------------
-dfmat_inaug_post1980 <- dfm(corpus_subset(data_corpus_inaugural, Year > 1980),
-                            remove = stopwords("english"), stem = TRUE, remove_punct = TRUE)
-tstat_obama <- textstat_simil(dfmat_inaug_post1980,
-                              dfmat_inaug_post1980[c("2009-Obama", "2013-Obama"), ],
-                              margin = "documents", method = "cosine")
-tstat_obama
-dotchart(as.list(tstat_obama)$"2013-Obama", xlab = "Cosine similarity", pch = 19)
+## ----fig.width = 6, fig.height = 3, eval = FALSE------------------------------
+#  library("quanteda.textstats")
+#  dfmat_inaug_post1980 <- corpus_subset(data_corpus_inaugural, Year > 1980) %>%
+#    tokens(remove_punct = TRUE) %>%
+#    tokens_wordstem(language = "en") %>%
+#    tokens_remove(stopwords("en")) %>%
+#    dfm()
+#  tstat_obama <- textstat_simil(dfmat_inaug_post1980,
+#                                dfmat_inaug_post1980[c("2009-Obama", "2013-Obama"), ],
+#                                margin = "documents", method = "cosine")
+#  as.list(tstat_obama)
+#  dotchart(as.list(tstat_obama)$"2013-Obama", xlab = "Cosine similarity", pch = 19)
 
 ## ---- eval = FALSE------------------------------------------------------------
 #  data_corpus_sotu <- readRDS(url("https://quanteda.org/data/data_corpus_sotu.rds"))
-#  dfmat_sotu <- dfm(corpus_subset(data_corpus_sotu, Date > as.Date("1980-01-01")),
-#                    stem = TRUE, remove_punct = TRUE,
-#                    remove = stopwords("english"))
+#  dfmat_sotu <- corpus_subset(data_corpus_sotu, Date > as.Date("1980-01-01")) %>%
+#    tokens(remove_punct = TRUE) %>%
+#    tokens_wordstem(language = "en") %>%
+#    tokens_remove(stopwords("en")) %>%
+#    dfm()
 #  dfmat_sotu <- dfm_trim(dfmat_sotu, min_termfreq = 5, min_docfreq = 3)
 
 ## ----echo = FALSE-------------------------------------------------------------
 load("../tests/data/dfmat_sotu.rda")
 
-## ---- fig.width = 8, fig.height = 5-------------------------------------------
-# hierarchical clustering - get distances on normalized dfm
-tstat_dist <- textstat_dist(dfm_weight(dfmat_sotu, scheme = "prop"))
-# hiarchical clustering the distance object
-pres_cluster <- hclust(as.dist(tstat_dist))
-# label with document names
-pres_cluster$labels <- docnames(dfmat_sotu)
-# plot as a dendrogram
-plot(pres_cluster, xlab = "", sub = "",
-     main = "Euclidean Distance on Normalized Token Frequency")
+## ---- fig.width = 8, fig.height = 5, eval = FALSE-----------------------------
+#  # hierarchical clustering - get distances on normalized dfm
+#  tstat_dist <- textstat_dist(dfm_weight(dfmat_sotu, scheme = "prop"))
+#  # hiarchical clustering the distance object
+#  pres_cluster <- hclust(as.dist(tstat_dist))
+#  # label with document names
+#  pres_cluster$labels <- docnames(dfmat_sotu)
+#  # plot as a dendrogram
+#  plot(pres_cluster, xlab = "", sub = "",
+#       main = "Euclidean Distance on Normalized Token Frequency")
 
-## -----------------------------------------------------------------------------
-tstat_sim <- textstat_simil(dfmat_sotu, dfmat_sotu[, c("fair", "health", "terror")],
-                          method = "cosine", margin = "features")
-lapply(as.list(tstat_sim), head, 10)
+## ---- eval = FALSE------------------------------------------------------------
+#  tstat_sim <- textstat_simil(dfmat_sotu, dfmat_sotu[, c("fair", "health", "terror")],
+#                            method = "cosine", margin = "features")
+#  lapply(as.list(tstat_sim), head, 10)
 
 ## ----fig.width = 7, fig.height = 5--------------------------------------------
 if (require("quanteda.textmodels")) {
-  dfmat_ire <- dfm(data_corpus_irishbudget2010)
+  dfmat_ire <- dfm(tokens(data_corpus_irishbudget2010))
   tmod_wf <- textmodel_wordfish(dfmat_ire, dir = c(2, 1))
   
   # plot the Wordfish estimates by party
@@ -230,11 +245,11 @@ if (require("quanteda.textmodels")) {
 }
 
 ## -----------------------------------------------------------------------------
-quant_dfm <- dfm(data_corpus_irishbudget2010, 
-                 remove_punct = TRUE, remove_numbers = TRUE, 
-                 remove = stopwords("english"))
+quant_dfm <- tokens(data_corpus_irishbudget2010, remove_punct = TRUE, remove_numbers = TRUE) %>%
+  tokens_remove(stopwords("en")) %>%
+  dfm()
 quant_dfm <- dfm_trim(quant_dfm, min_termfreq = 4, max_docfreq = 10)
-quant_dfm
+quant_dfm 
 
 ## ----fig.width = 7, fig.height = 5--------------------------------------------
 set.seed(100)

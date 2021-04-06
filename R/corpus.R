@@ -12,10 +12,9 @@
 #' are imported as document-level meta-data.  This matches the format of
 #' data.frames constructed by the the \pkg{readtext} package.
 #' \item a [kwic] object constructed by [kwic()].
-#' \item a \pkg{tm} [VCorpus][tm::VCorpus] or [SimpleCorpus][tm::SimpleCorpus] class  object,
-#'   with the fixed metadata
-#'   fields imported as [docvars] and corpus-level metadata imported
-#'   as [metacorpus] information.
+#' \item a \pkg{tm} [VCorpus][tm::VCorpus] or [SimpleCorpus][tm::SimpleCorpus]
+#'   class  object, with the fixed metadata fields imported as [docvars] and
+#'   corpus-level metadata imported as [meta] information.
 #' \item a [corpus] object.
 #' }
 #' @param x a valid corpus source object
@@ -50,7 +49,7 @@
 #'   of a corpus object change.  Using the accessor and replacement functions
 #'   ensures that future code to manipulate corpus objects will continue to work.
 #' @seealso [corpus-class], [docvars()],
-#'   [meta()], [texts()], [ndoc()],
+#'   [meta()], [as.character.corpus()], [ndoc()],
 #'   [docnames()]
 #' @details The texts and document variables of corpus objects can also be
 #'   accessed using index notation and the `$` operator for accessing or assigning
@@ -89,9 +88,6 @@
 #' summary(corpus(dat, text_field = "some_text",
 #'                meta = list(source = "From a data.frame called mydf.")))
 #'
-#' # construct a corpus from a kwic object
-#' kw <- kwic(data_corpus_inaugural, "southern")
-#' summary(corpus(kw))
 corpus <- function(x, ...) {
     UseMethod("corpus")
 }
@@ -100,7 +96,7 @@ corpus <- function(x, ...) {
 #' @noRd
 #' @export
 corpus.default <- function(x, ...) {
-    stop(friendly_class_undefined_message(class(x), "corpus"))
+    check_class(class(x), "corpus")
 }
 
 #' @rdname corpus
@@ -109,7 +105,7 @@ corpus.corpus <- function(x, docnames = quanteda::docnames(x),
                           docvars = quanteda::docvars(x),
                           meta = quanteda::meta(x), ...) {
     x <- as.corpus(x)
-    result <- corpus(texts(x), docnames = docnames, docvars = docvars, meta = meta, ...)
+    result <- corpus(as.character(x), docnames = docnames, docvars = docvars, meta = meta, ...)
     meta_system(result, "source") <- "corpus"
     return(result)
 }
@@ -119,7 +115,10 @@ corpus.corpus <- function(x, docnames = quanteda::docnames(x),
 corpus.character <- function(x, docnames = NULL, docvars = NULL,
                              meta = list(), unique_docnames = TRUE, ...) {
 
-    unused_dots(...)
+    
+    unique_docnames <- check_logical(unique_docnames)
+    check_dots(...)
+    
     is_na <- is.na(x)
     if (any(is.na(x))) {
         warning("NA is replaced by empty string", call. = FALSE)
@@ -174,10 +173,9 @@ corpus.character <- function(x, docnames = NULL, docvars = NULL,
 corpus.data.frame <- function(x, docid_field = "doc_id", text_field = "text",
                               meta = list(), unique_docnames = TRUE, ...) {
 
-    unused_dots(...)
-    # coerce data.frame variants to data.frame - for #1232
-    x <- as.data.frame(x)
-
+    x <- as.data.frame(x) # coerce data.frame variants to data.frame
+    check_dots(...)
+    
     text_index <- 0
     if (length(text_field) != 1)
         stop("text_field must refer to a single column")
@@ -232,7 +230,6 @@ corpus.data.frame <- function(x, docid_field = "doc_id", text_field = "text",
     return(result)
 }
 
-
 #' @rdname corpus
 #' @param split_context logical; if `TRUE`, split each kwic row into two
 #'   "documents", one for "pre" and one for "post", with this designation saved
@@ -242,18 +239,20 @@ corpus.data.frame <- function(x, docid_field = "doc_id", text_field = "text",
 #'   `pattern` as a new docvar `keyword`
 #' @examples
 #' # from a kwic
-#' kw <- kwic(data_char_sampletext, "econom*", separator = "",
-#'            remove_separators = FALSE) # keep original separators
+#' kw <- kwic(tokens(data_char_sampletext, remove_separators = FALSE),
+#'            pattern = "econom*", separator = "")
 #' summary(corpus(kw))
 #' summary(corpus(kw, split_context = FALSE))
-#' texts(corpus(kw, split_context = FALSE))
+#' as.character(corpus(kw, split_context = FALSE))
 #'
 #' @export
 corpus.kwic <- function(x, split_context = TRUE, extract_keyword = TRUE, meta = list(), ...) {
-
-    unused_dots(...)
-    class(x) <- "data.frame"
-
+    split_context <- check_logical(split_context)
+    extract_keyword <- check_logical(extract_keyword)
+    check_dots(...)
+    
+    x <- as.data.frame(x)
+    
     if (split_context) {
         pre <- corpus(x[, c("docname", "from", "to", "pre", "keyword")],
                       docid_field = "docname", text_field = "pre", meta = meta, unique_docnames = FALSE)
@@ -281,7 +280,8 @@ corpus.kwic <- function(x, split_context = TRUE, extract_keyword = TRUE, meta = 
 #' @rdname corpus
 #' @export
 corpus.Corpus <- function(x, ...) {
-    unused_dots(...)
+    
+    check_dots(...)
 
     if (inherits(x, what = "VCorpus")) {
         x <- unclass(x)

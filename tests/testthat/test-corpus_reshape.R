@@ -1,12 +1,16 @@
-context("test corpus_reshape")
-
 test_that("corpus_reshape works for sentences", {
     corp <- corpus(c(textone = "This is a sentence.  Another sentence.  Yet another.", 
-                     texttwo = "Premiere phrase.  Deuxieme phrase."), 
-                   docvars = data.frame(country = factor(c("UK", "USA")), year=c(1990, 2000)))
+                     texttwo = "Premiere phrase.  Deuxieme phrase.",
+                     textthree = ""), 
+                   docvars = data.frame(country = factor(c("UK", "US", "ZA")), year=c(1990, 2000, 2020)))
     corp_reshaped <- corpus_reshape(corp, to = "sentences")
+    expect_equal(docid(corp_reshaped),
+                 factor(c("textone", "textone", "textone", "texttwo", "texttwo", "textthree"),
+                        levels = c("textone", "texttwo", "textthree")))
     expect_equal(as.character(corp_reshaped)[4], c(texttwo.1 = "Premiere phrase."))
-    expect_equal(docvars(corp_reshaped, "country"), factor(c("UK", "UK", "UK", "USA", "USA")))
+    expect_equal(as.character(corp_reshaped)[6], c(textthree.1 = ""))
+    expect_equal(docvars(corp_reshaped, "country"), 
+                 factor(c("UK", "UK", "UK", "US", "US", "ZA"), levels = c("UK", "US", "ZA")))
 })
 
 test_that("corpus_reshape works for paragraphs", {
@@ -33,8 +37,8 @@ test_that("corpus_reshape works to sentences and back", {
         "reshape to paragraphs only goes from documents or segments"
     )
     corp_unshaped <- corpus_reshape(corp_reshaped, to = "documents")
-    expect_equal(texts(corp),
-                 texts(corp_unshaped))
+    expect_equal(as.character(corp),
+                 as.character(corp_unshaped))
     expect_equal(docvars(corp),
                  docvars(corp_unshaped))
 })
@@ -45,8 +49,8 @@ test_that("corpus_reshape works to paragraphs and back", {
                      docvars = data.frame(country=c("UK", "USA"), year=c(1990, 2000)))
     corp_reshaped <- corpus_reshape(corp, to = "paragraphs")
     corp_unshaped <- corpus_reshape(corp_reshaped, to = "documents")
-    expect_equal(texts(corp),
-                 texts(corp_unshaped))
+    expect_equal(as.character(corp),
+                 as.character(corp_unshaped))
     expect_equal(docvars(corp),
                  docvars(corp_unshaped))
 })
@@ -58,8 +62,8 @@ test_that("corpus_reshape works with empty documents (#670)", {
                        docvars = data.frame(country=c("UK", "USA", "Japan"), year=c(1990, 2000, 2010)))
     corp_reshaped <- corpus_reshape(corp, to = "paragraphs")
     corp_unshaped <- corpus_reshape(corp_reshaped, to = "documents")
-    expect_equal(texts(corp),
-                 texts(corp_unshaped))
+    expect_equal(as.character(corp),
+                 as.character(corp_unshaped))
     expect_equal(docvars(corp),
                  docvars(corp_unshaped))
 })
@@ -70,7 +74,7 @@ test_that("corpus_reshape works with segmented corpus", {
     corp_segmented <- corpus_segment(corp, ".", pattern_position = "after")
     corp_reshaped <- corpus_reshape(corp_segmented, to = "sentences")
     corp_reshaped <- corpus_reshape(corp_reshaped, to = "documents")
-    expect_equal(texts(corp_reshaped),
+    expect_equal(as.character(corp_reshaped),
                  c(textone = "This is a sentence  Another sentence  Yet another",
                    texttwo = "Premiere phrase  Deuxieme phrase"))
 })

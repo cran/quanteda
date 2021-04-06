@@ -6,67 +6,75 @@
 \alias{quanteda-package}
 \title{An R package for the quantitative analysis of textual data}
 \description{
-A set of functions for creating and managing text corpora, extracting
-features from text corpora, and analyzing those features using quantitative
+Functions for creating and managing textual corpora, extracting
+features from textual data, and analyzing those features using quantitative
 methods.
 }
 \details{
-\pkg{quanteda} makes it easy to manage texts in the form of a corpus, defined
-as a collection of texts that includes document-level variables specific to
-each text, as well as meta-data for documents and for the collection as a
-whole. \pkg{quanteda} includes tools to make it easy and fast to manipulate
-the texts in a corpus, by performing the most common natural language
-processing tasks simply and quickly, such as tokenizing, stemming, or forming
-ngrams. \pkg{quanteda}'s functions for tokenizing texts and forming multiple
+\pkg{quanteda} makes it easy to manage texts in the form of a
+corpus, defined as a collection of texts that includes document-level
+variables specific to each text, as well as meta-data. \pkg{quanteda}
+includes tools to make it easy and fast to manipulate the texts in a
+corpus, by performing the most common natural language processing tasks
+simply and quickly, such as tokenizing, stemming, or forming ngrams.
+\pkg{quanteda}'s functions for tokenizing texts and forming multiple
 tokenized documents into a document-feature matrix are both extremely fast
-and extremely simple to use. \pkg{quanteda} can segment texts easily by
-words, paragraphs, sentences, or even user-supplied delimiters and tags.
+and very simple to use. \pkg{quanteda} can segment texts easily by words,
+paragraphs, sentences, or even user-supplied delimiters and tags.
 
-Built on the text processing functions in the \pkg{stringi} package, which is
-in turn built on C++ implementation of the ICU libraries for Unicode text
-handling, \pkg{quanteda} pays special attention to fast and correct
-implementation of Unicode and the handling of text in any character set.
+Built on the text processing functions in the \pkg{stringi} package,
+which is in turn built on C++ implementation of the ICU libraries for
+Unicode text handling, \pkg{quanteda} pays special attention to fast and
+correct implementation of Unicode and the handling of text in any character
+set.
 
-\pkg{quanteda} is built for efficiency and speed, through its design around
-three infrastructures: the \pkg{stringi} package for text processing, the
-\pkg{data.table} package for indexing large documents efficiently, and the
-\pkg{Matrix} package for sparse matrix objects. If you can fit it into
-memory, \pkg{quanteda} will handle it quickly. (And eventually, we will make
-it possible to process objects even larger than available memory.)
+\pkg{quanteda} is built for efficiency and speed, through its design
+around three infrastructures: the \pkg{stringi} package for text
+processing, the \pkg{Matrix} package for sparse matrix objects, and
+computationally intensive processing (e.g. for tokens) handled in
+parallelized C++. If you can fit it into memory, \pkg{quanteda} will handle
+it quickly. (And eventually, we will make it possible to process objects
+even larger than available memory.)
 
-\pkg{quanteda} is principally designed to allow users a fast and convenient
-method to go from a corpus of texts to a selected matrix of documents by
-features, after defining what the documents and features. The package makes
-it easy to redefine documents, for instance by splitting them into sentences
-or paragraphs, or by tags, as well as to group them into larger documents by
-document variables, or to subset them based on logical conditions or
-combinations of document variables. The package also implements common NLP
-feature selection functions, such as removing stopwords and stemming in
-numerous languages, selecting words found in dictionaries, treating words as
-equivalent based on a user-defined "thesaurus", and trimming and weighting
-features based on document frequency, feature frequency, and related measures
-such as tf-idf.
+\pkg{quanteda} is principally designed to allow users a fast and
+convenient method to go from a corpus of texts to a selected matrix of
+documents by features, after defining what the documents and features. The
+package makes it easy to redefine documents, for instance by splitting them
+into sentences or paragraphs, or by tags, as well as to group them into
+larger documents by document variables, or to subset them based on logical
+conditions or combinations of document variables. The package also
+implements common NLP feature selection functions, such as removing
+stopwords and stemming in numerous languages, selecting words found in
+dictionaries, treating words as equivalent based on a user-defined
+"thesaurus", and trimming and weighting features based on document
+frequency, feature frequency, and related measures such as tf-idf.
 
-Once constructed, a \pkg{quanteda} document-feature matrix ("\link{dfm}") can be
-easily analyzed using either \pkg{quanteda}'s built-in tools for scaling
-document positions, or used with a number of other text analytic tools, such
-as: topic models (including converters for direct use with the topicmodels,
-LDA, and stm packages) document scaling (using \pkg{quanteda}'s own functions
-for the "wordfish" and "Wordscores" models, direct use with the \strong{ca}
-package for correspondence analysis, or scaling with the austin package)
-machine learning through a variety of other packages that take matrix or
-matrix-like inputs.
+Tools for working with dictionaries are one of \pkg{quanteda}'s
+principal strengths, and the package includes several core functions for
+preparing and applying dictionaries to texts, for example for lexicon-based
+sentiment analysis.
+
+Once constructed, a \pkg{quanteda} document-feature matrix ("\link{dfm}")
+can be easily analyzed using either \pkg{quanteda}'s built-in tools for
+scaling document positions, or used with a number of other text analytic
+tools, such as: topic models (including converters for direct use with the
+topicmodels, LDA, and stm packages) document scaling (using the
+\pkg{quanteda.textmodels} package's functions for the "wordfish" and
+"Wordscores" models, or direct use with the \strong{ca} package for
+correspondence analysis), or machine learning through a variety of other
+packages that take matrix or matrix-like inputs. \pkg{quanteda} includes
+functions for converting its core objects, but especially a dfm, into other
+formats so that these are easy to use with other analytic packages.
 
 Additional features of \pkg{quanteda} include:
 \itemize{
 \item powerful, flexible tools for working with \link[=dictionary]{dictionaries};
-\item the ability to identify \link[=textstat_keyness]{keywords} associated with
-documents or groups of documents;
+\item the ability to identify \link[quanteda.textstats:textstat_keyness]{keywords}
+associated with documents or groups of documents;
 \item the ability to explore texts using \link[=kwic]{key-words-in-context};
-\item fast computation of a variety of \link[=textstat_readability]{readability indexes};
-\item fast computation of a variety of \link[=textstat_lexdiv]{lexical diversity measures};
-\item quick computation of word or document \link[=textstat_simil]{similarities}, for
-clustering or to compute distances for other purposes;
+\item quick computation of word or document
+\link[quanteda.textstats:textstat_simil]{similarities}, for clustering or to
+compute distances for other purposes;
 \item a comprehensive suite of \link[=summary.corpus]{descriptive statistics on text}
 such as the number of sentences, words, characters, or syllables per
 document; and
@@ -99,17 +107,12 @@ Authors:
   \item Adam Obeng \email{quanteda@binaryeagle.com} (\href{https://orcid.org/0000-0002-2906-4775}{ORCID})
   \item Stefan Müller \email{mullers@tcd.ie} (\href{https://orcid.org/0000-0002-6315-4125}{ORCID})
   \item Akitaka Matsuo \email{a.matsuo@lse.ac.uk} (\href{https://orcid.org/0000-0002-3323-6330}{ORCID})
-  \item Jiong Wei Lua \email{J.W.Lua@lse.ac.uk}
-  \item Jouni Kuha \email{j.kuha@lse.ac.uk} (\href{https://orcid.org/0000-0002-1156-8465}{ORCID})
   \item William Lowe \email{wlowe@princeton.edu} (\href{https://orcid.org/0000-0002-1549-6163}{ORCID})
 }
 
 Other contributors:
 \itemize{
   \item Christian Müller \email{C.Mueller@lse.ac.uk} [contributor]
-  \item Lori Young (Lexicoder Sentiment Dictionary 2015) [data contributor]
-  \item Stuart Soroka (Lexicoder Sentiment Dictionary 2015) [data contributor]
-  \item Ian Fellows \email{ian@fellstat.com} (authored wordcloud C source code (modified)) [copyright holder]
   \item European Research Council (ERC-2011-StG 283794-QUANTESS) [funder]
 }
 

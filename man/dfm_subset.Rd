@@ -4,13 +4,16 @@
 \alias{dfm_subset}
 \title{Extract a subset of a dfm}
 \usage{
-dfm_subset(x, subset, ...)
+dfm_subset(x, subset, drop_docid = TRUE, ...)
 }
 \arguments{
 \item{x}{\link{dfm} object to be subsetted}
 
 \item{subset}{logical expression indicating the documents to keep: missing
 values are taken as false}
+
+\item{drop_docid}{if \code{TRUE}, \code{docid} for documents are removed as the result
+of subsetting.}
 
 \item{...}{not used}
 }
@@ -38,7 +41,7 @@ document-level version of using \code{\link[=dfm_select]{dfm_select()}} where
 corp <- corpus(c(d1 = "a b c d", d2 = "a a b e",
                  d3 = "b b c e", d4 = "e e f a b"),
                docvars = data.frame(grp = c(1, 1, 2, 3)))
-dfmat <- dfm(corp)
+dfmat <- dfm(tokens(corp))
 # selecting on a docvars condition
 dfm_subset(dfmat, grp > 1)
 # selecting on a supplied vector

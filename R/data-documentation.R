@@ -33,7 +33,6 @@
 #'   -1.5, -0.75, 0, 0.75, 1.5.  Document V1 is assumed unknown, and will have a
 #'   raw text score of approximately -0.45 when computed as per LBG (2003).
 #' @keywords data
-#' @aliases data_dfm_LBGexample
 #' @format A [dfm] object with 6 documents and 37 features.
 #' @references Laver, M., Benoit, K.R., & Garry, J. (2003). 
 #'   [Estimating Policy 
@@ -53,6 +52,7 @@
 #' * `Year` a four-digit integer year
 #' * `President` character; President's last name
 #' * `FirstName` character; President's first name (and possibly middle initial)
+#' * `Party` factor; name of the President's political party
 #' @examples
 #' # some operations on the inaugural corpus
 #' summary(data_corpus_inaugural)
@@ -104,9 +104,8 @@
 #'   Young, L. & Soroka, S. (2012). *Lexicoder Sentiment
 #'   Dictionary*. Available at <http://www.snsoroka.com/data-lexicoder/>.
 #'   
-#'   Young, L. & Soroka, S. (2012). 
-#'   [Affective News: 
-#'   The Automated Coding of Sentiment in Political Texts](https://doi.org/10.1080/10584609.2012.671234). 
+#'   Young, L. & Soroka, S. (2012). Affective News: The Automated Coding of
+#'   Sentiment in Political Texts]. \doi{10.1080/10584609.2012.671234}.
 #'   *Political Communication*, 29(2), 205--231.
 #' @keywords data
 #' @examples 
@@ -144,6 +143,7 @@
 #' @name data-relocated
 #' @aliases data_corpus_dailnoconf1991 data_corpus_irishbudget2010
 #' @seealso `quanteda.textmodels::quanteda.textmodels-package`
+#' @keywords data internal
 NULL
 
 #' Internal data sets

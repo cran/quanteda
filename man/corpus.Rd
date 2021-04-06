@@ -108,10 +108,9 @@ document is a variable identified by \code{text_field}; and other variables
 are imported as document-level meta-data.  This matches the format of
 data.frames constructed by the the \pkg{readtext} package.
 \item a \link{kwic} object constructed by \code{\link[=kwic]{kwic()}}.
-\item a \pkg{tm} \link[tm:VCorpus]{VCorpus} or \link[tm:SimpleCorpus]{SimpleCorpus} class  object,
-with the fixed metadata
-fields imported as \link{docvars} and corpus-level metadata imported
-as \link{metacorpus} information.
+\item a \pkg{tm} \link[tm:VCorpus]{VCorpus} or \link[tm:SimpleCorpus]{SimpleCorpus}
+class  object, with the fixed metadata fields imported as \link{docvars} and
+corpus-level metadata imported as \link{meta} information.
 \item a \link{corpus} object.
 }
 }
@@ -152,20 +151,17 @@ dat
 summary(corpus(dat, text_field = "some_text",
                meta = list(source = "From a data.frame called mydf.")))
 
-# construct a corpus from a kwic object
-kw <- kwic(data_corpus_inaugural, "southern")
-summary(corpus(kw))
 # from a kwic
-kw <- kwic(data_char_sampletext, "econom*", separator = "",
-           remove_separators = FALSE) # keep original separators
+kw <- kwic(tokens(data_char_sampletext, remove_separators = FALSE),
+           pattern = "econom*", separator = "")
 summary(corpus(kw))
 summary(corpus(kw, split_context = FALSE))
-texts(corpus(kw, split_context = FALSE))
+as.character(corpus(kw, split_context = FALSE))
 
 }
 \seealso{
 \linkS4class{corpus}, \code{\link[=docvars]{docvars()}},
-\code{\link[=meta]{meta()}}, \code{\link[=texts]{texts()}}, \code{\link[=ndoc]{ndoc()}},
+\code{\link[=meta]{meta()}}, \code{\link[=as.character.corpus]{as.character.corpus()}}, \code{\link[=ndoc]{ndoc()}},
 \code{\link[=docnames]{docnames()}}
 }
 \keyword{corpus}

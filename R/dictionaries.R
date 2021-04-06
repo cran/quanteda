@@ -100,7 +100,7 @@ check_entries <- function(dict) {
 #'   [`as.list()`][dictionary2-class], and checked using
 #'   [is.dictionary()].
 #' @references WordStat dictionaries page, from Provalis Research
-#'   <http://provalisresearch.com/products/content-analysis-software/wordstat-dictionary/>.
+#'   <https://provalisresearch.com/products/content-analysis-software/wordstat-dictionary/>.
 #'
 #'   Pennebaker, J.W., Chung, C.K., Ireland, M., Gonzales, A., & Booth, R.J.
 #'   (2007). The development and psychometric properties of LIWC2007. \[Software
@@ -121,7 +121,7 @@ check_entries <- function(dict) {
 #'                           taxation = "taxation",
 #'                           taxregex = "tax*",
 #'                           country = "america"))
-#' head(dfm(corp, dictionary = dict))
+#' head(dfm(tokens(corp), dictionary = dict))
 #'
 #' # subset a dictionary
 #' dict[1:2]
@@ -158,9 +158,12 @@ dictionary <- function(x, file = NULL, format = NULL,
 dictionary.default <- function(x, file = NULL, format = NULL,
                                separator = " ",
                                tolower = TRUE, encoding = "utf-8") {
+    
     if (!missing(x) & is.null(file))
         stop("x must be a list if file is not specified")
-
+    separator <- check_character(separator, min_nchar = 1)
+    tolower <- check_logical(tolower)
+    
     formats <- c(cat = "wordstat",
                  dic = "LIWC",
                  ykd = "yoshikoder",
@@ -204,10 +207,12 @@ dictionary.default <- function(x, file = NULL, format = NULL,
 dictionary.list <- function(x, file = NULL, format = NULL,
                             separator = " ",
                             tolower = TRUE, encoding = "utf-8") {
+    
+    separator <- check_character(separator, min_nchar = 1)
+    tolower <- check_logical(tolower)
+    
     if (!is.null(file) || !is.null(format) || encoding != "utf-8")
         stop("cannot specify file, format, or encoding when x is a list")
-    if (!is.character(separator) || stri_length(separator) == 0)
-        stop("separator must be a non-empty character")
     x <- list2dictionary(x)
     if (tolower) x <- lowercase_dictionary_values(x)
     x <- replace_dictionary_values(x, separator, " ")
@@ -289,15 +294,14 @@ as.dictionary <- function(x, format = c("tidytext"), separator = " ", tolower = 
 
 #' @export
 as.dictionary.default <- function(x, format = c("tidytext"), separator = " ", tolower = FALSE) {
-    format <- match.arg(format)
-    stop(friendly_class_undefined_message(class(x), "as.dictionary"))
+    check_class(class(x), "as.dictionary")
 }
 
 #' @export
 #' @noRd
 #' @method as.dictionary dictionary2
 as.dictionary.dictionary2 <- function(x, ...) {
-    unused_dots(...)
+    check_dots(...)
     upgrade_dictionary2(x)
 }
 
@@ -305,7 +309,10 @@ as.dictionary.dictionary2 <- function(x, ...) {
 #' @method as.dictionary data.frame
 #' @export
 as.dictionary.data.frame <- function(x, format = c("tidytext"), separator = " ", tolower = FALSE) {
+    
     format <- match.arg(format)
+    separator <- check_character(separator)
+    tolower <- check_logical(tolower)
 
     if (format == "tidytext") {
         if (!all(c("word", "sentiment") %in% names(x)))
@@ -334,7 +341,7 @@ is.dictionary <- function(x) {
     is(x, "dictionary2")
 }
 
-#' @rdname print-quanteda
+#' @rdname print-methods
 #' @aliases print.dictionary
 #' @param max_nkey max number of keys to print; default is from the
 #'   `print_dictionary_max_max_nkey` setting of [quanteda_options()]
@@ -347,7 +354,13 @@ setMethod("print", signature(x = "dictionary2"),
                    max_nval = quanteda_options("print_dictionary_max_nval"),
                    show_summary = quanteda_options("print_dictionary_summary"),
                    ...) {
+              
               x <- as.dictionary(x)
+              max_nkey <- check_integer(max_nkey, min = -1)
+              max_nval <- check_integer(max_nval, min = -1)
+              show_summary <- check_logical(show_summary)
+              check_dots(...)
+              
               if (show_summary) {
                   depth <- dictionary_depth(x)
                   lev <- if (depth > 1L) " primary" else ""
@@ -357,17 +370,16 @@ setMethod("print", signature(x = "dictionary2"),
                   if (lev != "") cat(" and ", depth, " nested levels", sep = "")
                   cat(".\n")
               }
-              invisible(print_dictionary(x, 1, max_nkey, max_nval, ...))
+              invisible(print_dictionary(x, 1, max_nkey, max_nval, show_summary, ...))
           })
 
-#' @rdname print-quanteda
+#' @noRd
 setMethod("show", signature(object = "dictionary2"), function(object) print(object))
 
 # Internal function to print dictionary
 print_dictionary <- function(entry, level = 1,
                              max_nkey, max_nval, show_summary, ...) {
-    unused_dots(...)
-
+    
     nkey <- length(entry)
     entry <- unclass(entry)
     if (max_nkey >= 0)

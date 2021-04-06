@@ -1,6 +1,4 @@
-context("test corpus")
-
-test_that("test show.corpus", {
+test_that("print works", {
     expect_output(
         print(corpus(c("The"))),
         "Corpus consisting of 1 document."
@@ -24,11 +22,23 @@ test_that("test show.corpus", {
                     docvars = data.frame(list(test = 1:4, test2 = 1:4)))),
         "Corpus consisting of 4 documents and 2 docvars."
     )
-})
+    expect_error(
+        print(corpus(c("The", "quick", "brown", "fox")), max_ndoc = "xyz"),
+        "max_ndoc must be coercible to integer"
+    )
+    expect_error(
+        print(corpus(c("The", "quick", "brown", "fox")), max_nchar = "xyz"),
+        "max_nchar must be coercible to integer"
+    )
+    expect_error(
+        print(corpus(c("The", "quick", "brown", "fox")), show_summary = logical()),
+        "The length of show_summary must be 1"
+    )
+    
+})                
 
-
-test_that("test corpus constructors works for kwic", {
-    kw <- kwic(data_char_sampletext, "econom*")
+test_that("corpus constructors works for kwic", {
+    kw <- kwic(tokens(data_char_sampletext), "econom*")
 
     # split_context = TRUE, extract_keyword = TRUE
     corp <- corpus(kw, split_context = TRUE, extract_keyword = TRUE)
@@ -58,54 +68,45 @@ test_that("test corpus constructors works for kwic", {
       kwic("econom*", window = 10, separator = "") %>%
       corpus(split_context = FALSE, extract_keyword = FALSE)
     expect_identical(
-        texts(corp)[2],
+        as.character(corp)[2],
         c("text1.L390" = "it is decimating the domestic economy? As we are tired ")
     )
 
     # ; and !
-    txt <- c("This is; a test!")
+    txt1 <- c("This is; a test!")
+    toks1 <- tokens(txt1, what = "word", remove_separators = FALSE)
+    kw1 <- kwic(toks1, "a", window = 10, separator = "")
     expect_equivalent(
-        suppressWarnings(tokens(txt, what = "word", remove_separators = FALSE) %>%
-          kwic("a", window = 10, separator = "") %>%
-          corpus(remove_separators = FALSE, split_context = FALSE) %>%
-          texts()),
-        txt
+        as.character(corpus(kw1, split_context = FALSE)), txt1
     )
 
     # quotes
-    txt <- "This 'is' only a test!"
+    txt2 <- "This 'is' only a test!"
+    toks2 <- tokens(txt2, what = "word", remove_separators = FALSE)
+    kw2 <- kwic(toks2, "a", window = 10, separator = "")
     expect_equivalent(
-      suppressWarnings(tokens(txt, what = "word", remove_separators = FALSE) %>%
-                         kwic("a", window = 10, separator = "") %>%
-                         corpus(remove_separators = FALSE, split_context = FALSE) %>%
-                         texts()),
-      txt
+        as.character(corpus(kw2, split_context = FALSE)), txt2
     )
-    txt <- "This \"is\" only a test!"
+    txt3 <- "This \"is\" only a test!"
+    toks3 <- tokens(txt3, what = "word", remove_separators = FALSE)
+    kw3 <- kwic(toks3, "a", window = 10, separator = "")
     expect_equivalent(
-      suppressWarnings(tokens(txt, what = "word", remove_separators = FALSE) %>%
-                         kwic("a", window = 10, separator = "") %>%
-                         corpus(remove_separators = FALSE, split_context = FALSE) %>%
-                         texts()),
-      txt
+        as.character(corpus(kw3, split_context = FALSE)), txt3
     )
-    txt <- 'This "is" only (a) test!'
+    txt4 <- 'This "is" only (a) test!'
+    toks4 <- tokens(txt4, what = "word", remove_separators = FALSE)
+    kw4 <- kwic(toks4, "a", window = 10, separator = "")
     expect_equivalent(
-      suppressWarnings(tokens(txt, what = "word", remove_separators = FALSE) %>%
-                         kwic("a", window = 10, separator = "") %>%
-                         corpus(remove_separators = FALSE, split_context = FALSE) %>%
-                         texts()),
-      txt
+        as.character(corpus(kw4, split_context = FALSE)), txt4
     )
-    txt <- "This is only (a) test!"
+    txt5 <- "This is only (a) test!"
+    toks5 <- tokens(txt5, what = "word", remove_separators = FALSE)
+    kw5 <- kwic(toks5, "a", window = 10, separator = "")
     expect_equivalent(
-      suppressWarnings(tokens(txt, what = "word", remove_separators = FALSE) %>%
-                         kwic("a", window = 10, separator = "") %>%
-                         corpus(remove_separators = FALSE, split_context = FALSE) %>%
-                         texts()),
-      txt
+        as.character(corpus(kw5, split_context = FALSE)), txt5
     )
-    corp <- corpus(kw, split_context = TRUE, extract_keyword = FALSE)
+    expect_error(corpus(kw, split_context = logical(), extract_keyword = FALSE))
+    expect_error(corpus(kw, extract_keyword = logical()))
 })
 
 test_that("test corpus constructors works for character", {
@@ -157,7 +158,7 @@ test_that("test corpus constructor works for tm objects", {
     # VCorpus
     data(crude, package = "tm")    # load in a tm example VCorpus
     corp1 <- corpus(crude)
-    expect_equal(substring(texts(corp1)[1], 1, 21),
+    expect_equal(substring(as.character(corp1)[1], 1, 21),
                  c("reut-00001.xml"  = "Diamond Shamrock Corp"))
 
     data(acq, package = "tm")
@@ -169,7 +170,7 @@ test_that("test corpus constructor works for tm objects", {
     scorp <- SimpleCorpus(DirSource(txt, encoding = "UTF-8"),
                                 control = list(language = "lat"))
     corp3 <- corpus(scorp)
-    expect_equal(content(scorp), texts(corp3))
+    expect_equal(content(scorp), as.character(corp3))
 
     # any other type
     scorp2 <- scorp
@@ -187,7 +188,7 @@ test_that("test corpus constructor works for VCorpus with one document (#445)", 
     require(tm)
     vcorp <- VCorpus(VectorSource(data_corpus_inaugural[2]))
     corp <- corpus(vcorp)
-    expect_equivalent(texts(corp)[1], texts(data_corpus_inaugural)[2])
+    expect_equivalent(as.character(corp)[1], as.character(data_corpus_inaugural)[2])
     detach("package:tm", unload = FALSE, force = TRUE)
     detach("package:NLP", unload = FALSE, force = TRUE)
 })
@@ -216,7 +217,10 @@ test_that("corpus works for texts with duplicate filenames", {
     txt <- c(one = "Text one.", two = "text two", one = "second first text")
     corp <- corpus(txt, unique_docnames = FALSE)
     expect_equal(docnames(corp), c("one.1", "two.1", "one.2"))
-    expect_error(corpus(txt, unique_docnames = TRUE), "docnames must be unique")
+    expect_error(corpus(txt, unique_docnames = TRUE), 
+                 "docnames must be unique")
+    expect_error(corpus(txt, unique_docnames = logical()), 
+                 "The length of unique_docnames must be 1")
 })
 
 test_that("create a corpus on a corpus", {
@@ -248,7 +252,7 @@ test_that("corpus constructor works with tibbles", {
         "corpus"
     )
     expect_equal(
-        texts(corpus(dd)),
+        as.character(corpus(dd)),
         c(text1 = "Hello", text2 = "quanteda", text3 = "world")
     )
 })
@@ -326,27 +330,27 @@ test_that("corpus.data.frame sets docnames correctly", {
 
     df <- data.frame(other = txt,
                      row.names = NULL, stringsAsFactors = FALSE)
-    dfdocid_ <- data.frame(other = txt, doc_id = dnames,
+    df_docid <- data.frame(other = txt, doc_id = dnames,
                            row.names = NULL, stringsAsFactors = FALSE)
     df_text <- data.frame(text = txt,
                           row.names = NULL, stringsAsFactors = FALSE)
     df_rownames <- data.frame(other = txt,
                               row.names = rnames, stringsAsFactors = FALSE)
-    dfdocid__rownames <- data.frame(other = txt, doc_id = dnames,
+    df_docid_rownames <- data.frame(other = txt, doc_id = dnames,
                                     row.names = rnames, stringsAsFactors = FALSE)
-    df_textdocid_ <- data.frame(text = txt,  doc_id = dnames,
+    df_text_docid <- data.frame(text = txt,  doc_id = dnames,
                                 row.names = NULL, stringsAsFactors = FALSE)
     df_text_rownames <- data.frame(text = txt,
                                    row.names = rnames, stringsAsFactors = FALSE)
-    df_textdocid_rownames <- data.frame(text = txt, doc_id = dnames,
+    df_text_docid_rownames <- data.frame(text = txt, doc_id = dnames,
                                          row.names = rnames, stringsAsFactors = FALSE)
 
     expect_identical(
-        docnames(corpus(df_textdocid_rownames)),
+        docnames(corpus(df_text_docid_rownames)),
         c("A-dn", "B-dn", "C-dn")
     )
     expect_error(
-        corpus(df_textdocid_rownames, docid_field = "notfound"),
+        corpus(df_text_docid_rownames, docid_field = "notfound"),
         "docid_field column not found or invalid"
     )
     expect_identical(
@@ -374,14 +378,16 @@ test_that("corpus.data.frame sets docnames correctly", {
 test_that("corpus handles NA correctly (#1372, #1969)", {
     txt <- c("a b c", NA, "d e f")
     expect_true(!any(
-        is.na(texts(corpus(txt)))
-    ))
+        suppressWarnings(is.na(as.character(corpus(txt)))
+    )))
     expect_warning(
         corpus(txt),
         "NA is replaced by empty string"
     )
     expect_true(!any(
-        is.na(texts(corpus(data.frame(text = txt, stringsAsFactors = FALSE))))
+        suppressWarnings(
+          is.na(as.character(corpus(data.frame(text = txt, stringsAsFactors = FALSE))))
+        )
     ))
 })
 
@@ -434,7 +440,7 @@ test_that("handle data.frame with improper column names and text and doc_id fiel
 
     expect_equal(names(docvars(corp)), c("V1", "dvar2", "V3"))
     expect_equal(docnames(corp), paste0("txt", 1:5))
-    expect_equivalent(texts(corp), LETTERS[1:5])
+    expect_equivalent(as.character(corp), LETTERS[1:5])
 })
 
 test_that("handle data.frame variable renaming when one already exists", {

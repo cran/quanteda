@@ -1,5 +1,3 @@
-context("test tokens_select.R")
-
 test_that("test that tokens_select is working", {
     txt <- c(doc1 = "This IS UPPER And Lower case",
              doc2 = "THIS is ALL CAPS aNd sand")
@@ -127,8 +125,6 @@ test_that("tokens_remove works regardless when features are overlapped, issue #7
 })
 
 
-context("test feature selection according to new scheme")
-## objects to work with in tests
 txt <- c(d1 = "a b c d e g h",  d2 = "a b e g h i j")
 toks_uni <- tokens(txt)
 dfm_uni <- dfm(toks_uni)
@@ -140,8 +136,9 @@ list_uni <- list("a", "b", "g", "j")
 list_bi <- list("a b", "g j")
 dict_uni <- dictionary(list(one = c("a", "b"), two = c("g", "j")))
 dict_bi <- dictionary(list(one = "a b", two = "g j"))
-coll_bi <- textstat_collocations(toks_uni, size = 2, min_count = 2)
-coll_tri <- textstat_collocations(toks_uni, size = 3, min_count = 2)[1, ]
+# coll_bi <- textstat_collocations(toks_uni, size = 2, min_count = 2)
+# coll_tri <- textstat_collocations(toks_uni, size = 3, min_count = 2)[1, ]
+
 test_that("tokens_select works as expected for unigrams selected on char, list of unigrams", {
     expect_equal(
         as.list(tokens_select(toks_uni, char_uni)),
@@ -218,43 +215,43 @@ test_that("tokens_select works as expected for bigrams selected on char, list of
     )
 })
 
-test_that("tokens_select works correctly with collocations objects", {
-    expect_equal(
-        as.list(tokens_select(toks_uni, coll_bi$collocation)),
-        list(d1 = character(), d2 = character())
-    )
-    expect_equal(
-        as.list(tokens_remove(toks_uni, phrase(coll_bi$collocation))),
-        list(d1 = c("c", "d"), d2 = c("i", "j"))
-    )
-    expect_equal(
-        as.list(tokens_remove(toks_uni, coll_bi)),
-        as.list(tokens_remove(toks_uni, phrase(coll_bi$collocation)))
-    )
-    expect_equal(
-        as.list(tokens_select(toks_uni, coll_tri$collocation)),
-        list(d1 = character(), d2 = character())
-    )
-    expect_equal(
-        as.list(tokens_select(toks_bi, coll_bi$collocation)),
-        list(d1 = c("a b", "e g", "g h"), d2 = c("a b", "e g", "g h"))
-    )
-    expect_equal(
-        as.list(tokens_select(toks_bi, phrase(coll_bi$collocation))),
-        list(d1 = character(), d2 = character())
-    )
-    expect_equal(
-        as.list(tokens_select(toks_bi, phrase(coll_bi$collocation))),
-        as.list(tokens_select(toks_bi, coll_bi))
-    )
-    expect_equal(
-        as.list(tokens_select(toks_bi, coll_tri)),
-        list(d1 = character(), d2 = character())
-    )
-    expect_silent(
-        tokens_select(toks_bi, coll_tri)
-    )
-})
+# test_that("tokens_select works correctly with collocations objects", {
+#     expect_equal(
+#         as.list(tokens_select(toks_uni, coll_bi$collocation)),
+#         list(d1 = character(), d2 = character())
+#     )
+#     expect_equal(
+#         as.list(tokens_remove(toks_uni, phrase(coll_bi$collocation))),
+#         list(d1 = c("c", "d"), d2 = c("i", "j"))
+#     )
+#     expect_equal(
+#         as.list(tokens_remove(toks_uni, coll_bi)),
+#         as.list(tokens_remove(toks_uni, phrase(coll_bi$collocation)))
+#     )
+#     expect_equal(
+#         as.list(tokens_select(toks_uni, coll_tri$collocation)),
+#         list(d1 = character(), d2 = character())
+#     )
+#     expect_equal(
+#         as.list(tokens_select(toks_bi, coll_bi$collocation)),
+#         list(d1 = c("a b", "e g", "g h"), d2 = c("a b", "e g", "g h"))
+#     )
+#     expect_equal(
+#         as.list(tokens_select(toks_bi, phrase(coll_bi$collocation))),
+#         list(d1 = character(), d2 = character())
+#     )
+#     expect_equal(
+#         as.list(tokens_select(toks_bi, phrase(coll_bi$collocation))),
+#         as.list(tokens_select(toks_bi, coll_bi))
+#     )
+#     expect_equal(
+#         as.list(tokens_select(toks_bi, coll_tri)),
+#         list(d1 = character(), d2 = character())
+#     )
+#     expect_silent(
+#         tokens_select(toks_bi, coll_tri)
+#     )
+# })
 
 
 test_that("tokens_select fails as expected with dfm objects", {
@@ -279,22 +276,22 @@ test_that("tokens_select on unigrams works as expected when padding = TRUE", {
         list(d1 = c("", "", "c", "d", "e", "", ""), d2 = rep("", 7))
     )
 
-    expect_equal(
-        as.list(tokens_select(toks_uni, coll_bi$collocation, padding = TRUE)),
-        list(d1 = rep("", 7), d2 = rep("", 7))
-    )
-
-    expect_equal(
-        as.list(tokens_select(toks_uni, phrase(coll_bi$collocation), padding = TRUE)),
-        list(d1 = c("a", "b", "", "", "e", "g", "h"),
-             d2 = c("a", "b", "e", "g", "h", "", ""))
-    )
-
-    expect_equal(
-        as.list(tokens_select(toks_uni, phrase(coll_bi$collocation), padding = TRUE)),
-        as.list(tokens_select(toks_uni, coll_bi, padding = TRUE))
-    )
-
+    # expect_equal(
+    #     as.list(tokens_select(toks_uni, coll_bi$collocation, padding = TRUE)),
+    #     list(d1 = rep("", 7), d2 = rep("", 7))
+    # )
+    #
+    # expect_equal(
+    #     as.list(tokens_select(toks_uni, phrase(coll_bi$collocation), padding = TRUE)),
+    #     list(d1 = c("a", "b", "", "", "e", "g", "h"),
+    #          d2 = c("a", "b", "e", "g", "h", "", ""))
+    # )
+    #
+    # expect_equal(
+    #     as.list(tokens_select(toks_uni, phrase(coll_bi$collocation), padding = TRUE)),
+    #     as.list(tokens_select(toks_uni, coll_bi, padding = TRUE))
+    # )
+    #
     expect_equal(
         as.list(tokens_select(toks_uni, list_bi, padding = TRUE)),
         list(d1 = rep("", 7), d2 = rep("", 7))
@@ -322,25 +319,25 @@ test_that("tokens_select on bigrams works as expected when padding = TRUE", {
         as.list(tokens_select(toks_bi, list(c("c", "d", "e")), padding = TRUE))
     )
 
-    expect_equal(
-        as.list(tokens_select(toks_bi, coll_bi$collocation, padding = TRUE)),
-        list(d1 = c("a b", "", "", "", "e g", "g h"),
-             d2 = c("a b", "", "e g", "g h", "", ""))
-    )
-
-    expect_equal(
-        as.list(tokens_select(toks_bi, phrase(coll_bi$collocation), padding = TRUE)),
-        list(d1 = rep("", 6), d2 = rep("", 6))
-    )
-
-    expect_equal(
-        as.list(tokens_select(toks_bi, phrase(coll_bi$collocation), padding = TRUE)),
-        as.list(tokens_select(toks_bi, coll_bi, padding = TRUE))
-    )
-
-    expect_silent(
-        as.list(tokens_select(toks_bi, coll_bi, padding = TRUE))
-    )
+    # expect_equal(
+    #     as.list(tokens_select(toks_bi, coll_bi$collocation, padding = TRUE)),
+    #     list(d1 = c("a b", "", "", "", "e g", "g h"),
+    #          d2 = c("a b", "", "e g", "g h", "", ""))
+    # )
+    #
+    # expect_equal(
+    #     as.list(tokens_select(toks_bi, phrase(coll_bi$collocation), padding = TRUE)),
+    #     list(d1 = rep("", 6), d2 = rep("", 6))
+    # )
+    #
+    # expect_equal(
+    #     as.list(tokens_select(toks_bi, phrase(coll_bi$collocation), padding = TRUE)),
+    #     as.list(tokens_select(toks_bi, coll_bi, padding = TRUE))
+    # )
+    #
+    # expect_silent(
+    #     as.list(tokens_select(toks_bi, coll_bi, padding = TRUE))
+    # )
 })
 
 test_that("tokens_select output works as planned", {
@@ -398,16 +395,17 @@ test_that("tokens_select works when window sizes are given ", {
     expect_equal(as.list(tokens_remove(toks, "c", padding = TRUE, window = c(1, 2))),
                  list(text1 = c("a", "", "", "", "", "f", "g", "h", "i")))
 
-    expect_error(tokens_remove(toks, "c", window = -1))
+    expect_error(tokens_remove(toks, "c", window = -1),
+                 "The value of window must be between 0 and Inf")
     expect_error(
         tokens_remove(toks, "c", window = c(1, 1, 3)),
-        "window must be a integer vector of length 1 or 2"
+        "The length of window must be between 1 and 2"
     )
 })
 
 test_that("tokens_select error when dfm is given, #1006", {
     toks <- tokens("a b c")
-    expect_error(tokens_select(toks, dfm("b c d")))
+    expect_error(tokens_select(toks, dfm(tokens("b c d"))))
 })
 
 test_that("shortcut functions works", {
@@ -677,22 +675,18 @@ test_that("position arguments are working", {
              doc3 = c("a"))
     )
     expect_identical(
-        as.list(tokens_select(toks, "*", startpos = numeric(), endpos = numeric())),
-        list(doc1 = c("a", "b", "c", "d", "e"),
-             doc2 = c("a", "b", "c"),
-             doc3 = c("a"))
-    )
-    expect_identical(
         as.list(tokens_remove(toks, "*", startpos = -100, endpos = 100)),
         list(doc1 = character(),
              doc2 = character(),
              doc3 = character())
     )
-    expect_identical(
-        as.list(tokens_remove(toks, "*", startpos = numeric(), endpos = numeric())),
-        list(doc1 = character(),
-             doc2 = character(),
-             doc3 = character())
+    expect_error(
+        tokens_remove(toks, "*", startpos = numeric()),
+        "The length of startpos must be between 1 and Inf"
+    )
+    expect_error(
+        tokens_remove(toks, "*", endpos = numeric()),
+        "The length of endpos must be between 1 and Inf"
     )
 
 })

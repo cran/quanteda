@@ -1,7 +1,7 @@
 #' Replace tokens in a tokens object
 #'
 #' Substitute token types based on vectorized one-to-one matching. Since this
-#' function is created for lemmatization or user-defined stemming. It support
+#' function is created for lemmatization or user-defined stemming. It supports
 #' substitution of multi-word features by multi-word features, but substitution
 #' is fastest when `pattern` and `replacement` are character vectors
 #' and `valuetype = "fixed"` as the function only substitute types of
@@ -44,7 +44,7 @@ tokens_replace <- function(x, pattern, replacement, valuetype = "glob",
 #' @export
 tokens_replace.default <- function(x, pattern, replacement, valuetype = "glob",
                                    case_insensitive = TRUE, verbose = quanteda_options("verbose")) {
-    stop(friendly_class_undefined_message(class(x), "tokens_replace"))
+    check_class(class(x), "tokens_replace")
 }
 
 #' @export
@@ -53,11 +53,16 @@ tokens_replace.tokens <- function(x, pattern, replacement, valuetype = "glob",
 
     x <- as.tokens(x)
     if (length(pattern) != length(replacement))
-        stop("Lengths of 'pattern' and 'replacement' must be the same")
+        stop("The length of pattern and replacement must be the same", call. = FALSE)
     if (!length(pattern)) return(x)
 
     type <- types(x)
     if (valuetype == "fixed" && !is.list(pattern) && !is.list(replacement)) {
+        
+        pattern <- check_character(pattern, min_len = 0, max_len = Inf, strict = TRUE)
+        replacement <- check_character(replacement, min_len = 0, max_len = Inf, strict = TRUE)
+        case_insensitive <- check_logical(case_insensitive)
+        
         type_new <- replace_type(type, pattern, replacement, case_insensitive)
         if (identical(type, type_new)) {
             result <- x
@@ -67,10 +72,10 @@ tokens_replace.tokens <- function(x, pattern, replacement, valuetype = "glob",
         }
     } else {
         attrs <- attributes(x)
-        ids_pat <- pattern2list(pattern, type, valuetype, case_insensitive,
+        ids_pat <- object2id(pattern, type, valuetype, case_insensitive,
                                 field_object(attrs, "concatenator"), keep_nomatch = FALSE)
         type <- union(type, unlist(replacement, use.names = FALSE))
-        ids_repl <- pattern2list(replacement, type, "fixed", FALSE,
+        ids_repl <- object2id(replacement, type, "fixed", FALSE,
                                  field_object(attrs, "concatenator"), keep_nomatch = TRUE)
         result <- qatd_cpp_tokens_replace(x, type, ids_pat, ids_repl[attr(ids_pat, "pattern")])
         result <- rebuild_tokens(result, attrs)
@@ -84,9 +89,7 @@ tokens_replace.tokens <- function(x, pattern, replacement, valuetype = "glob",
 #' @noRd
 #' @keywords internal
 replace_type <- function(type, pattern, replacement, case_insensitive) {
-
-    if (!is.character(pattern) || !is.character(replacement))
-        stop("'pattern' and 'replacement' must be characters")
+    
     if (!length(type)) return(character())
 
     # normalize unicode

@@ -35,8 +35,8 @@
 #'                           taxglob = "tax*",
 #'                           taxregex = "tax.+$",
 #'                           country = c("United_States", "Sweden")))
-#' dfmat <- dfm(c("My Christmas was ruined by your opposition tax plan.",
-#'                "Does the United_States or Sweden have more progressive taxation?"),
+#' dfmat <- dfm(tokens(c("My Christmas was ruined by your opposition tax plan.",
+#'                       "Does the United_States or Sweden have more progressive taxation?")),
 #'              remove = stopwords("english"))
 #' dfmat
 #'
@@ -73,7 +73,7 @@ dfm_lookup.default <- function(x, dictionary, levels = 1:5,
                            capkeys = !exclusive,
                            nomatch = NULL,
                            verbose = quanteda_options("verbose")) {
-    stop(friendly_class_undefined_message(class(x), "dfm_lookup"))
+    check_class(class(x), "dfm_lookup")
 }
 
 #' @export
@@ -84,7 +84,12 @@ dfm_lookup.dfm <- function(x, dictionary, levels = 1:5,
                            capkeys = !exclusive,
                            nomatch = NULL,
                            verbose = quanteda_options("verbose")) {
+    
     x <- as.dfm(x)
+    exclusive <- check_logical(exclusive)
+    capkeys <- check_logical(capkeys)
+    verbose <- check_logical(verbose)
+    
     if (!nfeat(x) || !ndoc(x)) return(x)
 
     if (!is.dictionary(dictionary))
@@ -98,7 +103,7 @@ dfm_lookup.dfm <- function(x, dictionary, levels = 1:5,
         catm("applying a dictionary consisting of ", length(dictionary), " key",
              if (length(dictionary) > 1L) "s" else "", "\n", sep = "")
 
-    ids <- pattern2list(dictionary, type, valuetype, case_insensitive,
+    ids <- object2id(dictionary, type, valuetype, case_insensitive,
                         field_object(attrs, "concatenator"), levels)
     key <- attr(ids, "key")
     ids <- ids[lengths(ids) == 1]

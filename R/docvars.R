@@ -76,15 +76,31 @@ select_docvars <- function(x, field = NULL, user = TRUE, system = FALSE, drop = 
     }
 }
 
-# internal function to make new system-level docvars
-make_docvars <- function(n, docname = NULL, unique = TRUE) {
+
+#' Internal function to make new system-level docvars
+#' @param n the number of documents
+#' @param docname a character vector for the names of documents. Must be the
+#'   same length as `n` or `NULL`. If NULL, names are generated automatically.
+#' @param unique if `TRUE`, names must be all unique. If `FALSE`, documents with the same
+#'   names are treated as segments from the same document and given serial number.
+#' @param drop_docid if `TRUE`, drop unused names of documents.
+#' @keywords internal
+make_docvars <- function(n, docname = NULL, unique = TRUE, drop_docid = TRUE) {
     
     stopifnot(is.integer(n))
     if (is.null(docname)) {
         docname <- paste0(quanteda_options("base_docname"), seq_len(n))
+        docname <- factor(docname, levels = unique(docname))
     } else {
         stopifnot(n == length(docname))
-        docname <- stri_trans_nfc(as.character(docname))
+        if (is.factor(docname)) {
+            levels(docname) <- stri_trans_nfc(levels(docname))
+            if (drop_docid)
+                docname <- droplevels(docname)
+        } else {
+            docname <- stri_trans_nfc(as.character(docname))
+            docname <- factor(docname, levels = unique(docname))
+        }
     }
     if (n == 0) {
         result <- data.frame("docname_" = character(),
@@ -92,20 +108,15 @@ make_docvars <- function(n, docname = NULL, unique = TRUE) {
                              "segid_" = integer(),
                               stringsAsFactors = FALSE)
     } else {
-        if (unique) {
-            if (any(duplicated(docname))) {
-                segid <- stats::ave(docname == docname, docname, FUN = cumsum)
-                docid <- paste0(docname, ".", segid)
-            } else {
-                segid <- rep(1L, n)
-                docid <- docname
-            }
+        if (unique && any(duplicated(docname))) {
+            segid <- stats::ave(docname == docname, docname, FUN = cumsum)
+            docid <- paste0(docname, ".", segid)
         } else {
             segid <- rep(1L, n)
-            docid <- docname
+            docid <- as.character(docname)
         }
         result <- data.frame("docname_" = docid,
-                             "docid_" = factor(docname, levels = unique(docname)),
+                             "docid_" = docname,
                              "segid_" = segid,
                              stringsAsFactors = FALSE)
     }
@@ -116,18 +127,20 @@ make_docvars <- function(n, docname = NULL, unique = TRUE) {
 #' Internal function to subset or duplicate docvar rows
 #' @param x docvar data.frame
 #' @param i numeric or logical vector for subsetting/duplicating rows
+#' @inheritParams make_docvars
 #' @keywords internal
-reshape_docvars <- function(x, i = NULL) {
+reshape_docvars <- function(x, i = NULL, drop_docid = TRUE) {
     if (is.null(i)) return(x)
     x <- x[i, , drop = FALSE]
-    temp <- make_docvars(nrow(x), x[["docid_"]], TRUE)
+    temp <- make_docvars(nrow(x), x[["docid_"]], unique = TRUE, drop_docid)
     x[c("docname_", "docid_", "segid_")] <- temp
     rownames(x) <- NULL
     return(x)
 }
 
 # Reshape docvars keeping variables that have the same values within groups
-group_docvars <- function(x, group = NULL) {
+group_docvars <- function(x, group = NULL, field = NULL) {
+    
     if (is.null(group))
         return(x)
     l <- rep(FALSE, length(x))
@@ -136,8 +149,11 @@ group_docvars <- function(x, group = NULL) {
             l[i] <- TRUE
         }
     }
-    temp <- make_docvars(length(levels(group)), levels(group), TRUE)
-    result <- x[match(levels(group), group), l, drop = FALSE]
+    temp <- make_docvars(length(levels(group)), levels(group), unique = TRUE)
+    i <- match(levels(group), group)
+    result <- x[i, l, drop = FALSE]
+    if (!is.null(field))
+        result[[field]] <- factor(levels(group), levels = levels(group))
     result[c("docname_", "docid_", "segid_")] <- temp
     rownames(result) <- NULL
     return(result)
@@ -151,9 +167,9 @@ upgrade_docvars <- function(x, docname = NULL) {
     if (is.null(docname))
         docname <- rownames(x)
     if (is.null(x) || length(x) == 0) {
-        result <- make_docvars(length(docname), docname, FALSE)
+        result <- make_docvars(length(docname), docname, unique = FALSE)
     } else {
-        result <- cbind(make_docvars(nrow(x), docname, FALSE),
+        result <- cbind(make_docvars(nrow(x), docname, unique = FALSE),
                         x[!is_system(names(x)) & !is_system_old(names(x))])
         if ("_document" %in% names(x))
             result[["docid_"]] <- factor(x[["_document"]], levels = unique(x[["_document"]]))
@@ -203,7 +219,7 @@ docvars <- function(x, field = NULL) {
 
 #' @export
 docvars.default <- function(x, field = NULL) {
-    stop(friendly_class_undefined_message(class(x), "docvars"))
+    check_class(class(x), "docvars")
 }
 
 #' @noRd
@@ -260,7 +276,7 @@ docvars.kwic <- function(x) {
 
 #' @export
 "docvars<-.default" <- function(x, field = NULL, value) {
-    stop(friendly_class_undefined_message(class(x), "docvars<-"))
+    check_class(class(x), "docvars<-")
 }
 
 #' @export

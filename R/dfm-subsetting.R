@@ -21,15 +21,15 @@ subset_dfm <- function(x, i, j, ..., drop) {
     }
 
     if (!missing(i) && missing(j)) {
-        x <- "["(as(x, "Matrix"), i, , ..., drop = FALSE)
+        x <- "["(as(x, "Matrix"), i, , drop = FALSE)
     } else if (missing(i) && !missing(j)) {
-        x <- "["(as(x, "Matrix"), , j, ..., drop = FALSE)
+        x <- "["(as(x, "Matrix"), , j, drop = FALSE)
     } else {
-        x <- "["(as(x, "Matrix"), i, j, ..., drop = FALSE)
+        x <- "["(as(x, "Matrix"), i, j, drop = FALSE)
     }
 
     if (!missing(i))
-        attrs[["docvars"]] <- reshape_docvars(attrs[["docvars"]], index_row)
+        attrs[["docvars"]] <- reshape_docvars(attrs[["docvars"]], index_row, ...)
 
     build_dfm(
         x, colnames(x),
@@ -38,9 +38,11 @@ subset_dfm <- function(x, i, j, ..., drop) {
     )
 }
 
-#' @param i index for documents
-#' @param j index for features
-#' @param drop always set to `FALSE`
+#' @param i document names or indices for documents to extract.
+#' @param j feature names or indices for documents to extract.
+#' @param drop_docid if `TRUE`, `docid` for documents are removed as the result 
+#'   of extraction.
+# @param drop always set to `FALSE`
 #' @param ... additional arguments not used here
 #' @rdname dfm-class
 #' @export
@@ -89,3 +91,49 @@ setMethod("[", signature = c("dfm", i = "missing", j = "index", drop = "logical"
 "[[.dfm" <- function(x, i) {
     stop("[[ not defined for a dfm/fcm object", call. = FALSE)
 }
+
+## can be removed later, but necessary in v3 for oldrelease checks
+
+#' Return the first or last part of a dfm
+#' 
+#' For a [dfm] object, return the dfm with only the first or last `n` documents.
+#' @param x a [dfm] object
+#' @inheritParams utils::head
+#' @return A [dfm] class object corresponding to the subset of documents
+#'   determined by by `n`.
+#' @export
+#' @name head.dfm
+#' @method head dfm
+#' @keywords dfm internal
+#' @examples
+#' head(data_dfm_lbgexample, 3)
+#' head(data_dfm_lbgexample, -4)
+#' 
+head.dfm <- function(x, n = 6L, ...) { 
+    x <- as.dfm(x)
+    check_dots(...)
+    n <- check_integer(n)
+    i <- seq_len(ndoc(x))
+    x[i %in% head(i, n), ]
+}
+
+#' @rdname head.dfm
+#' @method tail dfm
+#' @export
+#' @examples 
+#' tail(data_dfm_lbgexample)
+#' tail(data_dfm_lbgexample, n = 3)
+tail.dfm <- function(x, n = 6L, ...) { 
+    x <- as.dfm(x)
+    check_dots(...)
+    n <- check_integer(n)
+    i <- seq_len(ndoc(x))
+    x[i %in% tail(i, n), ]
+}
+
+setMethod("head", signature(x = "dfm"), function(x, n = 6L, ...) { 
+    UseMethod("head")
+})
+setMethod("tail", signature(x = "dfm"), function(x, n = 6L, ...) { 
+    UseMethod("tail")
+})

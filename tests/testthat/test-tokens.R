@@ -1,5 +1,3 @@
-context("test tokens")
-
 test_that("as.tokens list version works as expected", {
     txt <- c(doc1 = "The first sentence is longer than the second.",
              doc2 = "Told you so.")
@@ -150,63 +148,6 @@ test_that("remove_url works as expected", {
         list(text1 = c("The", "URL", "was"),
              text2 = c("The", "URL", "was"),
              text3 = c("is", "another", "URL"))
-    )
-})
-
-test_that("deprecated remove_ arguments work", {
-    txt <- "they: #stretched, @ @@ in,, a # ## never-ending @line."
-    toks <- tokens(txt)
-    txt <- "Pre- and post-war self-fulfilling."
-    expect_identical(
-        as.character(tokens(txt, what = "word", remove_punct = TRUE, split_hyphens = TRUE)),
-        as.character(suppressWarnings(tokens(txt, what = "word", remove_punct = TRUE,
-                                             remove_hyphens = TRUE)))
-    )
-    expect_warning(
-        tokens(txt, what = "word", remove_hyphens = TRUE),
-        "'remove_hyphens' is deprecated, use 'split_hyphens' instead.",
-        fixed = TRUE
-    )
-    expect_warning(
-        tokens(tokens(txt, what = "word"), remove_hyphens = TRUE),
-        "'remove_hyphens' is deprecated, use 'split_hyphens' instead.",
-        fixed = TRUE
-    )
-})
-
-test_that("defunct remove_twitter warning works", {
-    # character
-    txt <- "they: #stretched, @ @@ in,, a # ## never-ending @line."
-    expect_warning(
-        tokens(txt, remove_twitter = TRUE),
-        "'remove_twitter' is defunct; see 'quanteda Tokenizers' in ?tokens",
-        fixed = TRUE
-    )
-    expect_warning(
-        tokens(txt, remove_twitter = FALSE),
-        "'remove_twitter' is defunct; see 'quanteda Tokenizers' in ?tokens",
-        fixed = TRUE
-    )
-    expect_identical(
-        suppressWarnings(as.list(tokens(txt, remove_twitter = FALSE, remove_punct = TRUE))),
-        list(text1 = c("they", "#stretched", "in", "a", "never-ending", "@line"))
-    )
-    expect_identical(
-        suppressWarnings(tokens(txt, remove_twitter = FALSE, remove_punct = TRUE)),
-        tokens(txt, what = "word", remove_punct = TRUE)
-    )
-
-    # tokens
-    toks <- tokens(txt)
-    expect_warning(
-        tokens(toks, remove_twitter = TRUE),
-        "'remove_twitter' is deprecated and inactive for tokens.tokens()",
-        fixed = TRUE
-    )
-    expect_warning(
-        tokens(toks, remove_twitter = FALSE),
-        "'remove_twitter' is deprecated and inactive for tokens.tokens()",
-        fixed = TRUE
     )
 })
 
@@ -369,20 +310,24 @@ test_that("tokens arguments works with values from parent frame (#721)", {
         tokens("This contains 99 numbers.", remove_numbers = TRUE),
     )
 
-    expect_identical(
-        dfm("This contains 99 numbers.", remove_numbers = T),
-        dfm("This contains 99 numbers.", remove_numbers = TRUE)
+    suppressWarnings({
+        expect_identical(
+        dfm(tokens("This contains 99 numbers."), remove_numbers = T),
+        dfm(tokens("This contains 99 numbers."), remove_numbers = TRUE)
     )
+    })
 
     val <- FALSE
     expect_identical(
         tokens("This contains 99 numbers.", remove_numbers = val),
-        tokens("This contains 99 numbers.", remove_numbers = F)
+        tokens("This contains 99 numbers.", remove_numbers = FALSE)
     )
-    expect_identical(
-        dfm("This contains 99 numbers.", remove_numbers = val),
-        dfm("This contains 99 numbers.", remove_numbers = F)
+    suppressWarnings({
+        expect_identical(
+        dfm(tokens("This contains 99 numbers."), remove_numbers = val),
+        dfm(tokens("This contains 99 numbers."), remove_numbers = FALSE)
     )
+    })
 })
 
 test_that("tokens works for strange spaces (#796)", {
@@ -507,12 +452,14 @@ test_that("split_hyphens is working correctly", {
     corp <- data_corpus_inaugural[1:2]
     toks <- tokens(corp)
 
+    suppressWarnings({
     expect_equal(dfm(corp), dfm(toks))
     expect_equal(dfm(corp, remove_punct = TRUE), dfm(toks, remove_punct = TRUE))
     expect_equal(
         setdiff(featnames(dfm(corp)), featnames(dfm(toks))),
         character()
     )
+    })
 })
 
 test_that("tokens works as expected with NA, and blanks", {
@@ -521,11 +468,11 @@ test_that("tokens works as expected with NA, and blanks", {
         list(text1 = "one", text2 = "two", text3 = character())
     )
     expect_equal(
-        as.list(tokens(c("one", NA, ""))),
+        as.list(suppressWarnings(tokens(c("one", NA, "")))),
         list(text1 = "one", text2 = character(), text3 = character())
     )
     expect_equal(
-        as.list(tokens(c(NA, "one", ""))),
+        as.list(suppressWarnings(tokens(c(NA, "one", "")))),
         list(text1 = character(), text2 = "one", text3 = character())
     )
     expect_equal(
@@ -533,11 +480,11 @@ test_that("tokens works as expected with NA, and blanks", {
         list(text1 = character())
     )
     expect_equal(
-        as.list(tokens(c(d1 = "", d2 = NA))),
+        as.list(suppressWarnings(tokens(c(d1 = "", d2 = NA)))),
         list(d1 = character(), d2 = character())
     )
     expect_equal(
-        as.list(tokens(c(d1 = NA, d2 = ""))),
+        as.list(suppressWarnings(tokens(c(d1 = NA, d2 = "")))),
         list(d1 = character(), d2 = character())
     )
     expect_equal(
@@ -640,16 +587,6 @@ test_that("warn when remove_separators = FALSE fasterword and fastestword", {
                    "remove_separators is always TRUE for this type")
     expect_warning(tokens("a b c", what = "fastestword", remove_separators = FALSE),
                    "remove_separators is always TRUE for this type")
-})
-
-test_that("tokens_sample works as expected", {
-    toks <- tokens(data_corpus_inaugural[1:10])
-    expect_equal(ndoc(tokens_sample(toks, size = 5)), 5)
-    expect_equal(ndoc(tokens_sample(toks, size = 15, replace = TRUE)), 15)
-    expect_error(tokens_sample(toks, size = 20),
-                 "size cannot exceed the number of documents \\(10\\)")
-    expect_error(tokens_sample(data_corpus_inaugural[1:10]),
-                 "only works on tokens objects")
 })
 
 test_that("tokens.tokens(x, split_hyphens = TRUE) behaves same as tokens.character(...)", {
@@ -1190,4 +1127,10 @@ test_that("remove_numbers functions correctly", {
     )
 })
 
-
+test_that("edge case usernames are correctly recognized", {
+    toks <- tokens("Valid username: @_", remove_punct = TRUE)
+    expect_identical(
+        as.character(toks),
+        c("Valid", "username", "@_")
+    )
+})

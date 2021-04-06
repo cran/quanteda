@@ -1,17 +1,16 @@
-#' Convert regex and glob patterns to type IDs or fixed patterns
+#' Match patterns against token types
 #'
-#' @description `pattern2id` converts regex or glob to type IDs to allow
-#'   C++ function to perform fast searches in tokens object. C++ functions use a
-#'   list of type IDs to construct a hash table, against which sub-vectors of
-#'   tokens object are matched. This function constructs an index of glob
-#'   patterns for faster matching.
+#' Developer function to match regex, fixed or glob patterns against token
+#' types. This allows C++ function to perform fast searches in tokens object.
+#' C++ functions use a list of type IDs to construct a hash table, against which
+#' sub-vectors of tokens object are matched. This function constructs an index
+#' of glob patterns for faster matching.
 #' @inheritParams pattern
-#' @param types unique types of tokens obtained by [types()]
-#' @param keep_nomatch keep patterns not found
+#' @param types token types against which patterns are matched
+#' @param keep_nomatch keep patterns that did not match
 #' @inheritParams valuetype
-#' @return  `pattern2id` returns a list of integer vectors containing type
-#'   IDs
-#' @keywords internal
+#' @return a list of integer vectors containing indices of matched types
+#' @keywords development
 #' @export
 #' @examples
 #' types <- c("A", "AA", "B", "BB", "BBB", "C", "CC")
@@ -26,11 +25,15 @@
 pattern2id <- function(pattern, types, valuetype = c("glob", "fixed", "regex"),
                        case_insensitive = TRUE, keep_nomatch = FALSE) {
     
+    types <- check_character(types, min_len = 0, max_len = Inf, strict = TRUE)
+    valuetype <- match.arg(valuetype)
+    case_insensitive <- check_logical(case_insensitive)
+    keep_nomatch <- check_logical(keep_nomatch)
+    
     if (!length(pattern)) return(list())
     
-    pattern <- lapply(pattern, stri_trans_nfc) # normalize unicode
-    stopifnot(is.character(types))
-    valuetype <- match.arg(valuetype)
+    # normalize unicode
+    pattern <- lapply(pattern, stri_trans_nfc) 
     
     # glob is treated as fixed if neither * or ? is found
     if (valuetype == "glob" && !is_glob(pattern))
@@ -308,8 +311,7 @@ expand <- function(elem){
 
 #' Check if a glob pattern is indexed by index_types
 #' 
-#' Internal function for `select_types` to check if a glob pattern is
-#' indexed by
+#' Internal function for `select_types` to check if a glob pattern is indexed by
 #' `index_types`.
 #' @param pattern a glob pattern to be tested
 #' @keywords internal
@@ -368,11 +370,3 @@ unlist_character <- function(x, unique = FALSE, ...) {
         result <- unique(result)
     return(result)
 }
-
-
-
-# internal-only aliases for backward compatibility
-# TODO: this should be removed with in a year (by April 2019).
-regex2id <- pattern2id
-regex2fixed <- pattern2fixed
-

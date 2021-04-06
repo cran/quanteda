@@ -1,3 +1,5 @@
+# docnames -----------
+
 #' Get or set document names
 #' 
 #' Get or set the document names of a [corpus], [tokens], or [dfm] object.
@@ -25,7 +27,7 @@ docnames <- function(x) {
 
 #' @export
 docnames.default <- function(x) {
-    stop(friendly_class_undefined_message(class(x), "docnames"))
+    check_class(class(x), "docnames")
 }
 
 #' @noRd
@@ -40,6 +42,8 @@ docnames.corpus <- function(x) {
 docnames.tokens <- function(x) {
     get_docvars(x, "docname_", FALSE, TRUE, TRUE)
 }
+
+# docnames<- ----------
 
 #' @param value a character vector of the same length as `x`
 #' @return `docnames <-` assigns new values to the document names of an object.  
@@ -57,14 +61,14 @@ docnames.tokens <- function(x) {
 
 #' @export
 "docnames<-.default" <- function(x, value) {
-    stop(friendly_class_undefined_message(class(x), "docnames<-"))
+    check_class(class(x), "docnames<-")
 }
 
 #' @noRd
 #' @export
 "docnames<-.corpus" <- function(x, value) {
     x <- as.corpus(x)
-    temp <- make_docvars(length(value), value, TRUE)
+    temp <- make_docvars(length(value), value, unique = TRUE)
     attr(x, "docvars")[c("docname_", "docid_", "segid_")] <- temp
     attr(x, "names") <- temp[["docname_"]]
     return(x)
@@ -74,7 +78,7 @@ docnames.tokens <- function(x) {
 #' @export
 "docnames<-.tokens" <- function(x, value) {
     x <- as.tokens(x)
-    temp <- make_docvars(length(value), value, TRUE)
+    temp <- make_docvars(length(value), value, unique = TRUE)
     attr(x, "docvars")[c("docname_", "docid_", "segid_")] <- temp
     attr(x, "names") <- temp[["docname_"]]
     return(x)
@@ -84,7 +88,7 @@ docnames.tokens <- function(x) {
 #' @export
 "docnames<-.dfm" <- function(x, value) {
     x <- as.dfm(x)
-    temp <- make_docvars(length(value), value, TRUE)
+    temp <- make_docvars(length(value), value, unique = TRUE)
     x@docvars[c("docname_", "docid_", "segid_")] <- temp
     x@Dimnames[["docs"]] <- temp[["docname_"]]
     return(x)
@@ -137,10 +141,62 @@ setMethod("rownames<-",
               return(x)
           })
 
-#' Internal function to extract docid
-#' @rdname names-quanteda
-#' @export
-docid <- function(x) {
-    get_docvars(x, "docid_", system = TRUE, drop = TRUE)
-} 
+# docid -------------
 
+#' @rdname docnames
+#' @return `docid` returns an internal variable denoting the original "docname"
+#'   from which a document came.  Unless an object has been reshaped (e.g.
+#'   [corpus_reshape()], split (e.g.[tokens_split()]), or segmented (e.g.
+#'   [corpus_segment()]), `docid(x)` will return the docnames.
+#' @note `docid` is designed primarily for developers, not for end users.  In
+#'   most cases, you will want `docnames` instead.  It is, however, the
+#'   default for [groups], so that documents that have been previously reshaped
+#'   (e.g. [corpus_reshape()], split (e.g.[tokens_split()]), or segmented (e.g.
+#'   [corpus_segment()]) will be regrouped into their original `docnames` when
+#'   `groups = docid(x)`.
+#' @export
+#' @examples 
+#' # docid
+#' corp <- corpus(c(textone = "This is a sentence.  Another sentence.  Yet another.",
+#'                  textwo = "Sentence 1. Sentence 2."))
+#' corpsent <- corp %>%
+#'     corpus_reshape(to = "sentences")
+#' docnames(corpsent)
+#' docid(corpsent)
+#' docid(tokens(corpsent))
+#' docid(dfm(tokens(corpsent)))
+docid <- function(x) {
+    UseMethod("docid")
+}
+
+#' @export
+docid.default <- function(x) {
+    check_class(class(x), "docid")
+}
+
+#' @export
+docid.corpus <- function(x) {
+    tryCatch({
+        return(get_docvars(x, "docid_", system = TRUE, drop = TRUE))
+    }, error = function(e) {
+        return(NULL)
+    })
+}
+
+#' @export
+docid.tokens <- function(x) {
+    tryCatch({
+        return(get_docvars(x, "docid_", system = TRUE, drop = TRUE))
+    }, error = function(e) {
+        return(NULL)
+    })
+}
+
+#' @export
+docid.dfm <- function(x) {
+    tryCatch({
+        return(get_docvars(x, "docid_", system = TRUE, drop = TRUE))
+    }, error = function(e) {
+        return(NULL)
+    })
+}
