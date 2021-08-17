@@ -73,14 +73,14 @@ print.tokens <- function(x, max_ndoc = quanteda_options("print_tokens_max_ndoc")
 
     if (show_summary) {
         cat("Tokens consisting of ", format(ndoc, big.mark = ","), " document",
-            if (ndoc > 1L) "s" else "", sep = "")
+            if (ndoc != 1L) "s" else "", sep = "")
         if (ncol(docvars))
             cat(" and ", format(ncol(docvars), big.mark = ","), " docvar",
-                if (ncol(docvars) == 1L) "" else "s", sep = "")
+                if (ncol(docvars) != 1L) "s" else "", sep = "")
         cat(".\n")
     }
 
-    if (max_ndoc > 0) {
+    if (max_ndoc > 0 && ndoc(x) > 0) {
         x <- head(x, max_ndoc)
         label <- paste0(names(x), " :")
         types <- c("", types(x))
@@ -128,7 +128,7 @@ print.tokens <- function(x, max_ndoc = quanteda_options("print_tokens_max_ndoc")
     result <- build_tokens(
         unclass(x)[index],
         attrs[["types"]],
-        docvars = reshape_docvars(attrs[["docvars"]], index, drop_docid),
+        docvars = reshape_docvars(attrs[["docvars"]], index, drop_docid = drop_docid),
         meta = attrs[["meta"]],
         class = attrs[["class"]]
     )

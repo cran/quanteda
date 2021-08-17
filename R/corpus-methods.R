@@ -30,10 +30,10 @@ print.corpus <- function(x, max_ndoc = quanteda_options("print_corpus_max_ndoc")
 
     if (show_summary) {
         cat("Corpus consisting of ", format(ndoc, big.mark = ","), " document",
-            if (ndoc(x) != 1L) "s" else "", sep = "")
+            if (ndoc != 1L) "s" else "", sep = "")
         if (ncol(docvars))
             cat(" and ", format(ncol(docvars), big.mark = ","), " docvar",
-                if (ncol(docvars) == 1L) "" else "s", sep = "")
+                if (ncol(docvars) != 1L) "s" else "", sep = "")
         cat(".\n")
     }
 
@@ -158,7 +158,7 @@ c.corpus <- function(..., recursive = FALSE) {
 
     build_corpus(
         unclass(x)[index],
-        docvars = reshape_docvars(attrs[["docvars"]], index, drop_docid),
+        docvars = reshape_docvars(attrs[["docvars"]], index, drop_docid = drop_docid),
         meta = attrs[["meta"]],
         class = attrs[["class"]]
     )

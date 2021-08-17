@@ -29,11 +29,11 @@ test_that("make_docvars() works", {
 
 })
 
-test_that("reshape_docvars() words", {
+test_that("reshape_docvars() works", {
     
     docvar1 <- data.frame("docname_" = c("doc1", "doc2"),
-                          "docid_" = c("doc1", "doc2"),
-                          "segid_" = c(1, 2), stringsAsFactors = FALSE)
+                          "docid_" = factor(c("doc1", "doc2")),
+                          "segid_" = c(1, 1), stringsAsFactors = FALSE)
     
     expect_identical(
         quanteda:::reshape_docvars(docvar1, c(1, 2))[["docname_"]],
@@ -45,7 +45,7 @@ test_that("reshape_docvars() words", {
     )
     
     docvar2 <- data.frame("docname_" = c("doc1.1", "doc1.2"),
-                          "docid_" = c("doc1", "doc1"),
+                          "docid_" = factor(c("doc1", "doc1")),
                           "segid_" = c(1, 1))
     expect_identical(
         quanteda:::reshape_docvars(docvar2, c(1, 2))[["docname_"]],
@@ -628,3 +628,24 @@ test_that("docid works", {
         factor(docnames(corp))
     )
 })
+
+test_that("docvars are combined along with the main objects", {
+    
+    docvar <- data.frame("var1" = c(100, 100, 200, NA, NA),
+                         "var2" = c(NA, NA, NA, TRUE, FALSE))
+    
+    corp1 <- corpus(data.frame(text = c(d1 = "aa",  d2 = "bb", d3 = "cc"),
+                               var1 = c(100, 100, 200)))
+    corp2 <- corpus(data.frame(text = c(d4 = "dd", d5 = "ee"),
+                               var2 = c(TRUE, FALSE)))
+    expect_equal(docvars(c(corp1, corp2)), docvar)
+    
+    toks1 <- tokens(corp1)
+    toks2 <- tokens(corp2)
+    expect_equal(docvars(c(toks1, toks2)), docvar)
+    
+    dfmat1 <- dfm(tokens(corp1))
+    dfmat2 <- dfm(tokens(corp2))
+    expect_equal(docvars(rbind(dfmat1, dfmat2)), docvar)
+})
+

@@ -63,11 +63,11 @@
 #' # use window to form ngrams
 #' tokens_remove(toks, pattern = stopwords("en")) %>%
 #'     tokens_compound(pattern = "leav*", join = FALSE, window = c(0, 3))
-#'
+#'     
 tokens_compound <- function(x, pattern,
                     valuetype = c("glob", "regex", "fixed"),
                     concatenator = "_", 
-                    window = 0,
+                    window = 0L,
                     case_insensitive = TRUE, join = TRUE) {
     UseMethod("tokens_compound")
 }
@@ -76,7 +76,7 @@ tokens_compound <- function(x, pattern,
 tokens_compound.default <- function(x, pattern,
                                    valuetype = c("glob", "regex", "fixed"),
                                    concatenator = "_", 
-                                   window = 0,
+                                   window = 0L,
                                    case_insensitive = TRUE, join = TRUE) {
     check_class(class(x), "tokens_compound")
 }
@@ -86,7 +86,7 @@ tokens_compound.default <- function(x, pattern,
 tokens_compound.tokens <- function(x, pattern,
                    valuetype = c("glob", "regex", "fixed"),
                    concatenator = "_", 
-                   window = 0,
+                   window = 0L,
                    case_insensitive = TRUE, join = TRUE) {
 
     x <- as.tokens(x)
@@ -98,10 +98,10 @@ tokens_compound.tokens <- function(x, pattern,
     attrs <- attributes(x)
     type <- types(x)
 
-    seqs_id <- object2id(pattern, type, valuetype, case_insensitive, remove_unigram = FALSE)
-    if (length(seqs_id) == 0) return(x) # do nothing
+    ids <- object2id(pattern, type, valuetype, case_insensitive, remove_unigram = all(window == 0))
+    if (length(ids) == 0) return(x) # do nothing
     if (length(window) == 1) window <- rep(window, 2)
-    result <- qatd_cpp_tokens_compound(x, seqs_id, type, concatenator, join, window[1], window[2])
+    result <- qatd_cpp_tokens_compound(x, ids, type, concatenator, join, window[1], window[2])
     field_object(attrs, "concatenator") <- concatenator
     rebuild_tokens(result, attrs)
 }

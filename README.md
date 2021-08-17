@@ -25,35 +25,6 @@ Council grant ERC-2011-StG 283794-QUANTESS.
 
 For more details, see <https://quanteda.io>.
 
-## How to Install
-
-The normal way from CRAN, using your R GUI or
-
-``` r
-install.packages("quanteda") 
-```
-
-Or for the latest development version:
-
-``` r
-# devtools package required to install quanteda from Github 
-devtools::install_github("quanteda/quanteda") 
-```
-
-Because this compiles some C++ and Fortran source code, you will need to
-have installed the appropriate compilers.
-
-**If you are using a Windows platform**, this means you will need also
-to install the [Rtools](https://CRAN.R-project.org/bin/windows/Rtools/)
-software available from CRAN.
-
-**If you are using macOS**, you should install the [macOS
-tools](https://cran.r-project.org/bin/macosx/tools/), namely the Clang
-6.x compiler and the GNU Fortran compiler (as **quanteda** requires
-gfortran to build). If you are still getting errors related to gfortran,
-follow the fixes
-[here](https://thecoatlessprofessor.com/programming/rcpp-rcpparmadillo-and-os-x-mavericks--lgfortran-and--lquadmath-error/).
-
 ## **quanteda** version 3: New major release
 
 **quanteda** 3.0 is a major release that improves functionality,
@@ -92,13 +63,41 @@ from our GitHub pages:
 
 and more to come.
 
-## How to Use
+## How To…
+
+### How to Install
+
+The normal way from CRAN, using your R GUI or
+
+``` r
+install.packages("quanteda") 
+```
+
+Or for the latest development version:
+
+``` r
+# devtools package required to install quanteda from Github 
+devtools::install_github("quanteda/quanteda") 
+```
+
+Because this compiles some C++ and Fortran source code, you will need to
+have installed the appropriate compilers to build the development
+version.
+
+### How to Use
 
 See the [quick start
 guide](https://quanteda.io/articles/pkgdown/quickstart.html) to learn
 how to use **quanteda**.
 
-## How to cite
+### How to Get Help
+
+-   Read out documentation at <https://quanteda.io>.
+-   Submit a question on the [**quanteda** channel on
+    StackOverflow](https://stackoverflow.com/questions/tagged/quanteda).
+-   See our [tutorial site](https://tutorials.quanteda.io/).
+
+### How to Cite
 
 Benoit, Kenneth, Kohei Watanabe, Haiyan Wang, Paul Nulty, Adam Obeng,
 Stefan Müller, and Akitaka Matsuo. (2018) “[quanteda: An R package for
@@ -110,12 +109,12 @@ data](https://www.theoj.org/joss-papers/joss.00774/10.21105.joss.00774.pdf)”.
 For a BibTeX entry, use the output from
 `citation(package = "quanteda")`.
 
-## Leaving Feedback
+### How to Leave Feedback
 
 If you like **quanteda**, please consider leaving [feedback or a
 testimonial here](https://github.com/quanteda/quanteda/issues/461).
 
-## Contributing
+### How to Contribute
 
 Contributions in the form of feedback, comments, code, and bug reports
 are most welcome. How to contribute:
@@ -130,6 +129,4 @@ are most welcome. How to contribute:
     Guide](https://github.com/quanteda/quanteda/wiki/Style-guide).
 -   Issues, bug reports, and wish lists: [File a GitHub
     issue](https://github.com/quanteda/quanteda/issues).
--   Usage questions: Submit a question on the [**quanteda** channel on
-    StackOverflow](https://stackoverflow.com/questions/tagged/quanteda).
 -   Contact [the maintainer](mailto:kbenoit@lse.ac.uk) by email.
