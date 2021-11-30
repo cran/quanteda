@@ -236,7 +236,7 @@ load("../tests/data/dfmat_sotu.rda")
 #  lapply(as.list(tstat_sim), head, 10)
 
 ## ----fig.width = 7, fig.height = 5--------------------------------------------
-if (require("quanteda.textmodels")) {
+if (require("quanteda.textmodels") && require("quanteda.textplots")) {
   dfmat_ire <- dfm(tokens(data_corpus_irishbudget2010))
   tmod_wf <- textmodel_wordfish(dfmat_ire, dir = c(2, 1))
   

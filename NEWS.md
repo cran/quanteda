@@ -1,3 +1,15 @@
+# quanteda 3.2
+
+## Bug fixes and stability enhancements
+
+* `dfm()` returns a dfm with the identical column order even if `tokens_compound()` or `tokens_ngrams()` is used in the upstream (#2100).
+* `dfm_group()` with NA values in a grouping variable now drops those, similar to the behaviour of `tokens_group()` and `corpus_group()` (#2134).
+
+## Changes and additions
+
+* `char_wordstem()` now has a a new argument `check_whitespace`, which will not throw an error when lower-casing text containing a whitespace character.
+* `dfm_remove()` now has a new argument `padding = FALSE` that when `TRUE`, collects counts of the removed features in the first column.  This produces results consistent with what is compiled as a dfm built from tokens where some have been removed with `padding = TRUE` (#2152).
+
 # quanteda 3.1
 
 ## Bug fixes and stability enhancements
@@ -9,11 +21,11 @@
 
 ## Changes and additions
 
-* `phrase()` now has a `separator` argument (#2124)
+* `phrase()` now has a `separator` argument (#2124).
 
 ## Deprecations
 
-* `phrase()` methods for tokens, collocations, and lists are deprecated in favour of `as.phrase()`.  (#2129)
+* `phrase()` methods for tokens, collocations, and lists are deprecated in favour of `as.phrase()` (#2129).
 
 # quanteda 3.0
 

@@ -762,7 +762,7 @@ First, load some data.</p>
 <div id="scaling-document-positions" class="section level2">
 <h2>Scaling document positions</h2>
 <p>Here is a demonstration of unsupervised document scaling comparing the “Wordfish” model:</p>
-<div class="sourceCode" id="cb87"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">require</span>(<span class="st">&quot;quanteda.textmodels&quot;</span>)) {</span>
+<div class="sourceCode" id="cb87"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">require</span>(<span class="st">&quot;quanteda.textmodels&quot;</span>) <span class="sc">&amp;&amp;</span> <span class="fu">require</span>(<span class="st">&quot;quanteda.textplots&quot;</span>)) {</span>
 <span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a>    dfmat_ire <span class="ot">&lt;-</span> <span class="fu">dfm</span>(<span class="fu">tokens</span>(data_corpus_irishbudget2010))</span>
 <span id="cb87-3"><a href="#cb87-3" aria-hidden="true" tabindex="-1"></a>    tmod_wf <span class="ot">&lt;-</span> <span class="fu">textmodel_wordfish</span>(dfmat_ire, <span class="at">dir =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">1</span>))</span>
 <span id="cb87-4"><a href="#cb87-4" aria-hidden="true" tabindex="-1"></a></span>
