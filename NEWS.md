@@ -1,3 +1,14 @@
+# quanteda 3.2.1
+
+## Bug fixes and stability enhancements
+
+* `dfm_lookup()` ignores matches of multiple dictionary values in the same key in a similar way as `tokens_lookup()` (#2159).
+
+## Changes and additions
+
+* A new `split_tags` argument has been added to `tokens()`, to provide the user with an option not to preserve social media tags (addresses #2156).
+
+
 # quanteda 3.2
 
 ## Bug fixes and stability enhancements

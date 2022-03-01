@@ -1,5 +1,5 @@
 Package: quanteda
-Version: 3.2.0
+Version: 3.2.1
 Title: Quantitative Analysis of Textual Data
 Description: A fast, flexible, and comprehensive framework for 
     quantitative text analysis in R.  Provides functionality for corpus management,
@@ -61,7 +61,7 @@ Collate: 'RcppExports.R' 'meta.R' 'quanteda-documentation.R' 'aaa.R'
         'tokens_segment.R' 'tokens_select.R' 'tokens_split.R'
         'tokens_subset.R' 'utils.R' 'validator.R' 'wordstem.R' 'zzz.R'
 NeedsCompilation: yes
-Packaged: 2021-11-30 13:44:36 UTC; kbenoit
+Packaged: 2022-02-28 19:43:20 UTC; kbenoit
 Author: Kenneth Benoit [cre, aut, cph]
     (<https://orcid.org/0000-0002-0797-564X>),
   Kohei Watanabe [aut] (<https://orcid.org/0000-0001-6519-5265>),
@@ -75,4 +75,4 @@ Author: Kenneth Benoit [cre, aut, cph]
   European Research Council [fnd] (ERC-2011-StG 283794-QUANTESS)
 Maintainer: Kenneth Benoit <kbenoit@lse.ac.uk>
 Repository: CRAN
-Date/Publication: 2021-11-30 14:40:04 UTC
+Date/Publication: 2022-03-01 10:20:02 UTC

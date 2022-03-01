@@ -1,6 +1,6 @@
-1c7b6a2c3f71ff7788e0deb8f907234e *DESCRIPTION
+0e2f0c3c6fe6d84a26d280a93415b535 *DESCRIPTION
 bba70426e9fe97f3774731a3465b7a9c *NAMESPACE
-c0c69729b9849f8f9c84e0f1302257bd *NEWS.md
+e8f6c24f0c7fe51de8f891efd9f0aef4 *NEWS.md
 3cec08029daa056c6fb353032d9c9cdb *R/RcppExports.R
 7afeeaffe831e95cd2c8a35fc3ff63f8 *R/aaa.R
 53bba513dbfa274bbbd38b37b104058e *R/bootstrap_dfm.R
@@ -24,7 +24,7 @@ ff0d124a66bcd19120219f29a1289f33 *R/dfm-subsetting.R
 687de391ed2b0d6f20560580c371bb08 *R/dfm.R
 9394b68393c61ba975d2217eca595fb6 *R/dfm_compress.R
 9e85ebffdb19c683955b01309f918441 *R/dfm_group.R
-d2bf6f08d161e4b8b550e42fc9d56382 *R/dfm_lookup.R
+3ec368e797ac2bdd9926ae88d8aa7135 *R/dfm_lookup.R
 c978da0a644859550fa2632613f27471 *R/dfm_match.R
 df5e97bc33c239c7e759c55abd5bac27 *R/dfm_replace.R
 2a0565417380f5a0d8fb40394233ae12 *R/dfm_sample.R
@@ -33,7 +33,7 @@ df5e97bc33c239c7e759c55abd5bac27 *R/dfm_replace.R
 9166fc0f73fae6154d5a37c3a0f047ad *R/dfm_subset.R
 b42d9f0c52521d3eaba48395769fc458 *R/dfm_trim.R
 307386b39d6ecd10c25574e2463e2fbe *R/dfm_weight.R
-9cb064915a9785248bbc0526157dedc7 *R/dictionaries.R
+909435cc257c6e42ece3d2968cb91f68 *R/dictionaries.R
 2c8b60968968ddc82f2f7e59bd813536 *R/dimnames.R
 3b81cdf38f8dce5370199662ceb4363f *R/docnames.R
 d601a9b23fbb27bf486aa54ebf7c342b *R/docvars.R
@@ -49,8 +49,8 @@ f1f424b217a499a3374424feed6ce79c *R/message.R
 3b28fa28feb8db177bf94bfa5c068c58 *R/meta.R
 f3fa9d8e0581fdb4a9f1d962d19c5fc6 *R/nfunctions.R
 81f73aba3b2443996fb153c3f0c5050a *R/object-builder.R
-86ed7d2a57482525253b9724df8b245f *R/object2fixed.R
-60964302626bded1f463563699d7e8fa *R/pattern2fixed.R
+ec6060bd40d239b71776b656669050c5 *R/object2fixed.R
+2abd78334fa5376651b22a0dcdd9661b *R/pattern2fixed.R
 6164c3a6b87dfd4da710778cfe296023 *R/phrases.R
 f462d86cbe1fe39e0cc49f39e9f9ad2e *R/quanteda-documentation.R
 6f8df4ea5f344f3dcb3dee7da8458161 *R/quanteda_options.R
@@ -64,7 +64,7 @@ a96fca2172de75e9c2cb7a05c13c575b *R/summary.R
 130c2d918eaa6aeb57c05db3c8edbd13 *R/textstat.R
 5ce2ff1ed7205ed79997e1358831eef2 *R/tokenizers.R
 c923f71b2ae804bba8077799ef6ff8a3 *R/tokens-methods.R
-4ba0e4256c3733543a10cc95979be836 *R/tokens.R
+0ef1eb56b63813ad1056fbe577812893 *R/tokens.R
 dd383e737949aeaf8eeed98476afdfba *R/tokens_chunk.R
 3b914fec687bcc96cce8442bbd7d5329 *R/tokens_compound.R
 68642f613abe3fbba7c438c05690a565 *R/tokens_group.R
@@ -80,8 +80,8 @@ d410c5c3db61b7a1086afa77b8fec4fa *R/tokens_subset.R
 2ada843e8ce111a366a3e06c6d99f463 *R/validator.R
 8a938a7eee753bd3ab99c0923c7621ec *R/wordstem.R
 7af63ffb1fe524a40b0a681e83be1716 *R/zzz.R
-582bf31bd100e6f33c59884a7b86eca6 *README.md
-b53576c7d9d3a68792fec3888b789a12 *build/partial.rdb
+42802cbe74261b9cc40eb1dd4832a29c *README.md
+3e4c0ac143e7379bdbd9c0a554998c00 *build/partial.rdb
 1330dc153ce8651141dfd4b6edcc2bda *build/vignette.rds
 2d54be38b39a2c83cf8adae577fe01ed *data/data_char_sampletext.rda
 9002341250032df555d6aae14db540f9 *data/data_char_ukimmig2010.rda
@@ -91,8 +91,8 @@ d84e58c52e4387da53bd78b41460afce *data/data_corpus_inaugural.rda
 56ed661886406468d3338329c6f4c2e0 *inst/CITATION
 f6dda4ac24811a9bec1eba15d0411db6 *inst/WORDLIST
 8e5716fece1895aeba1cfafe8379daa4 *inst/doc/quickstart.R
-5ce2b0b8f2cb0c5e184afcc463ad3fc8 *inst/doc/quickstart.Rmd
-0335e7686652b1055ba741733785f806 *inst/doc/quickstart.html
+e45c88e0023ebb76a10a68ffb5350cd0 *inst/doc/quickstart.Rmd
+96577af1ea91431fa7369c80783e9c97 *inst/doc/quickstart.html
 ae85a11c59c3d7b869807fd05459023b *inst/extdata/LSD2015.lc3
 d8eb86c619a87ab01d1ea0fc2f79fb75 *inst/extdata/RID.cat
 41f59bf6227e672988becca34cc74e74 *inst/extdata/laver_garry.ykd
@@ -118,7 +118,7 @@ cc5f7b943991cca7ba6ea341970b2814 *man/char_tolower.Rd
 edec41247d546fd97652e3fd688c0406 *man/check_dots.Rd
 1ebfd967f6869170c0bd912d7dc2ae31 *man/check_integer.Rd
 131800275ce713e1c4713503a9d33d9d *man/convert-wrappers.Rd
-206a4ddb6efcbf80d59184633f1daa37 *man/convert.Rd
+926fb1ba0845ac7525f90662a60cda65 *man/convert.Rd
 13519df39481bf16a96897edcb6fcbf2 *man/corpus-class.Rd
 7122121284b0e566d439c0122f06518a *man/corpus.Rd
 1b0a95068e9834b51891af0b514588a5 *man/corpus_group.Rd
@@ -152,7 +152,7 @@ a369c28d9874da825ea20be3a9a34fd0 *man/dfm_subset.Rd
 732c05d430ae0c3a5253d91f79140384 *man/dfm_trim.Rd
 ec6e7c27c53a829e5be2a8dce3432703 *man/dfm_weight.Rd
 1c6bfa0deee945df6e018dab9973205c *man/dictionary-class.Rd
-21b793f608e5360c2e94f70152ff57e7 *man/dictionary.Rd
+83e28d45f53eaa33897da76b948ccaea *man/dictionary.Rd
 a2f35f1ac42c42a0015d64b99dee482c *man/docfreq.Rd
 cdc3e2dc08b02bf85c42254f948f12d8 *man/docnames.Rd
 3a2db9557089b10423b76ce0267b9e71 *man/docvars.Rd
@@ -193,7 +193,7 @@ d022d9150a02362d6cef4535e170713b *man/names-quanteda.Rd
 9c89575c96d05338557f735af03cc421 *man/nsentence.Rd
 0b345f095a821718b81f9e773828f905 *man/ntoken.Rd
 a9417bccabb5973af382ce4b668bde21 *man/object-builders.Rd
-15eb265d81036703a789d1c747c9355f *man/object2id.Rd
+8cc021f06685a0927ecbb6a4e032c383 *man/object2id.Rd
 cc841c26c67f6ee50a5ae7a5e5bdd4b9 *man/pattern.Rd
 f948759027eb616a08aa75a6f0bed37a *man/pattern2id.Rd
 bad32e30394a1821e4f42d03bcb20ccd *man/phrase.Rd
@@ -222,9 +222,9 @@ d669533e134b59a7d90928a93c550191 *man/summary_metadata.Rd
 f61be616f6b5d754f674a5cc40be2a31 *man/textplots.Rd
 4f6ebecdadba86a4a6ff3f6eb07b143d *man/texts.Rd
 8cdc8f06e03eceab3d45bddc63febbea *man/textstats.Rd
-f6e0f87da3c244af82cbc0e6cadbe636 *man/tokenize_internal.Rd
+35c977077044ef29b95bdc5598f68034 *man/tokenize_internal.Rd
 aa870ad521fefcbb792013a05e000f12 *man/tokens-class.Rd
-786ddc828400eebb1678d7315e8fc034 *man/tokens.Rd
+a8ea96e1bcd8856f567662372f05ad32 *man/tokens.Rd
 bad84865203f29f34ae68448c9d63093 *man/tokens_chunk.Rd
 fea419ad38c82b14c719b8f70b639003 *man/tokens_compound.Rd
 3a43812d89814f49f7a3dacb6851e9b7 *man/tokens_group.Rd
@@ -241,7 +241,7 @@ d75a76bbde17fbbd3148979968e943d4 *man/tokens_tolower.Rd
 c5f7a8d5f7158e3aaf8781f32abb1936 *man/tokens_wordstem.Rd
 04d1cd9bc1fc560442e11d2ef3237233 *man/topfeatures.Rd
 6abfe9a6fe9f7a118429790cdd7294d3 *man/types.Rd
-ab35cf6417fc94036b61edaa956f3b58 *man/unlist_character.Rd
+5ccf938df22a395de60a00cba829dc68 *man/unlist_character.Rd
 9754f4e9f2589291274ed933a090410c *man/unlist_integer.Rd
 bf769be84a2ebfe14c6fbb3c21122c8e *man/valuetype.Rd
 4da2ca9f67fbbba3f4d6b8e61988b8b4 *src/Makevars
@@ -316,7 +316,7 @@ ba3e31edb88ed180dfd48e5a1eb7f25d *tests/dependency/r-version.R
 9469c7046343ccf19c2865e80ccd0af0 *tests/testthat.R
 48a583219d7de9594b83512f4d4ceab4 *tests/testthat/meta.R
 c70d1d68b24f433a701eb445da1f5ecf *tests/testthat/test-as.dfm.R
-f55fdbb3497beb6d8d61e89d3ee00dea *tests/testthat/test-as.dictionary.R
+acf3f7cdc07dc951327d18dd56ea922b *tests/testthat/test-as.dictionary.R
 de5779f54577672c00fd13e3061b4626 *tests/testthat/test-attributes.R
 8745ac95e5c744d24288063de170cd01 *tests/testthat/test-bootstrap.R
 8bcc3343b5c5cde6f601cf866efde982 *tests/testthat/test-casechanges.R
@@ -335,7 +335,7 @@ fd0c1027cf99ea2742a1b5eddfcca053 *tests/testthat/test-default-methods.R
 d440492d80d218d9b68def97a742f254 *tests/testthat/test-dfm.R
 a444193e3ee5a41f3ec149bac6a823cd *tests/testthat/test-dfm_compress.R
 89b09cdfcda8c0de550ce92b214dd761 *tests/testthat/test-dfm_group.R
-4bf3b4dc7f66b27c50decdecba7283fc *tests/testthat/test-dfm_lookup.R
+b97c19f0d4452cebeb71edf261012d98 *tests/testthat/test-dfm_lookup.R
 04a5f3067e797428bf7fc6e770a11675 *tests/testthat/test-dfm_match.R
 2707b78003e61fddedc22c8e264e6c93 *tests/testthat/test-dfm_replace.R
 ebeca0efa80c276be19940d4953a7390 *tests/testthat/test-dfm_sample.R
@@ -343,7 +343,7 @@ ebeca0efa80c276be19940d4953a7390 *tests/testthat/test-dfm_sample.R
 b02c62d0d941eadbd9d717378d39e7e0 *tests/testthat/test-dfm_subset.R
 13b739b1bae8ec59586472d97301adc8 *tests/testthat/test-dfm_trim.R
 b203d80795a5b73b92f079d5e6542ff2 *tests/testthat/test-dfm_weight.R
-1c8bf4e9c4d783031cf39af6b1c1eac0 *tests/testthat/test-dictionaries.R
+12d577442f3ae70c266d97abe3fc84da *tests/testthat/test-dictionaries.R
 c15bed671ec3a65a419d9585061da33c *tests/testthat/test-docnames.R
 d62d52af348b8748d854344242d33ffb *tests/testthat/test-docvars.R
 6123b40eabc965711caf468b56eaeff0 *tests/testthat/test-empty-objects.R
@@ -368,13 +368,13 @@ ec2799a72e76b9bbcff89e62141b3e6a *tests/testthat/test-phrases.R
 bc52f73490faa9155388d8e7d3576e41 *tests/testthat/test-stopwords.R
 b73a7f83890d73338e0404f4600d614f *tests/testthat/test-summary.R
 9bc5de9be5957f8fbe065860601ba19d *tests/testthat/test-texts.R
-9d83456330818eb6fcb03742e3dfcb32 *tests/testthat/test-tokens.R
+4cf4c0fc2373f398864021035f215565 *tests/testthat/test-tokens.R
 d43b9f313c0f021cfc2e6387c4f5b3ca *tests/testthat/test-tokens_chunk.R
 bb180a71f36c6f32c49e28e54bb8b223 *tests/testthat/test-tokens_compound.R
 49d1b0e776c34e19e11512c6c5bb3859 *tests/testthat/test-tokens_group.R
 23dccf140fac41a0c5f3cc7c8931b7c9 *tests/testthat/test-tokens_lookup.R
-050dcaff71d6aabdd02ae0201ecfad5f *tests/testthat/test-tokens_ngrams.R
-77898a863abb06b4d58796a96fb291d5 *tests/testthat/test-tokens_recompile.R
+b6dff40a52f1d07791d55a1d4e4d6a8e *tests/testthat/test-tokens_ngrams.R
+5f75c3030011f5ffd0f19795f163e1a1 *tests/testthat/test-tokens_recompile.R
 4969f615ae124e9fadc784f2c9e3666c *tests/testthat/test-tokens_replace.R
 11238b32233690351b100225403d9a51 *tests/testthat/test-tokens_sample.R
 e71b6c3285e8125575fdd66135a5d216 *tests/testthat/test-tokens_segment.R
@@ -386,4 +386,4 @@ b13a8081c7081ff5daa673edde911bc2 *tests/testthat/test-tokens_subset.R
 b59cfd3b7826b308087642ef053c3e02 *tests/testthat/test-wordstem.R
 09069af4f711fc500c2fd44838b04fe0 *vignettes/images/fig1.png
 5446a3e8073ebf38b358c43f09d4c379 *vignettes/images/fig2.png
-5ce2b0b8f2cb0c5e184afcc463ad3fc8 *vignettes/quickstart.Rmd
+e45c88e0023ebb76a10a68ffb5350cd0 *vignettes/quickstart.Rmd
