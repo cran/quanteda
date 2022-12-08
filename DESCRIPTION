@@ -1,5 +1,5 @@
 Package: quanteda
-Version: 3.2.3
+Version: 3.2.4
 Title: Quantitative Analysis of Textual Data
 Description: A fast, flexible, and comprehensive framework for 
     quantitative text analysis in R.  Provides functionality for corpus management,
@@ -22,7 +22,7 @@ Authors@R: c(
     )
 License: GPL-3
 Depends: R (>= 3.5.0), methods
-Imports: fastmatch, magrittr, Matrix (>= 1.2), Rcpp (>= 0.12.12),
+Imports: fastmatch, magrittr, Matrix (>= 1.5-0), Rcpp (>= 0.12.12),
         RcppParallel, SnowballC, stopwords, stringi, xml2, yaml
 LinkingTo: Rcpp, RcppParallel, RcppArmadillo (>= 0.7.600.1.0)
 Suggests: rmarkdown, spelling, testthat, formatR, tm (>= 0.6),
@@ -36,7 +36,7 @@ BugReports: https://github.com/quanteda/quanteda/issues
 LazyData: TRUE
 VignetteBuilder: knitr
 Language: en-GB
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.2
 SystemRequirements: C++11
 Collate: 'RcppExports.R' 'meta.R' 'quanteda-documentation.R' 'aaa.R'
         'bootstrap_dfm.R' 'casechange-functions.R' 'char_select.R'
@@ -61,7 +61,7 @@ Collate: 'RcppExports.R' 'meta.R' 'quanteda-documentation.R' 'aaa.R'
         'tokens_segment.R' 'tokens_select.R' 'tokens_split.R'
         'tokens_subset.R' 'utils.R' 'validator.R' 'wordstem.R' 'zzz.R'
 NeedsCompilation: yes
-Packaged: 2022-08-29 00:07:15 UTC; kbenoit
+Packaged: 2022-12-08 12:17:31 UTC; kbenoit
 Author: Kenneth Benoit [cre, aut, cph]
     (<https://orcid.org/0000-0002-0797-564X>),
   Kohei Watanabe [aut] (<https://orcid.org/0000-0001-6519-5265>),
@@ -75,4 +75,4 @@ Author: Kenneth Benoit [cre, aut, cph]
   European Research Council [fnd] (ERC-2011-StG 283794-QUANTESS)
 Maintainer: Kenneth Benoit <kbenoit@lse.ac.uk>
 Repository: CRAN
-Date/Publication: 2022-08-29 06:50:03 UTC
+Date/Publication: 2022-12-08 13:00:02 UTC
