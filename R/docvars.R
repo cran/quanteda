@@ -233,7 +233,7 @@ docvars.default <- function(x, field = NULL) {
 
 #' @noRd
 #' @export
-    docvars.corpus <- function(x, field = NULL) {
+docvars.corpus <- function(x, field = NULL) {
     x <- as.corpus(x)
     select_docvars(attr(x, "docvars"), field, user = TRUE, system = FALSE, drop = TRUE)
 }

@@ -182,29 +182,28 @@ test_that("docvars with non-existent field names generate correct error messages
     )
 })
 
-
 test_that("docvars is working with tokens", {
     corp <- data_corpus_inaugural[1:58]
     toks <- tokens(corp, include_docvars = TRUE)
     expect_equal(docvars(toks), docvars(corp))
     expect_equal(docvars(toks, "President"), docvars(corp, "President"))
-
+    
     # Subset
     toks2 <- toks[docvars(toks, "Year") > 2000]
     expect_equal(ndoc(toks2), nrow(docvars(toks2)))
-
+    
     # Add field to meta-data
     expect_equal(
         docvars(quanteda:::"docvars<-"(toks2, "Type", "Speech"), "Type"),
         rep("Speech", 5)
     )
-
+    
     # Remove meta-data
     expect_output(
         print(docvars(quanteda:::"docvars<-"(toks, field = NULL, NULL))),
         "data frame with 0 columns and 58 rows"
     )
-
+    
     # Add fresh meta-data
     expect_equal(
         docvars(quanteda:::"docvars<-"(toks, field = "ID", 1:58), "ID"),
@@ -216,14 +215,14 @@ test_that("docvars is working with dfm", {
     corp <- data_corpus_inaugural
     toks <- tokens(corp, include_docvars = TRUE)
     thedfm <- dfm(toks)
-
+    
     expect_equal(docvars(toks), docvars(thedfm))
     expect_equal(docvars(toks, "Party"), docvars(corp, "Party"))
-
+    
     thedfm2 <- dfm(tokens(corp))
     expect_equal(docvars(corp), docvars(thedfm2))
     expect_equal(docvars(corp, "Party"), docvars(thedfm2, "Party"))
-
+    
     corp2 <- corpus_subset(corp, Party == "Democratic")
     thedfm3 <- dfm(tokens(corp2))
     expect_equal(docvars(corp2), docvars(thedfm3))
