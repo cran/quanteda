@@ -54,6 +54,11 @@ test_that("pattern2fixed converts regex patterns correctly", {
     ), list())
     
     expect_identical(setdiff(
+        pattern2fixed('?b', type, 'glob', case_insensitive = FALSE),
+        list("bb")
+    ), list())
+    
+    expect_identical(setdiff(
         pattern2fixed('a?', type, 'glob', case_insensitive = TRUE),
         list("AA", "aa")
     ), list())
@@ -75,15 +80,23 @@ test_that("pattern2fixed converts regex patterns correctly", {
     
 })
 
-test_that("pattern2fixed converts complex regex patterns correctly", {
+test_that("pattern2fixed converts complex patterns correctly", {
     
     regex <- list(c('a...b'), c('c.*d'), c('e.+f'), c('^g[xyz]+h$'), c('z'), c('[0-9]'))
-    type <- c('axxxb', 'cxxxd', 'exxxf', 'gyyyh', 'azzzb', 'a999b')
+    glob <- list("<*>")
+    type <- c('axxxb', 'cxxxd', 'exxxf', 'gyyyh', 'azzzb', 'a999b', 
+              "<*>", "<xxx>", "<xx.yy>")
     
-    expect_identical(setdiff(
+    expect_setequal(
         pattern2fixed(regex, type, 'regex', case_insensitive = TRUE),
         list('axxxb', 'cxxxd', 'exxxf', 'gyyyh', 'azzzb', 'a999b')
-    ), list())
+    )
+    
+    expect_setequal(
+        pattern2fixed(glob, type, 'glob', case_insensitive = TRUE),
+        list("<*>", "<xxx>", "<xx.yy>")
+    )
+    
 })
 
 test_that("pattern2fixed works with character class", {
@@ -194,18 +207,56 @@ test_that("used of index do not change the result", {
 
 })
 
-# test_that("flatten_id() is working", {
-#   expect_identical(
-#     quanteda:::flatten_id(list(list(c(1, 2)), list(3), list(4))),
-#     list(c(1, 2), 3, 4)
-#   )
-#   expect_identical(
-#     quanteda:::flatten_id(list(list(c(1, 2)), list(3), list(4), list())),
-#     list(c(1, 2), 3, 4)
-#   )
-#   expect_identical(
-#     quanteda:::flatten_id(list(list(c(1, 2)), list(3), list(4), list()), TRUE),
-#     list(c(1, 2), 3, 4, integer())
-#   )
-# })
+test_that("index_fixed and index_glob work correctly", {
+
+    type <- c("abcd", "abc", "ab", "ABCD", "ABC", "AB")
+    type_lower <- stringi::stri_trans_tolower(type)
+    
+    expect_equal(quanteda:::index_fixed("abc", type),
+                 list("abc" = 2))
+    expect_equal(quanteda:::index_fixed("abc", type_lower),
+                 list("abc" = c(2, 5)))
+    expect_equal(quanteda:::index_fixed("ab*", type),
+                 structure(list(), names = character()))
+    expect_equal(quanteda:::index_fixed("*ab", type),
+                 structure(list(), names = character()))
+    expect_equal(quanteda:::index_fixed("*", type),
+                 structure(list(), names = character()))
+    
+    expect_equal(quanteda:::index_glob("ab*", type, "*", "right"),
+                 list("ab*" = c(1, 2, 3)))
+    expect_equal(quanteda:::index_glob("abc*", type_lower, "*", "right"),
+                 list("abc*" = c(1, 2, 4, 5)))
+    expect_equal(quanteda:::index_glob("*bc", type, "*", "left"),
+                 list("*bc" = c(2)))
+    expect_equal(quanteda:::index_glob("*bc", type_lower, "*", "left"),
+                 list("*bc" = c(2, 5)))
+    
+    
+    # no wildcard
+    expect_equal(quanteda:::index_glob("ab", type, "*"),
+                 structure(list(), names = character()))
+    expect_equal(quanteda:::index_glob("ab", type_lower, "*"),
+                 structure(list(), names = character()))
+    expect_equal(quanteda:::index_glob("bc", type, "?"),
+                 structure(list(), names = character()))
+    expect_equal(quanteda:::index_glob("bc", type_lower, "?"),
+                 structure(list(), names = character()))
+    
+    # wrong side
+    expect_equal(quanteda:::index_glob("ab*", type, "*", "left"),
+                 structure(list(), names = character()))
+    expect_equal(quanteda:::index_glob("*bc", type, "*", "right"),
+                 structure(list(), names = character()))
+    
+    # both sides
+    expect_equal(quanteda:::index_glob("*b*", type, "*", "right"),
+                 structure(list(), names = character()))
+    expect_equal(quanteda:::index_glob("*b*", type, "*", "left"),
+                 structure(list(), names = character()))
+    expect_equal(quanteda:::index_glob("?b?", type, "?", "right"),
+                 structure(list(), names = character()))
+    expect_equal(quanteda:::index_glob("?b?", type, "?", "left"),
+                 structure(list(), names = character()))
+})
 
