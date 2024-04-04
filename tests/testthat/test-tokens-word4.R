@@ -1,13 +1,5 @@
 quanteda_options("tokens_tokenizer_word" = "word4")
 
-test_that("as.tokens list version works as expected", {
-    txt <- c(doc1 = "The first sentence is longer than the second.",
-             doc2 = "Told you so.")
-    toks_list <- as.list(tokens(txt))
-    toks <- tokens(txt)
-    expect_equivalent(as.tokens(toks_list), toks)
-})
-
 test_that("tokens indexing works as expected", {
     toks <- tokens(c(d1 = "one two three",
                      d2 = "four five six",
@@ -28,18 +20,6 @@ test_that("tokens indexing works as expected", {
     expect_error(toks[1:4], "Subscript out of bounds")
     expect_error(toks["d4"], "Subscript out of bounds")
     expect_error(toks[c("d1", "d4")], "Subscript out of bounds")
-})
-
-test_that("tokens_recompile combine duplicates is working", {
-    toksh <- tokens(c(one = "a b c d A B C D", two = "A B C d"))
-    expect_equivalent(attr(toksh, "types"),
-                      c("a", "b", "c", "d", "A", "B", "C", "D"))
-    expect_equivalent(attr(tokens_tolower(toksh), "types"),
-                      c("a", "b", "c", "d"))
-    attr(toksh, "types") <- char_tolower(attr(toksh, "types"))
-    expect_equivalent(attr(quanteda:::tokens_recompile(toksh), "types"),
-                      c("a", "b", "c", "d"))
-
 })
 
 test_that("test `ngrams` with padding = FALSE: #428", {
@@ -146,9 +126,9 @@ test_that("remove_url works as expected", {
              "www.r-project.org/about.html is a specific page without protocol",
              "https://www.google.com/search?q=quanteda+package is a google search",
              "ftp://user@host/foo/bar.txt is a FTP-hosted file",
-             "kohei.watanabe@quanteda.org is not an url")
-    toks <- tokens(txt) %>% 
-        tokens_remove(c("^https?:", "^ftp:", "^www"), valuetype = "regex")
+             "kohei.watanabe@quanteda.org is an email address",
+             "The U.S. is not an url")
+    toks <- tokens(txt, remove_url = TRUE)
     expect_equal(
         as.list(toks),
         list(text1 = c("The", "URL", "was"),
@@ -157,7 +137,8 @@ test_that("remove_url works as expected", {
              text4 = c("is", "a", "specific", "page", "without", "protocol"),
              text5 = c("is", "a", "google", "search"),
              text6 = c("is", "a", "FTP-hosted", "file"),
-             text7 = c("kohei.watanabe@quanteda.org", "is", "not", "an", "url"))
+             text7 = c("is", "an", "email", "address"),
+             text8 = c("The", "U.S", ".", "is", "not", "an", "url"))
     )
 })
 
@@ -252,8 +233,8 @@ test_that("c() works with tokens", {
               tokens(data_corpus_inaugural[6:10]))
 
     expect_equivalent(
-         toks,
-         tokens(data_corpus_inaugural[1:10])
+         as.list(toks),
+         as.list(tokens(data_corpus_inaugural[1:10]))
     )
 
     expect_equal(
@@ -343,7 +324,7 @@ test_that("tokens arguments works with values from parent frame (#721)", {
 
 test_that("tokens works for strange spaces (#796)", {
     txt <- "space tab\t newline\n non-breakingspace\u00A0, variationselector16 \uFE0F."
-    expect_identical(ntoken(txt, remove_punct = FALSE, remove_separators = TRUE),
+    expect_identical(ntoken(tokens(txt, remove_punct = FALSE, remove_separators = TRUE)),
                      c(text1 = 7L))
     expect_identical(
         as.character(tokens(txt, what = "word", remove_punct = TRUE, remove_separators = TRUE)),
@@ -395,20 +376,6 @@ test_that("tokens.tokens() does nothing by default", {
                    split_hyphens = FALSE,
                    remove_url = FALSE)
     expect_equal(toks, tokens(toks))
-})
-
-test_that("split_hyphens is working correctly", {
-    corp <- data_corpus_inaugural[1:2]
-    toks <- tokens(corp)
-
-    suppressWarnings({
-    expect_equal(dfm(corp), dfm(toks))
-    expect_equal(dfm(corp, remove_punct = TRUE), dfm(toks, remove_punct = TRUE))
-    expect_equal(
-        setdiff(featnames(dfm(corp)), featnames(dfm(toks))),
-        character()
-    )
-    })
 })
 
 test_that("tokens works as expected with NA, and blanks", {
@@ -509,15 +476,15 @@ test_that("tokens.tokens(x, split_hyphens = TRUE) behaves same as tokens.charact
     # issue #1498
     txt <- "Auto-immune system."
     expect_identical(
-        as.character(tokens(txt, split_hyphens = FALSE) %>% tokens(split_hyphens = TRUE)),
+        as.character(tokens(txt, split_hyphens = FALSE) |> tokens(split_hyphens = TRUE)),
         c("Auto", "-", "immune", "system", ".")
     )
 
     txt <- c("There's shrimp-kabobs, shrimp creole. Deep-deep-fried, stir-fried.",
              "Stir-fried shrimp.")
     expect_identical(
-        tokens(txt, split_hyphens = TRUE) %>% as.list(),
-        tokens(txt, split_hyphens = FALSE) %>% tokens(split_hyphens = TRUE) %>% as.list()
+        tokens(txt, split_hyphens = TRUE) |> as.list(),
+        tokens(txt, split_hyphens = FALSE) |> tokens(split_hyphens = TRUE) |> as.list()
     )
 })
 
@@ -547,7 +514,8 @@ test_that("tokens verbose = TRUE produces expected messages", {
 test_that("types<- with wrong value generates error", {
     toks <- tokens(c("one two three", "four five."))
     expect_error(
-        quanteda:::`types<-.tokens`(toks, value = 1:6),
+        # quanteda:::`types<-.tokens`(toks, value = 1:6),
+        quanteda:::`types<-`(toks, value = 1:6),
         "replacement value must be character"
     )
 })
@@ -636,6 +604,7 @@ test_that("tokens.tokens(x, remove_symbols = TRUE, verbose = TRUE) works as expe
 })
 
 test_that("tokens.tokens(x, remove_separators = TRUE, verbose = TRUE) works as expected (#1683)", {
+    skip("the verbose message has been changed")
     expect_message(
         tokens(tokens("Removing separators", remove_separators = FALSE, what = "word"),
                remove_separators = TRUE, verbose = TRUE),

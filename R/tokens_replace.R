@@ -12,6 +12,7 @@
 #'   [pattern] for more details.
 #' @param replacement a character vector or (if `pattern` is a list) list
 #'   of character vectors of the same length as `pattern`
+#' @inheritParams apply_if
 #' @inheritParams valuetype
 #' @param verbose print status messages if `TRUE`
 #' @export
@@ -23,7 +24,7 @@
 #' taxwords <- c("tax", "taxing", "taxed", "taxed", "taxation")
 #' lemma <- rep("TAX", length(taxwords))
 #' toks2 <- tokens_replace(toks1, taxwords, lemma, valuetype = "fixed")
-#' kwic(toks2, "TAX") %>% 
+#' kwic(toks2, "TAX") |>
 #'     tail(10)
 #'
 #' # stemming
@@ -37,59 +38,58 @@
 #'                         phrase(c("Supreme Court of the United States")))
 #' kwic(toks4, phrase(c("Supreme Court of the United States")))
 tokens_replace <- function(x, pattern, replacement, valuetype = "glob",
-                           case_insensitive = TRUE, verbose = quanteda_options("verbose")) {
+                           case_insensitive = TRUE, apply_if = NULL,
+                           verbose = quanteda_options("verbose")) {
     UseMethod("tokens_replace")
 }
 
 #' @export
 tokens_replace.default <- function(x, pattern, replacement, valuetype = "glob",
-                                   case_insensitive = TRUE, verbose = quanteda_options("verbose")) {
+                                   case_insensitive = TRUE, apply_if = NULL,
+                                   verbose = quanteda_options("verbose")) {
     check_class(class(x), "tokens_replace")
 }
 
 #' @export
-tokens_replace.tokens <- function(x, pattern, replacement, valuetype = "glob",
-                                  case_insensitive = TRUE, verbose = quanteda_options("verbose")) {
+tokens_replace.tokens_xptr <- function(x, pattern, replacement, valuetype = "glob",
+                                       case_insensitive = TRUE, apply_if = NULL,
+                                       verbose = quanteda_options("verbose")) {
 
-    x <- as.tokens(x)
     if (length(pattern) != length(replacement))
         stop("The length of pattern and replacement must be the same", call. = FALSE)
     if (!length(pattern)) return(x)
 
-    type <- types(x)
-    if (valuetype == "fixed" && !is.list(pattern) && !is.list(replacement)) {
-        
-        pattern <- check_character(pattern, min_len = 0, max_len = Inf, strict = TRUE)
-        replacement <- check_character(replacement, min_len = 0, max_len = Inf, strict = TRUE)
-        case_insensitive <- check_logical(case_insensitive)
-        
-        type_new <- replace_type(type, pattern, replacement, case_insensitive)
-        if (identical(type, type_new)) {
-            result <- x
-        } else {
-            attr(x, "types") <- type_new
-            result <- tokens_recompile(x)
-        }
-    } else {
-        attrs <- attributes(x)
-        ids_pat <- object2id(pattern, type, valuetype, case_insensitive,
-                                field_object(attrs, "concatenator"), keep_nomatch = FALSE)
-        type <- union(type, unlist(replacement, use.names = FALSE))
-        ids_repl <- object2id(replacement, type, "fixed", FALSE,
-                                 field_object(attrs, "concatenator"), keep_nomatch = TRUE)
-        result <- qatd_cpp_tokens_replace(x, type, ids_pat, ids_repl[attr(ids_pat, "pattern")])
-        result <- rebuild_tokens(result, attrs)
-    }
-    return(result)
+    apply_if <- check_logical(apply_if, min_len = ndoc(x), max_len = ndoc(x),
+                               allow_null = TRUE, allow_na = TRUE)
+
+    type <- get_types(x)
+    attrs <- attributes(x)
+    type <- union(type, unlist(replacement, use.names = FALSE))
+    conc <- field_object(attrs, "concatenator")
+
+    ids_pat <- object2id(pattern, type, valuetype, case_insensitive, conc, keep_nomatch = FALSE)
+    ids_rep <- object2id(replacement, type, "fixed", FALSE, conc, keep_nomatch = TRUE)
+    set_types(x) <- type
+
+    if (is.null(apply_if))
+        apply_if <- rep(TRUE, length.out = ndoc(x))
+    result <- cpp_tokens_replace(x, ids_pat, ids_rep[attr(ids_pat, "pattern")], !apply_if,
+                                 get_threads())
+
+    rebuild_tokens(result, attrs)
 }
 
+#' @export
+tokens_replace.tokens <- function(x, ...) {
+    as.tokens(tokens_replace(as.tokens_xptr(x), ...))
+}
 
 #' Replace types by patterns
 #'
 #' @noRd
 #' @keywords internal
 replace_type <- function(type, pattern, replacement, case_insensitive) {
-    
+
     if (!length(type)) return(character())
 
     # normalize unicode

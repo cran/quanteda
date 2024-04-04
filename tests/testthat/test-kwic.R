@@ -222,6 +222,10 @@ test_that("test that kwic works with index", {
   kwic_pat2 <- kwic(toks, pattern = "security")[c(2, 3, 1),]
   expect_identical(kiwc_idx2, kwic_pat2)
   
+  kiwc_idx3 <- kwic(toks, index = idx[0,])
+  kwic_pat3 <- kwic(toks, pattern = "security")[0,]
+  expect_identical(kiwc_idx3, kwic_pat3)
+  
   expect_error(kwic(toks),
                "Either pattten or index must be provided")
   expect_error(kwic(toks, index = data.frame(1:5)),
@@ -241,59 +245,56 @@ test_that("print method works as expected", {
     testkwic <- kwic(tokens("what does the fox say fox"), "fox")
     expect_output(
         print(testkwic), 
-        "Keyword-in-context with 2 matches.                                                 
- [text1, 4]         what does the | fox | say fox
- [text1, 6] what does the fox say | fox |",
-        fixed = TRUE
-        )
+        paste("Keyword-in-context with 2 matches.",
+              "[text1, 4]         what does the | fox | say fox",
+              "[text1, 6] what does the fox say | fox |", sep = "\\s*"
+        ))
         
     testkwic <- kwic(tokens("what does the fox say fox"), "foox")
     expect_output(print(testkwic), "Keyword-in-context with 0 matches.", fixed = TRUE)
     
     toks <- tokens(data_corpus_inaugural[1:8])
     kw <- kwic(toks, "secure*", window = 1)
-    out <- "Keyword-in-context with 6 matches.                                                  
-      [1797-Adams, 478]   and | secure  | the     
-     [1797-Adams, 1512]   and | secured | immortal
- [1805-Jefferson, 2367] shall | secure  | to      
-    [1817-Monroe, 1754]    To | secure  | us      
-    [1817-Monroe, 1814]    to | secure  | our     
-    [1817-Monroe, 3009]    to | secure  | economy"
-    expect_output(print(kw, max_nrow = -1), out, fixed = TRUE)
-    expect_output(print(kw, max_nrow = 6), out, fixed = TRUE)
-    expect_output(print(kw, max_nrow = 7), out, fixed = TRUE)
+    out <- paste("Keyword-in-context with 6 matches.",
+      "[1797-Adams, 478]   and | secure  | the",
+      "[1797-Adams, 1512]   and | secured | immortal",
+      "[1805-Jefferson, 2367] shall | secure  | to",
+      "[1817-Monroe, 1754]    To | secure  | us",
+      "[1817-Monroe, 1814]    to | secure  | our",
+      "[1817-Monroe, 3009]    to | secure  | economy", sep = "\\s*")
+    expect_output(print(kw, max_nrow = -1), out)
+    expect_output(print(kw, max_nrow = 6), out)
+    expect_output(print(kw, max_nrow = 7), out)
     expect_output(print(kw, show_summary = FALSE),
-                  "      [1797-Adams, 478]   and | secure  | the     
-     [1797-Adams, 1512]   and | secured | immortal
- [1805-Jefferson, 2367] shall | secure  | to      
-    [1817-Monroe, 1754]    To | secure  | us      
-    [1817-Monroe, 1814]    to | secure  | our     
-    [1817-Monroe, 3009]    to | secure  | economy", fixed = TRUE)
+                  paste("[1797-Adams, 478]   and | secure  | the",   
+                        "[1797-Adams, 1512]   and | secured | immortal",
+                        "[1805-Jefferson, 2367] shall | secure  | to",
+                        "[1817-Monroe, 1754]    To | secure  | us",
+                        "[1817-Monroe, 1814]    to | secure  | our",   
+                        "[1817-Monroe, 3009]    to | secure  | economy", sep = "\\s*"))
     expect_output(print(kw, 3),
-                  "Keyword-in-context with 6 matches.                                                  
-      [1797-Adams, 478]   and | secure  | the     
-     [1797-Adams, 1512]   and | secured | immortal
- [1805-Jefferson, 2367] shall | secure  | to      
-[ reached max_nrow ... 3 more matches ]", fixed = TRUE)
+                  paste("Keyword-in-context with 6 matches.",
+                        "[1797-Adams, 478]   and | secure  | the",
+                        "[1797-Adams, 1512]   and | secured | immortal",
+                        "[1805-Jefferson, 2367] shall | secure  | to",
+                        "[ reached max_nrow ... 3 more matches ]", sep = "\\s*"))
     expect_output(print(kwic(toks, "secured", window = 1)),
                   "Keyword-in-context with 1 match.                                            
  [1797-Adams, 1512] and | secured | immortal", fixed = TRUE)
     expect_output(print(kwic(toks, "XXX", window = 1)),
-                  "Keyword-in-context with 0 matches.", fixed = TRUE)
+                  "Keyword-in-context with 0 matches.")
 })
 
 test_that("kwic works with padding", {
     testtoks <- tokens("what does the fox say cat")
     expect_output(
         print(kwic(tokens_remove(testtoks, c("what", "the"), padding = TRUE), "fox")),
-        "Keyword-in-context with 1 match.                                
- [text1, 4] does | fox | say cat",
-        fixed = TRUE
- )
+        paste("Keyword-in-context with 1 match.",
+              "[text1, 4]  does | fox | say cat", sep = "\\s*")
+    )
     expect_output(
         print(kwic(tokens_remove(testtoks, "*", padding = TRUE), "fox")),
         "Keyword-in-context with 0 matches.",
-        fixed = TRUE
     )
 })
 
@@ -301,7 +302,7 @@ test_that("kwic works as expected with and without phrases", {
     txt <- c(d1 = "a b c d e g h",  d2 = "a b e g h i j")
     toks_uni <- tokens(txt)
     dfm_uni <- dfm(toks_uni)
-    toks_bi <- tokens(txt) %>% tokens_ngrams(n = 2, concatenator = " ")
+    toks_bi <- tokens(txt) |> tokens_ngrams(n = 2, concatenator = " ")
     dfm_bi <- dfm(toks_bi)
     char_uni <- c("a", "b", "g", "j")
     char_bi <- c("a b", "g j")
@@ -315,64 +316,6 @@ test_that("kwic works as expected with and without phrases", {
     coll_tri <- data.frame(collocation = c("e g h"),
                            stringsAsFactors = FALSE)
     class(coll_tri) <- c("collocations", "data.frame")
-
-    suppressWarnings({
-      expect_equal(
-        as.data.frame(kwic(txt, char_uni))$keyword,
-        c("a", "b", "g",
-          "a", "b", "g", "j")
-    )
-    expect_equal(
-        as.data.frame(kwic(txt, list_uni))$keyword,
-        c("a", "b", "g",
-          "a", "b", "g", "j")
-    )
-    expect_equal(
-        nrow(kwic(txt, char_bi)),
-        0
-    )
-    expect_equal(
-        nrow(kwic(txt, list("c d", "g h"))),
-        0
-    )
-    expect_equal(
-        as.data.frame(kwic(txt, list(c("c", "d"), c("g", "h"))))$keyword,
-        c("c d", "g h", "g h")
-    )
-    expect_equal(
-        as.data.frame(kwic(txt, phrase(c("c d", "g h"))))$keyword,
-        c("c d", "g h", "g h")
-    )
-
-    expect_equal(
-        as.data.frame(kwic(txt, coll_bi))$keyword,
-        c("a b", "e g", "g h",
-          "a b", "e g", "g h")
-    )
-    expect_equal(
-        as.data.frame(kwic(txt, coll_tri))$keyword,
-        c("e g h", "e g h")
-    )
-
-    expect_equal(
-        as.data.frame(kwic(txt, as.phrase(coll_bi)))$keyword,
-        c("a b", "e g", "g h",
-          "a b", "e g", "g h")
-    )
-    expect_equal(
-        as.data.frame(kwic(txt, phrase(coll_bi)))$keyword,
-        c("a b", "e g", "g h",
-          "a b", "e g", "g h")
-    )
-    expect_equal(
-        as.data.frame(kwic(txt, phrase(dict_bi)))$keyword,
-        c("a b", "a b")
-    )
-    expect_equal(
-        as.data.frame(kwic(txt, dict_bi))$keyword,
-        c("a b", "a b")
-    )
-    })
 
     ## on tokens
     expect_equal(
@@ -434,9 +377,9 @@ test_that("keywords attribute is set correctly in textplot_kwic (#1514)", {
     expect_identical(kwic2$pattern, factor(c("u", "u")))
     expect_identical(kwic3$pattern, factor(c("f", "u", "f", "u"), levels = c("u", "f")))
 
-    suppressWarnings(kwic_dict1 <- kwic(corp, dictionary(list(ukey = "u"))))
+    kwic_dict1 <- kwic(tokens(corp), dictionary(list(ukey = "u")))
     kwic_dict2 <- kwic(toks, dictionary(list(ukey = "u")))
-    suppressWarnings(kwic_dict3 <- kwic(corp, dictionary(list(ukey = "u", fkey = "f"))))
+    kwic_dict3 <- kwic(tokens(corp), dictionary(list(ukey = "u", fkey = "f")))
     kwic_dict4 <- kwic(toks, dictionary(list(ukey = "u", fkey = "f")))
 
     expect_identical(kwic_dict1, kwic_dict2)
@@ -501,8 +444,8 @@ test_that("kwic pattern column works for phrases", {
 })
 
 test_that("kwic with pattern overlaps works as expected", {
-    kw <- c(d2 = "one two three four", d1 = "four three two one") %>%
-        tokens() %>%
+    kw <- c(d2 = "one two three four", d1 = "four three two one") |>
+        tokens() |>
         kwic(pattern = c("two", "two", "three"))
     expect_equal(
         as.character(kw$pattern),
@@ -534,12 +477,14 @@ test_that("pre and post for phrases are working", {
 })
 
 test_that("kwic structure is as expected", {
-    toks <- tokens(c(doc1 = "a a a b c d d d", doc2 = "a b c d e", doc3 = "b b a a"))
+    toks <- tokens(c(doc1 = "a a a b c d d d", 
+                     doc2 = "a b c d e", 
+                     doc3 = "b b a a"))
     kw <- kwic(toks, phrase("a a"), window = 2)
     expect_identical(
       kw,
       structure(data.frame(docname = c("doc1", "doc1", "doc3"), 
-                           from = 1:3, to = 2:4, 
+                           from = 1L:3L, to = 2L:4L, 
                            pre = c("", "a", "b b"), 
                            keyword = c("a a", "a a", "a a"), 
                            post = c("a b", "b c", ""), 
@@ -552,16 +497,6 @@ test_that("kwic structure is as expected", {
 
 test_that("kwic deprecations work as expected", {
     txt <- "A b c d e."
-    expect_warning(
-      kwic(txt, "c", window = 1),
-      "'kwic.character()' is deprecated. Use 'tokens()' first.",
-      fixed = TRUE
-    )
-    expect_warning(
-      kwic(corpus(txt), "c", window = 1),
-      "'kwic.corpus()' is deprecated. Use 'tokens()' first.",
-      fixed = TRUE
-    )
     expect_warning(
       kwic(tokens(txt), "e", window = 2, remove_punct = TRUE),
       "remove_punct argument is not used"

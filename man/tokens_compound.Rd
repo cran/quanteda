@@ -8,10 +8,11 @@ tokens_compound(
   x,
   pattern,
   valuetype = c("glob", "regex", "fixed"),
-  concatenator = "_",
+  concatenator = concat(x),
   window = 0L,
   case_insensitive = TRUE,
-  join = TRUE
+  join = TRUE,
+  apply_if = NULL
 )
 }
 \arguments{
@@ -24,11 +25,8 @@ or collocations object.  See \link{pattern} for details.}
 wildcard expressions; \code{"regex"} for regular expressions; or \code{"fixed"} for
 exact matching. See \link{valuetype} for details.}
 
-\item{concatenator}{the concatenation character that will connect the words
-making up the multi-word sequences.  The default \verb{_} is recommended since
-it will not be removed during normal cleaning and tokenization (while
-nearly all other punctuation characters, at least those in the Unicode
-punctuation class \verb{[P]} will be removed).}
+\item{concatenator}{character; the concatenation character that will connect
+the tokens making up a multi-token sequence.}
 
 \item{window}{integer; a vector of length 1 or 2 that specifies size of the
 window of tokens adjacent to \code{pattern} that will be compounded with matches
@@ -42,6 +40,9 @@ be shrunk to exclude them.}
 
 \item{join}{logical; if \code{TRUE}, join overlapping compounds into a single
 compound; otherwise, form these separately.  See examples.}
+
+\item{apply_if}{logical vector of length \code{ndoc(x)}; documents are modified
+only when corresponding values are \code{TRUE}, others are left unchanged.}
 }
 \value{
 A \link{tokens} object in which the token sequences matching \code{pattern}
@@ -93,7 +94,7 @@ tokens_compound(toks, pattern = compounds, join = TRUE)
 tokens_compound(toks, pattern = compounds, join = FALSE)
 
 # use window to form ngrams
-tokens_remove(toks, pattern = stopwords("en")) \%>\%
+tokens_remove(toks, pattern = stopwords("en")) |>
     tokens_compound(pattern = "leav*", join = FALSE, window = c(0, 3))
-    
+
 }

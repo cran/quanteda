@@ -13,12 +13,16 @@ tokens_lookup(
   capkeys = !exclusive,
   exclusive = TRUE,
   nomatch = NULL,
+  append_key = FALSE,
+  separator = "/",
+  concatenator = concat(x),
   nested_scope = c("key", "dictionary"),
+  apply_if = NULL,
   verbose = quanteda_options("verbose")
 )
 }
 \arguments{
-\item{x}{tokens object to which dictionary or thesaurus will be supplied}
+\item{x}{the \link{tokens} object to which the dictionary will be applied}
 
 \item{dictionary}{the \link{dictionary}-class object that will be applied to
 \code{x}}
@@ -37,16 +41,23 @@ exact matching. See \link{valuetype} for details.}
 \item{case_insensitive}{logical; if \code{TRUE}, ignore case when matching a
 \code{pattern} or \link{dictionary} values}
 
-\item{capkeys}{if TRUE, convert dictionary keys to uppercase to distinguish
-them from other features}
+\item{capkeys}{if \code{TRUE}, convert dictionary keys to uppercase to distinguish
+them from unmatched tokens.}
 
 \item{exclusive}{if \code{TRUE}, remove all features not in dictionary,
 otherwise, replace values in dictionary with keys while leaving other
-features unaffected}
+features unaffected.}
 
 \item{nomatch}{an optional character naming a new key for tokens that do not
 matched to a dictionary values  If \code{NULL} (default), do not record
 unmatched tokens.}
+
+\item{append_key}{if \code{TRUE}, annotate matched tokens with keys.}
+
+\item{separator}{a character to separate tokens and keys when \code{append_key = TRUE}.}
+
+\item{concatenator}{the concatenation character that will connect the words
+making up the multi-word sequences.}
 
 \item{nested_scope}{how to treat matches from different dictionary keys that
 are nested.  When one value is nested within another, such as "a b" being
@@ -55,6 +66,9 @@ nested within "a b c", then \code{tokens_lookup()} will match the longer.  When
 within the key, while \code{"dictionary"} applies it across keys, matching only
 the key with the longer pattern, not the matches nested within that longer
 pattern from other keys.  See Details.}
+
+\item{apply_if}{logical vector of length \code{ndoc(x)}; documents are modified
+only when corresponding values are \code{TRUE}, others are left unchanged.}
 
 \item{verbose}{print status messages if \code{TRUE}}
 }
@@ -78,6 +92,12 @@ for these two different behaviours.
 \emph{Overlapping values}, such as \code{"a b"} and \code{"b a"} are
 currently always considered as separate matches if they are in different
 keys, or as one match if the overlap is within the same key.
+
+Note: \code{apply_if} This applies the dictionary lookup only to documents that
+match the logical condition.  When \code{exclusive = TRUE} (the default),
+however, this means that empty documents will be returned for those not
+meeting the condition, since no lookup will be applied and hence no tokens
+replaced by matching keys.
 }
 \examples{
 toks1 <- tokens(data_corpus_inaugural)

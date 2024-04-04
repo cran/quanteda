@@ -1,3 +1,54 @@
+# quanteda 4.0.0
+
+## Changes and additions
+
+* Introduces the `tokens_xptr` objects that extend the `tokens` objects with external pointers for a greater efficiency. Once `tokens` objects are converted to `tokens_xptr` objects using `as.tokens_xptr()`, `tokens_*.tokens_xptr()` methods are called automatically. 
+
+* Improved C++ functions to allow the users to change the number of threads for parallel computing in more flexible manner using `quanteda_options()`. The value of `threads` can be changed in the middle of analysis pipeline.
+
+* Makes `"word4"` the default (word) tokeniser, with improved efficiency, language handling, and customisation options.
+
+* Replaced all occurrences of the **magrittr** `%>%` pipe with the R pipe `|>` introduced in R 4.1, although the `%>%` pipe is still re-exported and therefore available to all users of **quanteda** without loading any additional packages.
+
+* Added `min_ntoken` and `max_ntoken` to `tokens_subset()` and `dfm_subset()` to extract documents based on number of tokens easily. It is equivalent to selecting documents using `ntoken()`.
+
+* Added a new argument `apply_if` that allows a tokens-based operation to apply only to documents that meet a logical condition.  This argument has been added to `tokens_select()`, `tokens_compound()`, `tokens_replace()`, `tokens_split()`, and `tokens_lookup()`.  This is similar to applying `purrr::map_if()` to a tokens object, but is implemented within the function so that it can be performed efficiently in C++.
+
+* Added new arguments `append_key`, `separator` and `concatenator` to `tokens_lookup()`. These allow tokens matched by dictionary values to be retained with their keys appended to them, separated by `separator`.  The addition of the `concatenator` argument allows additional control at the lookup stage for tokens that will be concatenated from having matched multi-word dictionary values. (#2324)
+
+* Added a new argument `remove_padding` to `ntoken()` and `ntype()` that allows for not counting padding that might have been left over from `tokens_remove(x, padding = TRUE`). This changes the previous number of types from `ntype()` when pads exist, by counting pads by default. (#2336)
+
+* Removed dependency on **RcppParallel** to improve the stability of the C++ code. This change requires the users of Linux-like OS to install the Intel TBB library manually to enable parallel computing.
+
+## Removals
+
+* `bootstrap_dfm()` was removed for character and corpus objects.  The correct way to bootstrap sentences is not to tokenize them as sentences and then bootstrap them from the dfm.  This is consistent with requiring the user to tokenise objects prior to forming dfms or other "downstream" objects.
+
+* `dfm()` no longer works on character or corpus objects, only on tokens or other dfm objects.  This was deprecated in v3 and removed in v4. 
+
+* Very old arguments to `dfm()` options that were not visible but worked with warnings (such as `stem = TRUE`) are removed.
+
+* Deprecated or renamed arguments formerly passed in `tokens()` that formerly mapped to the v3 arguments with a warning are removed.
+
+* Methods for **readtext** objects are removed, since these are data.frame objects that are straightforward to convert into a `corpus` object.
+
+* `topfeatures()` no longer works on an fcm object. (#2141)
+
+## Deprecations
+
+* Some on-the-fly calculations applied to character or corpus objects that require a temporary tokenisation are now deprecated.  This includes:
+    - `nsentence()` -- use `lengths(tokens(x, what = "sentence"))` instead;  
+    - `ntype()` -- use `ntype(tokens(x))` instead; and. 
+    - `ntoken()` -- use `ntoken(tokens(x))` instead.
+    - `char_ngrams()` -- use `tokens_ngrams(tokens(x))` instead.
+
+* `corpus.kwic()` is deprecated, with the suggestion to form a corpus from using `tokens_select(x, window = ...)` instead.
+ 
+## Bug fixes and stability enhancements
+
+* `tokens_group()` works efficiently even when the number of documents and groups are very large.
+
+
 # quanteda 3.3.1
 
 ## Bug fixes and stability enhancements

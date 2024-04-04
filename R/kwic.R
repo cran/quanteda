@@ -56,25 +56,30 @@ kwic.default <- function(x, ...) {
 
 #' @export
 kwic.character <- function(x, ...) {
-    .Deprecated(msg = "'kwic.character()' is deprecated. Use 'tokens()' first.")
-    kwic(tokens(x, what = "word"), ...)
+    lifecycle::deprecate_stop(
+        when = "3.0", 
+        what = "kwic.character()",
+        details = 'Please apply `tokens()` to the character object first.'
+    )
 }
 
 #' @export
 kwic.corpus <- function(x, ...) {
-    .Deprecated(msg = "'kwic.corpus()' is deprecated. Use 'tokens()' first.")
-    x <- as.corpus(x)
-    kwic(tokens(x, what = "word"), ...)
+    lifecycle::deprecate_stop(
+        when = "3.0", 
+        what = "kwic.corpus()",
+        details = 'Please apply `tokens()` to the corpus object first.'
+    )
 }
 
 #' @export
-kwic.tokens <- function(x, pattern = NULL, window = 5,
+kwic.tokens_xptr <- function(x, pattern = NULL, window = 5,
                         valuetype = c("glob", "regex", "fixed"),
                         separator = " ",
                         case_insensitive = TRUE, 
                         index = NULL,
                         ...) {
-    x <- as.tokens(x)
+    
     check_dots(..., "kwic")
     
     window <- check_integer(window, 1, 1, 0)
@@ -85,36 +90,30 @@ kwic.tokens <- function(x, pattern = NULL, window = 5,
     if (is.null(pattern) && is.null(index))
         stop("Either pattten or index must be provided\n", call. = FALSE)
     if (!is.null(pattern)) {
-        result <- index(x, pattern = pattern, valuetype = valuetype, 
+        index <- index(x, pattern = pattern, valuetype = valuetype, 
                         case_insensitive = case_insensitive)
     } else if (!is.null(index)) {
         if (!is.index(index))
             stop("Invalid index object\n", call. = FALSE)
-        result <- index
     }
     
     n <- ntoken(x)
-    result$pre <- rep("", nrow(result))
-    result$keyword <- rep("", nrow(result))
-    result$post <- rep("", nrow(result))
-    if (nrow(result)) {
-        n <- n[unique(result$docname)]
-        x <- x[result$docname]
-        lis_pre <- as.list(tokens_select(x, startpos = pmax(result$from - window, 1), endpos = result$from - 1))
-        lis_key <- as.list(tokens_select(x, startpos = result$from, endpos = result$to))
-        lis_post <- as.list(tokens_select(x, startpos = result$to + 1, endpos = result$to + window))
-        
-        result$pre[lengths(lis_pre) > 0] <- stri_c_list(lis_pre, sep = separator)
-        result$keyword[lengths(lis_key) > 0] <- stri_c_list(lis_key, sep = separator)
-        result$post[lengths(lis_post) > 0] <- stri_c_list(lis_post, sep = separator)
-    }
-    
+    index$document <- match(index$docname, docnames(x))
+    index <- subset(index, !is.na(index$document))
+    result <- cbind(index, cpp_kwic(x, index$document, index$from, index$to, 
+                                    window, separator, get_threads()))
+
     # reorder columns to match pre-v3 order
     result <- result[, c("docname", "from", "to", "pre", "keyword", "post", "pattern")]
+    attr(result, "ntoken") <- n[unique(index$docname)]
     class(result) <- c("kwic", "data.frame")
-    attr(result, "ntoken") <- n
-    
+    rownames(result) <- NULL
     return(result)
+}
+
+#' @export
+kwic.tokens <- function(x, ...) {
+    kwic(as.tokens_xptr(x), ...)
 }
 
 #' @rdname kwic
@@ -202,5 +201,6 @@ print.kwic <- function(x, max_nrow = quanteda_options("print_kwic_max_nrow"),
     x <- x[i,]
     attr(x, "ntoken") <- attrs$ntoken[i]
     class(x) <- c("kwic", "data.frame")
+    rownames(x) <- NULL
     return(x)
 }

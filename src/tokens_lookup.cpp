@@ -1,6 +1,5 @@
-//#include "dev.h"
 #include "lib.h"
-#include "recompile.h"
+//#include "dev.h"
 
 using namespace quanteda;
 
@@ -9,9 +8,10 @@ Text lookup(Text tokens,
             const unsigned int &id_max,
             const int &overlap,
             const int &nomatch,
-            const MultiMapNgrams &map_keys){
+            const MultiMapNgrams &map_keys,
+            const bool &bypass){
     
-    if (tokens.size() == 0) return {}; // return empty vector for empty text
+    if (tokens.empty()) return {}; // return empty vector for empty text
     
     // Match flag for each token
     std::vector<bool> flags_match_global(tokens.size(), false);
@@ -28,27 +28,14 @@ Text lookup(Text tokens,
     
     std::size_t match_count = 0;
     std::vector< std::vector<unsigned int> > keys(tokens.size());
-    for (std::size_t span : spans) { // substitution starts from the longest sequences
-        if (tokens.size() < span) continue;
-        for (std::size_t i = 0; i < tokens.size() - (span - 1); i++) {
-            Ngram ngram(tokens.begin() + i, tokens.begin() + i + span);
-            auto range = map_keys.equal_range(ngram);
-            bool match = false;
-            if (overlap == 1) { // local
-                for (auto it = range.first; it != range.second; ++it) {
-                    unsigned int id = it->second;
-                    std::vector< bool > &flags_match_local = flags_match[id - 1];
-                    bool flagged = std::any_of(flags_match_local.begin() + i, flags_match_local.begin() + i + span, [](bool v) { return v; });
-                    if (!flagged) {
-                        keys[i].push_back(id); // keep multiple keys in the same position
-                        std::fill(flags_match_local.begin() + i, flags_match_local.begin() + i + span, true); // for each key
-                        match = true;
-                        match_count++;
-                    }
-                }
-            } else if (overlap == 2) { // global
-                bool flagged = std::all_of(flags_match_global.begin() + i, flags_match_global.begin() + i + span, [](bool v) { return v; });
-                if (!flagged) {
+    if (!bypass) {
+        for (std::size_t span : spans) { // substitution starts from the longest sequences
+            if (tokens.size() < span) continue;
+            for (std::size_t i = 0; i < tokens.size() - (span - 1); i++) {
+                Ngram ngram(tokens.begin() + i, tokens.begin() + i + span);
+                auto range = map_keys.equal_range(ngram);
+                bool match = false;
+                if (overlap == 1) { // local
                     for (auto it = range.first; it != range.second; ++it) {
                         unsigned int id = it->second;
                         std::vector< bool > &flags_match_local = flags_match[id - 1];
@@ -60,10 +47,25 @@ Text lookup(Text tokens,
                             match_count++;
                         }
                     }
+                } else if (overlap == 2) { // global
+                    bool flagged = std::all_of(flags_match_global.begin() + i, flags_match_global.begin() + i + span, [](bool v) { return v; });
+                    if (!flagged) {
+                        for (auto it = range.first; it != range.second; ++it) {
+                            unsigned int id = it->second;
+                            std::vector< bool > &flags_match_local = flags_match[id - 1];
+                            bool flagged = std::any_of(flags_match_local.begin() + i, flags_match_local.begin() + i + span, [](bool v) { return v; });
+                            if (!flagged) {
+                                keys[i].push_back(id); // keep multiple keys in the same position
+                                std::fill(flags_match_local.begin() + i, flags_match_local.begin() + i + span, true); // for each key
+                                match = true;
+                                match_count++;
+                            }
+                        }
+                    }
                 }
+                if (match)
+                    std::fill(flags_match_global.begin() + i, flags_match_global.begin() + i + span, true); // for all keys
             }
-            if (match)
-                std::fill(flags_match_global.begin() + i, flags_match_global.begin() + i + span, true); // for all keys
         }
     }
     
@@ -118,78 +120,56 @@ Text lookup(Text tokens,
     return keys_flat;
 }
 
-
-struct lookup_mt : public Worker{
-    
-    Texts &texts;
-    const std::vector<std::size_t> &spans;
-    const unsigned int &id_max;
-    const int &overlap;
-    const int &nomatch;
-    const MultiMapNgrams &map_keys;
-    
-    // Constructor
-    lookup_mt(Texts &texts_, const std::vector<std::size_t> &spans_, const unsigned int &id_max_,
-              const int &overlap_, const int &nomatch_, const MultiMapNgrams &map_keys_):
-              texts(texts_), spans(spans_), id_max(id_max_), overlap(overlap_), nomatch(nomatch_),
-              map_keys(map_keys_){}
-    
-    // parallelFor calles this function with std::size_t
-    void operator()(std::size_t begin, std::size_t end){
-        //Rcout << "Range " << begin << " " << end << "\n";
-        for (std::size_t h = begin; h < end; h++) {
-            texts[h] = lookup(texts[h], spans, id_max, overlap, nomatch, map_keys);
-        }
-    }
-};
-
 /* 
-* This function finds patterns in tokens object. This is similar to tokens_replace, 
-* but all overlapping or nested patterns are detected and recorded by IDs.
-* The number of threads is set by RcppParallel::setThreadOptions()
+* Function to find dictionary keywords
 * @used tokens_lookup()
 * @creator Kohei Watanabe
-* @param texts_ tokens ojbect
 * @param words_ list of dictionary values
 * @param keys_ IDs of dictionary keys
 * @param overlap ignore overlapped words: 1=local, 2=global, 3=none
 * @param nomatch determine how to treat unmached words: 0=remove, 1=pad; 2=keep
+* @param bypass_ select documents to modify: TRUE=modify, FALSE=don't modify
 */
 
-
 // [[Rcpp::export]]
-List qatd_cpp_tokens_lookup(const List &texts_,
-                            const CharacterVector types_,
-                            const List &words_,
-                            const IntegerVector &keys_,
-                            const int overlap,
-                            const int nomatch){
+TokensPtr cpp_tokens_lookup(TokensPtr xptr,
+                                 const List &words_,
+                                 const IntegerVector &keys_,
+                                 const CharacterVector &types_,
+                                 const int overlap,
+                                 const int nomatch,
+                                 const LogicalVector bypass_,
+                                 const int thread = -1) {
     
-    Texts texts = Rcpp::as<Texts>(texts_);
+    Texts texts = xptr->texts;
     Types types = Rcpp::as<Types>(types_);
-    unsigned int id_max(0);
+    
+    if (words_.size() != keys_.size())
+        throw std::range_error("Invalid words and keys");
+    
+    if (bypass_.size() != (int)texts.size())
+        throw std::range_error("Invalid bypass");
+    std::vector<bool> bypass = Rcpp::as< std::vector<bool> >(bypass_);
+    
+    std::vector<unsigned int> keys = Rcpp::as< std::vector<unsigned int> >(keys_);
+    unsigned int id_max = 0;
     if (nomatch == 2) {
-        id_max = keys_.size() > 0 ? Rcpp::max(keys_) : 0;
+        types.insert(types.end(), xptr->types.begin(), xptr->types.end());
+        if (keys_.size() > 0)
+            id_max = *max_element(keys.begin(), keys.end());
     } else {
-        id_max = types_.size();
+        id_max = types.size();
     }
-    //Rcout << id_max << "\n";
-    
-    //dev::Timer timer;
-    
-    //dev::start_timer("Map construction", timer);
-
     MultiMapNgrams map_keys;
     map_keys.max_load_factor(GLOBAL_PATTERN_MAX_LOAD_FACTOR);
     Ngrams words = Rcpp::as<Ngrams>(words_);
-    std::vector<unsigned int> keys = Rcpp::as< std::vector<unsigned int> >(keys_);
     
-    size_t len = std::min(words.size(), keys.size());
-    std::vector<std::size_t> spans(len);
-    for (size_t g = 0; g < len; g++) {
+    size_t G = words.size();
+    std::vector<std::size_t> spans(G);
+    for (std::size_t g = 0; g < G; g++) {
         Ngram value = words[g];
         unsigned int key = keys[g];
-        map_keys.insert(std::pair<Ngram, unsigned int>(value, key));
+        map_keys.insert(std::make_pair(value, key));
         spans[g] = value.size();
     }
     sort(spans.begin(), spans.end());
@@ -199,21 +179,32 @@ List qatd_cpp_tokens_lookup(const List &texts_,
     //dev::stop_timer("Map construction", timer);
     
     //dev::start_timer("Dictionary lookup", timer);
+    std::size_t H = texts.size();
 #if QUANTEDA_USE_TBB
-    lookup_mt lookup_mt(texts, spans, id_max, overlap, nomatch, map_keys);
-    parallelFor(0, texts.size(), lookup_mt);
+    tbb::task_arena arena(thread);
+    arena.execute([&]{
+        tbb::parallel_for(tbb::blocked_range<int>(0, H), [&](tbb::blocked_range<int> r) {
+            for (int h = r.begin(); h < r.end(); ++h) {
+                texts[h] = lookup(texts[h], spans, id_max, overlap, nomatch, map_keys, bypass[h]);
+            }    
+        });
+    });
 #else
-    for (std::size_t h = 0; h < texts.size(); h++) {
-        texts[h] = lookup(texts[h], spans, id_max, overlap, nomatch, map_keys);
+    for (std::size_t h = 0; h < H; h++) {
+        texts[h] = lookup(texts[h], spans, id_max, overlap, nomatch, map_keys, bypass[h]);
     }
 #endif
-    //dev::stop_timer("Dictionary lookup", timer);
-    if (nomatch == 2) {
-        return recompile(texts, types, true, true, is_encoded(types_));
-    } else {
-        return recompile(texts, types, false, false, is_encoded(types_));
-    }
     
+    xptr->texts = texts;
+    xptr->types = types;
+    
+    if (nomatch != 2) { // exclusive mode
+        // NOTE: values might need to be reset
+        xptr->recompiled = true;
+    } else {
+        xptr->recompiled = false;
+    }
+    return xptr;
 }
 
 /***R
@@ -223,11 +214,11 @@ dict <- list(c(1, 2), c(5, 6), 10, 15, 20)
 #dict <- list(1:10, c(5, 6) , 4)
 #keys <- rep(2, length(dict))
 keys <- seq_along(dict) + 1
-#qatd_cpp_tokens_lookup(toks, letters, dict, integer(0), 0)
-qatd_cpp_tokens_lookup(toks, letters, dict, keys, FALSE, 0)
-qatd_cpp_tokens_lookup(toks, letters, dict, keys, TRUE, 0)
-qatd_cpp_tokens_lookup(toks, letters, dict, keys, FALSE, 0)
-qatd_cpp_tokens_lookup(toks, letters, dict, keys, FALSE, 1)
-qatd_cpp_tokens_lookup(toks, letters, dict, keys, FALSE, 2)
+#cpp_tokens_lookup(toks, letters, dict, integer(0), 0)
+cpp_tokens_lookup(toks, dict, keys, FALSE, 0)
+cpp_tokens_lookup(toks, dict, keys, TRUE, 0)
+cpp_tokens_lookup(toks, dict, keys, FALSE, 0)
+cpp_tokens_lookup(toks, dict, keys, FALSE, 1)
+cpp_tokens_lookup(toks, dict, keys, FALSE, 2)
 
 */

@@ -145,6 +145,8 @@ test_that("non-exclusive lookup is working",{
                      d2 = "Let freedom ring in the United States!",
                      d3 = "Aliens are invading Mars"),
                    remove_punct = TRUE)
+    toks2 <- tokens_remove(toks, stopwords("en"), padding = TRUE)
+    
     dict <- dictionary(list(country = c("united states", "mexico", "canada"), 
                             "law words" = c('law*', 'constitution'), 
                             freedom = c('free', "freedom", 'libertarian'),
@@ -155,7 +157,6 @@ test_that("non-exclusive lookup is working",{
                       d2 = c("Let", "FREEDOM", "ring", "in", "the", "COUNTRY", "OVERLAP"),
                       d3 = c("Aliens", "are", "invading", "Mars")))
     
-    toks2 <- tokens_remove(toks, stopwords("en"), padding = TRUE)
     expect_equal(as.list(tokens_lookup(toks2, dict, exclusive = FALSE, capkeys = TRUE)),
                  list(d1 = c("COUNTRY", "signed", "", "new", "FREEDOM", "LAW WORDS", "", "COUNTRY"),
                       d2 = c("Let", "FREEDOM", "ring", "", "", "COUNTRY", "OVERLAP"),
@@ -516,5 +517,148 @@ test_that("tokens_lookup return tokens even if no matches", {
         lengths(tokens_lookup(toks, dict)),
         c("1789-Washington" = 0L, "1793-Washington" = 0L, "1797-Adams" = 0L,
           "1801-Jefferson"  = 0L, "1805-Jefferson" = 0L)
+    )
+})
+
+
+test_that("append_key is working",{
+    
+    toks <- tokens(c(d1 = "Mexico signed a new libertarian law with Canada.",
+                     d2 = "Let freedom ring in the United States!",
+                     d3 = "Aliens are invading Mars"),
+                   remove_punct = TRUE)
+    toks_pad <- tokens_remove(toks, stopwords("en"), padding = TRUE)
+    
+    dict <- dictionary(list(country = c("united states", "mexico", "canada"), 
+                            "law words" = c('law*', 'constitution'), 
+                            freedom = c('free', "freedom", 'libertarian'),
+                            overlap = "United"))
+    
+    # exclusive mode
+    toks_ex1 <- tokens_lookup(toks, dict, exclusive = TRUE, capkeys = TRUE, append_key = TRUE)
+    expect_equal(as.list(toks_ex1),
+                 list(d1 = c("Mexico/COUNTRY", "libertarian/FREEDOM", 
+                             "law/LAW WORDS", "Canada/COUNTRY"),
+                      d2 = c("freedom/FREEDOM", 
+                             "United_States/COUNTRY", "United/OVERLAP"),
+                      d3 = character()))
+    expect_true(all(featfreq(dfm(toks_ex1)) > 0))
+    
+    toks_ex2 <- tokens_lookup(toks_pad, dict, exclusive = TRUE, capkeys = TRUE, append_key = TRUE)
+    expect_equal(as.list(toks_ex2),
+                 list(d1 = c("Mexico/COUNTRY", "libertarian/FREEDOM", 
+                             "law/LAW WORDS", "Canada/COUNTRY"),
+                      d2 = c("freedom/FREEDOM", 
+                             "United_States/COUNTRY", "United/OVERLAP"),
+                      d3 = character()))
+    expect_true(all(featfreq(dfm(toks_ex2)) > 0))
+    
+    toks_ex3 <- tokens_lookup(toks_pad, dict, exclusive = TRUE, capkeys = TRUE,
+                             append_key = TRUE, concatenator = "+")
+    expect_equal(as.list(toks_ex3),
+                 list(d1 = c("Mexico/COUNTRY", "libertarian/FREEDOM", 
+                             "law/LAW WORDS", "Canada/COUNTRY"),
+                      d2 = c("freedom/FREEDOM", 
+                             "United+States/COUNTRY", "United/OVERLAP"),
+                      d3 = character()))
+    expect_true(all(featfreq(dfm(toks_ex3)) > 0))
+    
+    # non-exclusive mode
+    toks_ne1 <- tokens_lookup(toks, dict, exclusive = FALSE, capkeys = TRUE,
+                              append_key = TRUE)
+    expect_equal(as.list(toks_ne1),
+                 list(d1 = c("Mexico/COUNTRY", "signed", "a", "new", "libertarian/FREEDOM", 
+                             "law/LAW WORDS", "with", "Canada/COUNTRY"),
+                      d2 = c("Let", "freedom/FREEDOM", "ring", "in", "the", 
+                             "United_States/COUNTRY", "United/OVERLAP"),
+                      d3 = c("Aliens", "are", "invading", "Mars")))
+    expect_true(all(featfreq(dfm(toks_ne1)) > 0))
+    
+    toks_ne2 <- tokens_lookup(toks, dict, exclusive = FALSE, capkeys = TRUE,
+                              append_key = TRUE, separator = "+")
+    expect_equal(as.list(toks_ne2),
+                 list(d1 = c("Mexico+COUNTRY", "signed", "a", "new", "libertarian+FREEDOM", 
+                             "law+LAW WORDS", "with", "Canada+COUNTRY"),
+                      d2 = c("Let", "freedom+FREEDOM", "ring", "in", "the", 
+                             "United_States+COUNTRY", "United+OVERLAP"),
+                      d3 = c("Aliens", "are", "invading", "Mars")))
+    expect_true(all(featfreq(dfm(toks_ne2)) > 0))
+    
+    toks_ne3 <- tokens_lookup(toks, dict, exclusive = FALSE, capkeys = TRUE, 
+                              append_key = TRUE, separator = " x ")
+    expect_equal(as.list(toks_ne3),
+                 list(d1 = c("Mexico x COUNTRY", "signed", "a", "new", "libertarian x FREEDOM", 
+                             "law x LAW WORDS", "with", "Canada x COUNTRY"),
+                      d2 = c("Let", "freedom x FREEDOM", "ring", "in", "the", 
+                             "United_States x COUNTRY", "United x OVERLAP"),
+                      d3 = c("Aliens", "are", "invading", "Mars")))
+    expect_true(all(featfreq(dfm(toks_ne3)) > 0))
+    
+    toks_ne4 <- tokens_lookup(toks_pad, dict, exclusive = FALSE, capkeys = FALSE, 
+                              append_key = TRUE)
+    expect_equal(as.list(toks_ne4),
+                 list(d1 = c("Mexico/country", "signed", "", "new", "libertarian/freedom", 
+                             "law/law words", "", "Canada/country"),
+                      d2 = c("Let", "freedom/freedom", "ring", "", "", 
+                             "United_States/country", "United/overlap"),
+                      d3 = c("Aliens", "", "invading", "Mars")))
+    expect_true(all(featfreq(dfm(toks_ne4)) > 0))
+    
+    toks_ne5 <- tokens_lookup(toks_pad, dict, exclusive = FALSE, capkeys = FALSE, 
+                              append_key = TRUE, separator = "➡️")
+    expect_equal(as.list(toks_ne5),
+                 list(d1 = c("Mexico➡️country", "signed", "", "new", "libertarian➡️freedom", 
+                             "law➡️law words", "", "Canada➡️country"),
+                      d2 = c("Let", "freedom➡️freedom", "ring", "", "", 
+                             "United_States➡️country", "United➡️overlap"),
+                      d3 = c("Aliens", "", "invading", "Mars")))
+    expect_true(all(featfreq(dfm(toks_ne5)) > 0))
+    
+    expect_error(
+        tokens_lookup(toks, dict, exclusive = FALSE,  append_key = NA),
+        "append_key cannot be NA"
+    )
+    expect_error(
+        tokens_lookup(toks, dict, exclusive = FALSE, append_key = TRUE, 
+                      separator = c("+", "+")),
+        "The length of separator must be 1"
+    )
+    expect_error(
+        tokens_lookup(toks, dict, exclusive = FALSE, append_key = TRUE, 
+                      concatenator = c("_", "_")),
+        "The length of concatenator must be 1"
+    )
+    
+})
+
+test_that("apply_if argument is working", {
+    
+    dat <- data.frame(text = c("R and C are languages",
+                               "Windows (R), Quanteda (C)"),
+                      topic = c("language", "software"))
+    dict <- dictionary(list(language = c("C", "R")))
+    corp <- corpus(dat)
+    toks <- tokens(corp, remove_punct = TRUE) %>% 
+        tokens_remove(stopwords())
+    
+    toks1 <- tokens_lookup(toks, dict)
+    expect_identical(
+        as.list(toks1),
+        list(text1 = c("language", "language"),
+             text2 = c("language", "language"))
+    )
+    
+    toks2 <- tokens_lookup(toks, dict, apply_if = toks$topic == "language")
+    expect_identical(
+        as.list(toks2),
+        list(text1 = c("language", "language"),
+             text2 = character())
+    )
+    
+    toks3 <- tokens_lookup(toks, dict, exclusive = FALSE, append_key = TRUE)
+    expect_identical(
+        as.list(toks3),
+        list(text1 = c("R/LANGUAGE", "C/LANGUAGE", "languages"),
+             text2 = c("Windows", "R/LANGUAGE" , "Quanteda", "C/LANGUAGE"))
     )
 })

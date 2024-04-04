@@ -67,9 +67,10 @@ check_double <- function(x, min_len = 1, max_len = 1, min = -Inf, max = Inf,
 }
 
 #' @rdname check_integer
+#' @param allow_na if `TRUE`, convert `NA` to `FALSE`
 #' @export
 check_logical <- function(x, min_len = 1, max_len = 1, strict = FALSE, 
-                          allow_null = FALSE) {
+                          allow_null = FALSE, allow_na = FALSE) {
     arg <- deparse(substitute(x))
     if (allow_null) {
         if (is.null(x)) return(NULL)
@@ -83,7 +84,11 @@ check_logical <- function(x, min_len = 1, max_len = 1, strict = FALSE,
         x <- as.logical(x)
     }, warning = fun, error = fun)
     x <- check_length(x, min_len, max_len, arg)
-    x <- check_na(x, arg)
+    if (allow_na) {
+        x[is.na(x)] <- FALSE
+    } else {
+        x <- check_na(x, arg)    
+    }
     return(x)
 }
 
@@ -159,10 +164,10 @@ check_length <- function(x, min_len, max_len, arg) {
 #' \dontrun{
 #' quanteda:::check_class("tokens", "dfm_select")
 #' }
-check_class <- function(class, method) {
+check_class <- function(class, method, defunct_methods = NULL) {
     class_valid <- rownames(attr(utils::methods(method), "info"))
     class_valid <- stringi::stri_replace_first_fixed(class_valid, paste0(method, "."), "")
-    class_valid <- class_valid[class_valid != "default"]
+    class_valid <- class_valid[! class_valid %in% c("default", defunct_methods)]
     if (!length(intersect(class, class_valid)))
         stop(method, "() only works on ", paste(class_valid, collapse = ", "), " objects.", call. = FALSE)
 }

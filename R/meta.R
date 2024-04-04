@@ -180,7 +180,6 @@ meta_system <- function(x, field = NULL)
 `meta_system<-.dictionary` <- `meta_system<-.dfm`
 
 #' @rdname meta_system
-#' @param source character; the input object class
 #' @return `meta_system_defaults` returns a list of default system
 #'   values, with the user setting the "source" value.  This should be used
 #'   to set initial system meta information.
@@ -265,6 +264,7 @@ make_meta_tokens <- function(inherit = NULL, ...) {
     default <- list(
         "unit" = "documents",
         "what" = "word",
+        "tokenizer" = "tokenize_word",
         "ngram" = 1L,
         "skip" = 0L,
         "concatenator" = "_",
@@ -281,6 +281,7 @@ make_meta_dfm <- function(inherit = NULL, ...) {
     default <- list(
         "unit" = "documents",
         "what" = "word",
+        "tokenizer" = "tokenize_word",
         "ngram" = 1L,
         "skip" = 0L,
         "concatenator" = "_",
@@ -302,6 +303,7 @@ make_meta_fcm <- function(inherit = NULL, ...) {
         "unit" = "documents",
         "concatenator" = "_",
         "what" = "word",
+        "tokenizer" = "tokenize_word",
         "context" = "document", 
         "window" = 5L,
         "count" = "frequency",

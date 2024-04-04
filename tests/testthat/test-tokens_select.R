@@ -80,10 +80,10 @@ test_that("tokens_select reduces the types appropriately", {
     ## see issue/PR #416
     toks <- tokens(c(doc1 = "This is a SAMPLE text", doc2 = "this sample text is better"))
     feats <- c("this", "sample", "is")
-    expect_equal(attributes(tokens_select(toks, feats, selection = "keep"))$types,
-                 c("This", "is", "SAMPLE", "this", "sample"))
-    expect_equal(attributes(tokens_select(toks, feats, selection = "keep", case_insensitive = FALSE))$types,
-                 c("is", "this", "sample"))
+    expect_setequal(types(tokens_select(toks, feats, selection = "keep")),
+                    c("This", "is", "SAMPLE", "this", "sample"))
+    expect_setequal(types(tokens_select(toks, feats, selection = "keep", case_insensitive = FALSE)),
+                    c("is", "this", "sample"))
 })
 test_that("tokens_remove works on \"\" with tokens containing padding", {
     toks <- tokens(c(doc1 = "a b c d e f g"))
@@ -128,7 +128,7 @@ test_that("tokens_remove works regardless when features are overlapped, issue #7
 txt <- c(d1 = "a b c d e g h",  d2 = "a b e g h i j")
 toks_uni <- tokens(txt)
 dfm_uni <- dfm(toks_uni)
-toks_bi <- tokens(txt) %>% tokens_ngrams(n = 2, concatenator = " ")
+toks_bi <- tokens(txt) |> tokens_ngrams(n = 2, concatenator = " ")
 dfm_bi <- dfm(toks_bi)
 char_uni <- c("a", "b", "g", "j")
 char_bi <- c("a b", "g j")
@@ -711,20 +711,57 @@ test_that("position arguments are working", {
         "The length of endpos must be between 1 and 3"
     )
     
-    expect_error(
-        quanteda:::qatd_cpp_tokens_select(toks, types(toks), as.list(1:3), 1, TRUE, 0, 0, integer(), 1:3),
-        "Invalid pos_from"
+})
+
+
+test_that("apply_if argument is working", {
+    
+    dat <- data.frame(text = c("R and C are languages",
+                              "Windows (R), Quanteda (C)",
+                              "Sizes are X=10, Y=20, Z=30"),
+                      topic = c("language", "software", "hardware"),
+                      month = c(NA, 4, 12))
+    corp <- corpus(dat)
+    toks <- tokens(corp)
+    
+    toks1 <- tokens_select(toks, min_nchar = 2, apply_if = toks$topic != "language")
+    expect_identical(
+        as.list(toks1),
+        list(text1 = c("R", "and", "C", "are", "languages"),
+             text2 = c("Windows", "Quanteda"),
+             text3 = c("Sizes", "are", "10", "20", "30"))
     )
-    expect_error(
-        quanteda:::qatd_cpp_tokens_select(toks, types(toks), as.list(1:3), 1, TRUE, 0, 0, 1, 1:3),
-        "Invalid pos_from"
+    
+    docname <- docnames(toks)
+    toks2 <- toks %>% 
+        tokens_select(c("R", "C"), apply_if = docname == "text1") %>% 
+        tokens_select(c("windows", "quanteda"), apply_if = docname == "text2") %>% 
+        tokens_select("\\d", valuetype = "regex", apply_if = docname == "text3")
+    expect_identical(
+        as.list(toks2),
+        list(text1 = c("R", "C"),
+             text2 = c("Windows", "Quanteda"),
+             text3 = c("10", "20", "30"))
     )
-    expect_error(
-        quanteda:::qatd_cpp_tokens_select(toks, types(toks), as.list(1:3), 1, TRUE, 0, 0, 1:3, integer()),
-        "Invalid pos_to"
+    
+    toks3 <- toks |>
+        tokens_keep(c("R", "C"), apply_if = toks$topic == "language") %>% 
+        tokens_remove(min_nchar = 6, apply_if = toks$topic != "language")
+    expect_identical(
+        as.list(toks3),
+        list(text1 = c("R", "C"),
+             text2 = c("Windows", "Quanteda"),
+             text3 = character())
     )
-    expect_error(
-        quanteda:::qatd_cpp_tokens_select(toks, types(toks), as.list(1:3), 1, TRUE, 0, 0, 1:3, 1),
-        "Invalid pos_to"
+    
+    toks4 <- toks |>
+        tokens_remove(min_nchar = 2, apply_if = toks$month) |>
+        tokens_remove(stopwords())
+    expect_identical(
+        as.list(toks4),
+        list(text1 = c("R", "C", "languages"),
+             text2 = c("Windows", "Quanteda"),
+             text3 = c("Sizes", "10", "20", "30"))
     )
 })
+

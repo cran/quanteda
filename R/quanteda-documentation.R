@@ -105,7 +105,7 @@
 #'   (literal) pattern matching.} }
 #' @note If "fixed" is used with `case_insensitive = TRUE`, features will
 #'   typically be lowercased internally prior to matching.  Also, glob matches
-#'   are converted to regular expressions (using [glob2rx][utils::glob2rx]) when
+#'   are converted to regular expressions (using [utils::glob2rx()]) when
 #'   they contain wild card characters, and to fixed pattern matches when they
 #'   do not.
 #' @name valuetype
@@ -124,7 +124,7 @@ NULL
 #'   or collocations object.  See [pattern] for details.
 #' @details The `pattern` argument is a vector of patterns, including
 #'   sequences, to match in a target object, whose match type is specified by
-#'   [valuetype()]. Note that an empty pattern (`""`) will match
+#'   [valuetype]. Note that an empty pattern (`""`) will match
 #'   "padding" in a [tokens] object.
 #'   \describe{
 #'   \item{`character`}{A character vector of token patterns to be selected
@@ -172,6 +172,7 @@ NULL
 #' (dict1 <- dictionary(list(us = c("president", "white house", "house of representatives"))))
 #' phrase(dict1)
 #' @keywords internal
+#' @seealso [valuetype], [case_insensitive]
 NULL
 
 #' Grouping variable(s) for various functions
@@ -216,4 +217,14 @@ NULL
 #'
 #' dfmat <- dfm(toks)
 #' print(dfmat, max_ndoc = 3, max_nfeat = 10)
+NULL
+
+#' Modify only documents matching a logical condition
+#'
+#' Applies the modification only to documents matching a condition.
+#' 
+#' @param apply_if logical vector of length `ndoc(x)`; documents are modified
+#'   only when corresponding values are `TRUE`, others are left unchanged.
+#' @name apply_if
+#' @keywords internal
 NULL

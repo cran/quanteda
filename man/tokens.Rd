@@ -16,8 +16,10 @@ tokens(
   split_tags = FALSE,
   include_docvars = TRUE,
   padding = FALSE,
+  concatenator = "_",
   verbose = quanteda_options("verbose"),
-  ...
+  ...,
+  xptr = FALSE
 )
 }
 \arguments{
@@ -25,7 +27,8 @@ tokens(
 \link{character} object to tokenize.}
 
 \item{what}{character; which tokenizer to use.  The default \code{what = "word"}
-is the version 2 \pkg{quanteda} tokenizer.  Legacy tokenizers (version < 2)
+is the current version of the \pkg{quanteda} tokenizer, set by
+\code{quanteda_options(okens_tokenizer_word)}. Legacy tokenizers (version < 2)
 are also supported, including the default \code{what = "word1"}. See the Details
 and quanteda Tokenizers below.}
 
@@ -39,8 +42,8 @@ valid social media tags if \code{preserve_tags = TRUE}}
 \item{remove_numbers}{logical; if \code{TRUE} remove tokens that consist only of
 numbers, but not words that start with digits, e.g. \verb{2day}}
 
-\item{remove_url}{logical; if \code{TRUE} find and eliminate URLs beginning with
-http(s)}
+\item{remove_url}{logical; if \code{TRUE} removes URLs (http, https, ftp, sftp)
+and email addresses.}
 
 \item{remove_separators}{logical; if \code{TRUE} remove separators and separator
 characters (Unicode "Separator" \verb{[Z]} and "Control" \verb{[C]} categories)}
@@ -60,24 +63,30 @@ previously existed.  This is useful if a positional match is needed between
 the pre- and post-selected tokens, for instance if a window of adjacency
 needs to be computed.}
 
+\item{concatenator}{character; the concatenation character that will connect
+the tokens making up a multi-token sequence.}
+
 \item{verbose}{if \code{TRUE}, print timing messages to the console}
 
 \item{...}{used to pass arguments among the functions}
+
+\item{xptr}{if \code{TRUE}, returns a \code{tokens_xptr} class object}
 }
 \value{
 \pkg{quanteda} \code{tokens} class object, by default a serialized list of
 integers corresponding to a vector of types.
 }
 \description{
-Construct a tokens object, either by importing a named list of characters
-from an external tokenizer, or by calling the internal \pkg{quanteda}
-tokenizer.
-}
-\details{
-\code{tokens()} works on tokens class objects, which means that the removal rules
-can be applied post-tokenization, although it should be noted that it will
-not be possible to remove things that are not present.  For instance, if the
-\code{tokens} object has already had punctuation removed, then \code{tokens(x, remove_punct = TRUE)} will have no additional effect.
+Construct a tokens object, either by importing a named list of
+characters from an external tokenizer, or by calling the internal
+\pkg{quanteda} tokenizer.
+
+\code{tokens()} can also be applied to tokens class objects, which
+means that the removal rules can be applied post-tokenization, although it
+should be noted that it will not be possible to remove things that are not
+present.  For instance, if the \code{tokens} object has already had punctuation
+removed, then \code{tokens(x, remove_punct = TRUE)} will have no additional
+effect.
 }
 \section{Details}{
  As of version 2, the choice of tokenizer is left more to
@@ -113,8 +122,12 @@ from social media (including hashtags and usernames).
 }
 
 \section{quanteda Tokenizers}{
- The default word tokenizer \code{what = "word"}
-splits tokens using \link[stringi:stri_split_boundaries]{stri_split_boundaries(x, type = "word")} but by default preserves infix
+ The default word tokenizer \code{what = "word"} is
+updated in major version 4.  It is even smarter than the v3 and v4
+versions, with additional options for customization.  See
+\code{\link[=tokenize_word4]{tokenize_word4()}} for full details.
+
+The default tokenizer splits tokens using \link[stringi:stri_split_boundaries]{stri_split_boundaries(x, type = "word")} but by default preserves infix
 hyphens (e.g. "self-funding"), URLs, and social media "tag" characters
 (#hashtags and @usernames), and email addresses.  The rules defining a
 valid "tag" can be found at
@@ -123,17 +136,21 @@ for hashtags and at
 https://help.twitter.com/en/managing-your-account/twitter-username-rules
 for usernames.
 
-In versions < 2, the argument \code{remove_twitter} controlled whether social
-media tags were preserved or removed, even when \code{remove_punct = TRUE}. This
-argument is not longer functional in versions >= 2.  If greater control
-over social media tags is desired, you should user an alternative
-tokenizer, including non-\pkg{quanteda} options.
-
 For backward compatibility, the following older tokenizers are also
-supported through \code{what}: \describe{ \item{\code{"word1"}}{(legacy) implements
+supported through \code{what}:
+\describe{
+\item{\code{"word1"}}{(legacy) implements
 similar behaviour to the version of \code{what = "word"} found in pre-version 2.
 (It preserves social media tags and infix hyphens, but splits URLs.)
-"word1" is also slower than "word".} \item{\code{"fasterword"}}{(legacy) splits
+"word1" is also slower than "word2" and "word4".  In "word1",
+the argument \code{remove_twitter} controlled whether social
+media tags were preserved or removed, even when \code{remove_punct = TRUE}. This
+argument is not longer functional in versions >= 2, but equivalent control
+can be had using the \code{split_tags} argument and selective tokens removals.}
+\item{\verb{"word2", "word3"}}{(legacy) implements
+similar behaviour to the versions of "word" found in \pkg{quanteda} versions
+3 and 4.}
+\item{\code{"fasterword"}}{(legacy) splits
 on whitespace and control characters, using
 \code{stringi::stri_split_charclass(x, "[\\\\p{Z}\\\\p{C}]+")}}
 \item{\code{"fastestword"}}{(legacy) splits on the space character, using
@@ -143,11 +160,6 @@ individual characters} \item{\code{"sentence"}}{sentence segmenter based on
 additional rules to avoid splits on words like "Mr." that would otherwise
 incorrectly be detected as sentence boundaries.  For better sentence
 tokenization, consider using \pkg{spacyr}.} }
-
-For forward compatibility including use of a more advanced tokenizer that
-will be used in major version 4, there is also a "word4" tokenizer that is
-even smarter than the default, which is also aliased as "word2" and "word3"
-(these are identical).  See \code{\link[=tokenize_word4]{tokenize_word4()}} for full details.
 }
 
 \examples{
@@ -172,18 +184,18 @@ tokens(txt[4], remove_numbers = TRUE, remove_symbols = TRUE)
 
 \dontrun{# using other tokenizers
 tokens(tokenizers::tokenize_words(txt[4]), remove_symbols = TRUE)
-tokenizers::tokenize_words(txt, lowercase = FALSE, strip_punct = FALSE) \%>\%
+tokenizers::tokenize_words(txt, lowercase = FALSE, strip_punct = FALSE) |>
     tokens(remove_symbols = TRUE)
-tokenizers::tokenize_characters(txt[3], strip_non_alphanum = FALSE) \%>\%
+tokenizers::tokenize_characters(txt[3], strip_non_alphanum = FALSE) |>
     tokens(remove_punct = TRUE)
 tokenizers::tokenize_sentences(
-    "The quick brown fox.  It jumped over the lazy dog.") \%>\%
+    "The quick brown fox.  It jumped over the lazy dog.") |>
     tokens()
 }
 
 }
 \seealso{
-\code{\link[=tokens_ngrams]{tokens_ngrams()}}, \code{\link[=tokens_skipgrams]{tokens_skipgrams()}}, \code{\link[=as.list.tokens]{as.list.tokens()}},
-\code{\link[=as.tokens]{as.tokens()}}
+\code{\link[=tokens_ngrams]{tokens_ngrams()}}, \code{\link[=tokens_skipgrams]{tokens_skipgrams()}}, \code{\link[=tokens_compound]{tokens_compound()}},
+\code{\link[=tokens_lookup]{tokens_lookup()}}, \code{\link[=concat]{concat()}}, \code{\link[=as.list.tokens]{as.list.tokens()}}, \code{\link[=as.tokens]{as.tokens()}}
 }
 \keyword{tokens}

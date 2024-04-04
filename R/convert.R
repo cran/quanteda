@@ -55,7 +55,7 @@
 #' @examples
 #' ## convert a dfm
 #'
-#' toks <- corpus_subset(data_corpus_inaugural, Year > 1970) %>%
+#' toks <- corpus_subset(data_corpus_inaugural, Year > 1970) |>
 #'     tokens()
 #' dfmat1 <- dfm(toks)
 #'
@@ -184,7 +184,6 @@ convert.corpus <- function(x, to = c("data.frame", "json"), pretty = FALSE, ...)
 #' are converting.
 #' @param x the dfm to be converted
 #' @inheritParams convert
-#' @param ... additional arguments used only by `as.DocumentTermMatrix`
 #' @return A converted object determined by the value of `to` (see above).
 #'   See conversion target package documentation for more detailed descriptions
 #'   of the return formats.
@@ -197,8 +196,8 @@ convert.corpus <- function(x, to = c("data.frame", "json"), pretty = FALSE, ...)
 #' @name convert-wrappers
 #' @keywords internal
 #' @examples
-#' dfmat <- corpus_subset(data_corpus_inaugural, Year > 1970) %>%
-#'     tokens() %>%
+#' dfmat <- corpus_subset(data_corpus_inaugural, Year > 1970) |>
+#'     tokens() |>
 #'     dfm()
 #'
 NULL
@@ -276,7 +275,7 @@ dtm2lda <- function(x, omit_empty = TRUE) {
     docs <- vector(mode = "list", length = nrow(x))
     names(docs) <- rownames(x)
 
-    docs[slam::row_sums(x) > 0] <- split.matrix(rbind(as.integer(x$j) - 1L,
+    docs[slam::row_sums(x) > 0] <- split_matrix(rbind(as.integer(x$j) - 1L,
                                                       as.integer(x$v)),
                                                 as.integer(x$i))
     if (omit_empty) {
@@ -289,7 +288,7 @@ dtm2lda <- function(x, omit_empty = TRUE) {
 }
 
 # internal function for dtm2lda
-split.matrix <- function(x, f, drop = FALSE, ...) {
+split_matrix <- function(x, f, drop = FALSE, ...) {
     lapply(split(seq_len(ncol(x)),
                  f, drop = drop, ...), function(ind) x[, ind, drop = FALSE])
 }

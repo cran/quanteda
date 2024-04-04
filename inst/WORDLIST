@@ -3,6 +3,7 @@ ACL
 Biden
 Biden's
 Bormuth
+CIC
 CMD
 CTM
 Ch
@@ -79,6 +80,7 @@ cbind
 cbinded
 cbinding
 changeunits
+cheatsheet
 chisquared
 ci
 cleanC
@@ -199,6 +201,7 @@ R's
 segmentSentence
 segmenter
 selectFeatures
+sftp
 skipgram
 skipgrams
 smoothdfm
@@ -228,6 +231,8 @@ textplot
 textplots
 textstat
 textstats
+tokens
+xptr
 tf
 tfidf
 th
@@ -265,3 +270,5 @@ aaa
 RBBI
 RuleBasedBreakIterator
 yml
+RcppParallel
+RcppArmadillo

@@ -61,9 +61,6 @@ tokens_lookup(tokens(txt), dictionary = data_dictionary_LSD2015,
 ## text1 :
 ## [1] "This"   "NEGATIVE"   "policy"   "will"   "NEG_POSITIVE" "POSITIVE."   
 
-# on larger examples - notice that few negations are used
-dfm(data_char_ukimmig2010[1:5], dictionary = data_dictionary_LSD2015)
-
 # compound neg_negative and neg_positive tokens before creating a dfm object
 toks <- tokens_compound(tokens(txt), data_dictionary_LSD2015)
 
@@ -77,7 +74,7 @@ Young, L. & Soroka, S. (2012). \emph{Lexicoder Sentiment
 Dictionary}. Available at \url{https://www.snsoroka.com/data-lexicoder/}.
 
 Young, L. & Soroka, S. (2012). Affective News: The Automated Coding of
-Sentiment in Political Texts]. \doi{10.1080/10584609.2012.671234}.
+Sentiment in Political Texts. \doi{10.1080/10584609.2012.671234}.
 \emph{Political Communication}, 29(2), 205--231.
 }
 \keyword{data}

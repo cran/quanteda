@@ -5,7 +5,7 @@
 #' @param x a list of character vectors, [dictionary] or collocations object
 #' @inheritParams valuetype
 #' @inheritParams pattern2id
-#' @param concatenator the concatenation character that join multi-word
+#' @param concatenator the concatenation character that joins multi-word
 #'   expression in `types`
 #' @inheritParams tokens_lookup
 #' @param remove_unigram  if `TRUE`, ignores single-word patterns
@@ -53,9 +53,11 @@ object2id <- function(x, types, valuetype = c("glob", "fixed", "regex"),
             key <- names(temp)
             temp <- split_values(temp, " ", concatenator)
         } else if (is.list(x)) {
+            x <- lapply(x, function(x) check_character(x, min_len = 0, max_len = Inf, strict = TRUE))
             temp <- x
             names(temp) <- stri_c_list(x, " ")
         } else {
+            x <- check_character(x, min_len = 0, max_len = Inf, strict = TRUE)
             temp <- as.list(x)
             names(temp) <- x
         }

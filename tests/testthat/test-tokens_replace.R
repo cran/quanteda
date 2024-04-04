@@ -5,8 +5,8 @@ toks_test <- tokens(txt)
 test_that("tokens_replace works with regular pattern and replacement", {
     
     # equivalent to tokens conversion method
-    expect_equal(tokens_replace(toks_test, types(toks_test), char_toupper(types(toks_test)), "fixed", case_insensitive = FALSE),
-                 tokens_toupper(toks_test))
+    expect_equal(as.list(tokens_replace(toks_test, types(toks_test), char_toupper(types(toks_test)), "fixed", case_insensitive = FALSE)),
+                 as.list(tokens_toupper(toks_test)))
     
     # fixed, case-insensitive
     expect_equal(as.list(tokens_replace(toks_test, c('aa', 'bb'), c('a', 'b'), "fixed", case_insensitive = TRUE)),
@@ -140,7 +140,7 @@ test_that("tokens_replace raises error when input values are invalid", {
                  "The length of pattern and replacement must be the same")
     
     expect_error(tokens_replace(toks_test, c(1, 2), c(10, 20), valuetype = "fixed"),
-                 "The type of pattern must be character")
+                 "The type of x must be character")
     
     # does nothing when input vector is zero length
     expect_equal(tokens_replace(toks_test, character(), character()),
@@ -233,4 +233,28 @@ test_that("tokens_replace works with same replacement characters (#1765)", {
                        c("zz", "zz"), valuetype = "regex")),
         exp4
     )
+})
+
+test_that("apply_if argument is working", {
+    
+    dat <- data.frame(text = c("C language",
+                               "Vitamin C"),
+                      topic = c("language", "vitamin"))
+    corp <- corpus(dat)
+    toks <- tokens(corp)
+    
+    toks1 <- tokens_replace(toks, "C", "R", apply_if = toks$topic == "language")
+    expect_identical(
+        as.list(toks1),
+        list(text1 = c("R", "language"),
+             text2 = c("Vitamin", "C"))
+    )
+    
+    toks2 <- tokens_replace(toks, "C", "D", apply_if = toks$topic == "vitamin")
+    expect_identical(
+        as.list(toks2),
+        list(text1 = c("C", "language"),
+             text2 = c("Vitamin", "D"))
+    )
+    
 })

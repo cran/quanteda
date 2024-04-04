@@ -37,7 +37,14 @@ corpus(x, ...)
   ...
 )
 
-\method{corpus}{kwic}(x, split_context = TRUE, extract_keyword = TRUE, meta = list(), ...)
+\method{corpus}{kwic}(
+  x,
+  split_context = TRUE,
+  extract_keyword = TRUE,
+  meta = list(),
+  concatenator = " ",
+  ...
+)
 
 \method{corpus}{Corpus}(x, ...)
 }
@@ -72,7 +79,7 @@ based on \verb{([quanteda_options]("base_docname")}.}
 \code{data.frame} indicating the variable to be read in as text, which must
 be a character vector. All other variables in the data.frame will be
 imported as docvars.  This argument is only used for \code{data.frame}
-objects (including those created by \pkg{readtext}).}
+objects.}
 
 \item{split_context}{logical; if \code{TRUE}, split each kwic row into two
 "documents", one for "pre" and one for "post", with this designation saved
@@ -81,6 +88,8 @@ therefore being twice the number of rows in the kwic.}
 
 \item{extract_keyword}{logical; if  \code{TRUE}, save the keyword matching
 \code{pattern} as a new docvar \code{keyword}}
+
+\item{concatenator}{character between tokens, default is the whitespace.}
 }
 \value{
 A \linkS4class{corpus} class object containing the original texts,
@@ -150,13 +159,6 @@ dat <- data.frame(letter_factor = factor(rep(letters[1:3], each = 2)),
 dat
 summary(corpus(dat, text_field = "some_text",
                meta = list(source = "From a data.frame called mydf.")))
-
-# from a kwic
-kw <- kwic(tokens(data_char_sampletext, remove_separators = FALSE),
-           pattern = "econom*", separator = "")
-summary(corpus(kw))
-summary(corpus(kw, split_context = FALSE))
-as.character(corpus(kw, split_context = FALSE))
 
 }
 \seealso{

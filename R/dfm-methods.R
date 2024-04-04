@@ -7,7 +7,7 @@
 #' @param x the dfm whose features will be extracted
 #' @return character vector of the feature labels
 #' @examples
-#' dfmat <- dfm(data_corpus_inaugural)
+#' dfmat <- dfm(tokens(data_corpus_inaugural))
 #'
 #' # first 50 features (in original text order)
 #' head(featnames(dfmat), 50)
@@ -182,8 +182,8 @@ is.dfm <- function(x) {
 #' @return A named numeric vector of feature counts, where the names are the
 #'   feature labels, or a list of these if `groups` is given.
 #' @examples
-#' dfmat1 <- corpus_subset(data_corpus_inaugural, Year > 1980) %>%
-#'     tokens(remove_punct = TRUE) %>%
+#' dfmat1 <- corpus_subset(data_corpus_inaugural, Year > 1980) |>
+#'     tokens(remove_punct = TRUE) |>
 #'     dfm()
 #' dfmat2 <- dfm_remove(dfmat1, stopwords("en"))
 #'
@@ -219,7 +219,12 @@ topfeatures.default <- function(x, n = 10, decreasing = TRUE,
 #' @importFrom stats quantile
 topfeatures.dfm <- function(x, n = 10, decreasing = TRUE,
                             scheme = c("count", "docfreq"), groups = NULL) {
-
+    if (is.fcm(x)) {
+        lifecycle::deprecate_stop(
+            when = "4.0", 
+            what = "quanteda::topfeatures.fcm()"
+        )
+    }
     x <- as.dfm(x)
     if (!nfeat(x) || !ndoc(x)) return(numeric())
     if (!is.numeric(n)) stop("n must be a number")
@@ -248,6 +253,7 @@ topfeatures.dfm <- function(x, n = 10, decreasing = TRUE,
     return(head(result, n))
 }
 
+
 # sparsity -----------
 
 #' Compute the sparsity of a document-feature matrix
@@ -256,7 +262,7 @@ topfeatures.dfm <- function(x, n = 10, decreasing = TRUE,
 #' to the proportion of cells that have zero counts.
 #' @param x the document-feature matrix
 #' @examples
-#' dfmat <- dfm(data_corpus_inaugural)
+#' dfmat <- dfm(tokens(data_corpus_inaugural))
 #' sparsity(dfmat)
 #' sparsity(dfm_trim(dfmat, min_termfreq = 5))
 #' @export

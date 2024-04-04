@@ -100,23 +100,29 @@ test_that("tokens_compound works with padded tokens", {
 
 test_that("tokens_compound works with different concatenators", {
   toks <- tokens(c(doc1 = "a b c d e f g"))
+  
   toks1 <- tokens_compound(toks, phrase("c d"), concatenator = "+")
   expect_equal(sort(attr(toks1, "types")),
                sort(c("a", "b", "c+d", "e", "f", "g")))
-  expect_equal(meta(toks1, field = "concatenator", type = "object"),
-               "+")
+  expect_equal(meta(toks1, field = "concatenator", type = "object"), "+")
+  
   toks2 <- tokens_compound(toks, phrase("c d"), concatenator = "&&")
-  expect_equal(meta(toks2, field = "concatenator", type = "object"),
-               "&&")
+  expect_equal(meta(toks2, field = "concatenator", type = "object"), "&&")
   expect_equal(sort(attr(toks2, "types")),
                sort(c("a", "b", "c&&d", "e", "f", "g")))
+  
   toks3 <- tokens_compound(toks, phrase("c d"), concatenator = "")
-  expect_equal(meta(toks3, field = "concatenator", type = "object"),
-               "")
+  expect_equal(meta(toks3, field = "concatenator", type = "object"), "")
   expect_equal(sort(attr(toks3, "types")),
                sort(c("a", "b", "cd", "e", "f", "g")))
   expect_error(tokens_compound(toks, phrase("c d"), concatenator = character()),
                "The length of concatenator must be 1")
+  
+  # update concatenator even without matches
+  toks4 <- tokens_compound(toks, phrase("xxxx yyy"), concatenator = "++")
+  expect_equal(sort(attr(toks4, "types")),
+               sort(c("a", "b", "c", "d", "e", "f", "g")))
+  expect_equal(meta(toks4, field = "concatenator", type = "object"), "++")
 })
 
 test_that("tokens_compound works as expected with nested tokens", {
@@ -271,7 +277,6 @@ test_that("tokens_compound window is working", {
 
 })
 
-
 test_that("tokens_compound ignores padding", {
     
     toks <- tokens("a b c d e")
@@ -290,4 +295,32 @@ test_that("tokens_compound ignores padding", {
         as.character(toks_comp2),
         c("a", "", "c", "d_e")
     )
+})
+
+
+test_that("apply_if argument is working", {
+    
+    dat <- data.frame(text = c("C++ is a language",
+                               "+++ Section C +++"),
+                      topic = c("language", "separator"))
+    corp <- corpus(dat)
+    toks <- tokens(corp)
+    
+    toks1 <- tokens_compound(toks, phrase("+ +"), concatenator = "",
+                             apply_if = toks$topic == "language")
+    expect_identical(
+        as.list(toks1),
+        list(text1 = c("C", "++", "is", "a", "language"),
+             text2 = c("+", "+", "+", "Section", "C", "+", "+", "+"))
+    )
+    
+    toks2 <- tokens_compound(toks, "c", window = c(0, 2), concatenator = "",
+                             apply_if = toks$topic == "language") %>% 
+             tokens_select(min_nchar = 3)
+    expect_identical(
+        as.list(toks2),
+        list(text1 = c("C++", "language"),
+             text2 = c("Section"))
+    )
+
 })

@@ -7,11 +7,7 @@
 #' subsequently as single tokens, for instance in constructing a [dfm].
 #' @param x an input [tokens] object
 #' @inheritParams pattern
-#' @param concatenator the concatenation character that will connect the words
-#'   making up the multi-word sequences.  The default `_` is recommended since
-#'   it will not be removed during normal cleaning and tokenization (while
-#'   nearly all other punctuation characters, at least those in the Unicode
-#'   punctuation class `[P]` will be removed).
+#' @inheritParams tokens
 #' @inheritParams valuetype
 #' @param join logical; if `TRUE`, join overlapping compounds into a single
 #'   compound; otherwise, form these separately.  See examples.
@@ -21,6 +17,7 @@
 #'   with the first giving the window size before `pattern` and the second the
 #'   window size after.  If paddings (empty `""` tokens) are found, window will
 #'   be shrunk to exclude them.
+#' @inheritParams apply_if
 #' @return A [tokens] object in which the token sequences matching `pattern`
 #'   have been replaced by new compounded "tokens" joined by the concatenator.
 #' @note Patterns to be compounded (naturally) consist of multi-word sequences,
@@ -61,47 +58,57 @@
 #' tokens_compound(toks, pattern = compounds, join = FALSE)
 #'
 #' # use window to form ngrams
-#' tokens_remove(toks, pattern = stopwords("en")) %>%
+#' tokens_remove(toks, pattern = stopwords("en")) |>
 #'     tokens_compound(pattern = "leav*", join = FALSE, window = c(0, 3))
-#'     
+#'
 tokens_compound <- function(x, pattern,
-                    valuetype = c("glob", "regex", "fixed"),
-                    concatenator = "_", 
-                    window = 0L,
-                    case_insensitive = TRUE, join = TRUE) {
+                            valuetype = c("glob", "regex", "fixed"),
+                            concatenator = concat(x),
+                            window = 0L,
+                            case_insensitive = TRUE, join = TRUE,
+                            apply_if = NULL) {
     UseMethod("tokens_compound")
 }
 
 #' @export
 tokens_compound.default <- function(x, pattern,
-                                   valuetype = c("glob", "regex", "fixed"),
-                                   concatenator = "_", 
-                                   window = 0L,
-                                   case_insensitive = TRUE, join = TRUE) {
+                                    valuetype = c("glob", "regex", "fixed"),
+                                    concatenator = concat(x),
+                                    window = 0L,
+                                    case_insensitive = TRUE, join = TRUE,
+                                    apply_if = NULL) {
     check_class(class(x), "tokens_compound")
 }
 
-#' @importFrom RcppParallel RcppParallelLibs
 #' @export
-tokens_compound.tokens <- function(x, pattern,
-                   valuetype = c("glob", "regex", "fixed"),
-                   concatenator = "_", 
-                   window = 0L,
-                   case_insensitive = TRUE, join = TRUE) {
+tokens_compound.tokens_xptr <- function(x, pattern,
+                                        valuetype = c("glob", "regex", "fixed"),
+                                        concatenator = concat(x),
+                                        window = 0L,
+                                        case_insensitive = TRUE, join = TRUE,
+                                        apply_if = NULL) {
 
-    x <- as.tokens(x)
     valuetype <- match.arg(valuetype)
     concatenator <- check_character(concatenator)
     window <- check_integer(window, min_len = 1, max_len = 2, min = 0)
     join <- check_logical(join)
-    
+    apply_if <- check_logical(apply_if, min_len = ndoc(x), max_len = ndoc(x),
+                               allow_null = TRUE, allow_na = TRUE)
+
     attrs <- attributes(x)
-    type <- types(x)
+    type <- get_types(x)
 
     ids <- object2id(pattern, type, valuetype, case_insensitive, remove_unigram = all(window == 0))
-    if (length(ids) == 0) return(x) # do nothing
     if (length(window) == 1) window <- rep(window, 2)
-    result <- qatd_cpp_tokens_compound(x, ids, type, concatenator, join, window[1], window[2])
+    if (is.null(apply_if))
+        apply_if <- rep(TRUE, length.out = ndoc(x))
+    result <- cpp_tokens_compound(x, ids, concatenator, join, window[1], window[2], !apply_if,
+                                  get_threads())
     field_object(attrs, "concatenator") <- concatenator
     rebuild_tokens(result, attrs)
+}
+
+#' @export
+tokens_compound.tokens <- function(x, ...) {
+    as.tokens(tokens_compound(as.tokens_xptr(x), ...))
 }

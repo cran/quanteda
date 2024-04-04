@@ -1,5 +1,5 @@
 #include "lib.h"
-#include "dev.h"
+//#include "dev.h"
 using namespace quanteda;
 
 struct hash_pair {
@@ -44,34 +44,33 @@ void count_col(const Text &text,
     
     unsigned int j_ini, j_lim;
     double weight;
-    Triplet tripl;
     for (unsigned int i = 0; i < text.size(); i++) {
         if (text[i] == 0) continue; // skip padding
         j_ini = std::min((int)(i + 1), (int)text.size());
         j_lim = std::min((int)(i + window + 1), (int)text.size());
-        for(unsigned int j = j_ini; j < j_lim; j++) {
+        for (unsigned int j = j_ini; j < j_lim; j++) {
             if (text[j] == 0) continue; // skip padding
             weight = weights[std::abs((int)j - (int)i) - 1];
             if (ordered) {
                 if (!boolean || !exist(text[i] - 1, text[j] - 1, set_pair)) {
                     //Rcout << i << " " << j << "\n";
-                    tripl = std::make_tuple(text[i] - 1, text[j] - 1, weight);
+                    Triplet tripl = std::make_tuple(text[i] - 1, text[j] - 1, weight);
                     fcm_tri.push_back(tripl);
                 }
             } else {
                 if (text[i] < text[j]) {
                     if (!boolean || !exist(text[i] - 1, text[j] - 1, set_pair)) {
-                        tripl = std::make_tuple(text[i] - 1, text[j] - 1, weight);
+                        Triplet tripl = std::make_tuple(text[i] - 1, text[j] - 1, weight);
                         fcm_tri.push_back(tripl);
                     }
                 } else if (text[i] > text[j]){
                     if (!boolean || !exist(text[j] - 1, text[i] - 1, set_pair)) {
-                        tripl = std::make_tuple(text[j] - 1, text[i] - 1, weight);
+                        Triplet tripl = std::make_tuple(text[j] - 1, text[i] - 1, weight);
                         fcm_tri.push_back(tripl);
                     }
                 } else {
                     if (!boolean || !exist(text[i] - 1, text[j] - 1, set_pair)) {
-                        tripl = std::make_tuple(text[i] - 1, text[j] - 1, weight * 2);
+                        Triplet tripl = std::make_tuple(text[i] - 1, text[j] - 1, weight * 2);
                         fcm_tri.push_back(tripl);
                     }
                 } 
@@ -80,38 +79,18 @@ void count_col(const Text &text,
     }
 }
 
-struct count_col_mt : public Worker{
-    const Texts &texts;
-    const std::vector<double> &weights;    
-    const unsigned int window;
-    const bool ordered;
-    const bool boolean;
-    Triplets &fcm_tri; // output vector to write to, each Triplet contains i, j, x for the sparse matrix fcm.
-
-    //initialization
-    count_col_mt(const Texts &texts_, const std::vector<double> &weights_, const unsigned int window_, 
-             const bool ordered_, const bool boolean_, Triplets &fcm_tri_): 
-             texts(texts_),  weights(weights_),
-             window(window_), ordered(ordered_), boolean(boolean_), fcm_tri(fcm_tri_) {}
-
-    // function call operator that work for the specified range (begin/end)
-    void operator()(std::size_t begin, std::size_t end) {
-        for (std::size_t h = begin; h < end; h++) {
-            count_col(texts[h], weights, window, ordered, boolean, fcm_tri);
-        }
-    }
-};
-
-
 // [[Rcpp::export]]
-S4 qatd_cpp_fcm(const Rcpp::List &texts_,
+S4 cpp_fcm(TokensPtr xptr,
                 const int n_types,
                 const NumericVector &weights_,
                 const bool boolean,
-                const bool ordered){
+                const bool ordered,
+                const int thread = -1) {
     
     // triplets are constructed according to tri & ordered settings to be efficient
-    Texts texts = Rcpp::as<Texts>(texts_);
+    xptr->recompile();
+    Texts texts = xptr->texts;
+    Types types = xptr->types;
     std::vector<double> weights = Rcpp::as< std::vector<double> >(weights_);
     unsigned int window = weights.size();
 
@@ -120,12 +99,18 @@ S4 qatd_cpp_fcm(const Rcpp::List &texts_,
 
     //dev::Timer timer;
     //dev::start_timer("Count", timer);
-    
+    std::size_t H = texts.size();
 #if QUANTEDA_USE_TBB
-    count_col_mt count_col_mt(texts, weights, window, ordered, boolean, fcm_tri);
-    parallelFor(0, texts.size(), count_col_mt);
+    tbb::task_arena arena(thread);
+    arena.execute([&]{
+        tbb::parallel_for(tbb::blocked_range<int>(0, H), [&](tbb::blocked_range<int> r) {
+            for (int h = r.begin(); h < r.end(); ++h) {
+                count_col(texts[h], weights, window, ordered, boolean, fcm_tri);
+            }    
+        });
+    });
 #else        
-    for (std::size_t h = 0; h < texts.size(); h++) {
+    for (std::size_t h = 0; h < H; h++) {
         count_col(texts[h], weights, window, ordered, boolean, fcm_tri);
     }
 #endif
@@ -137,12 +122,11 @@ S4 qatd_cpp_fcm(const Rcpp::List &texts_,
 
 
 /***R
-RcppParallel::setThreadOptions(1)
 toks <- list(rep(1:10, 10), rep(5:15, 10))
 toks <- list(c(1, 4, 2, 3))
 types <- unique(unlist(toks))
-qatd_cpp_fcm(toks, max(types), c(1, 1), FALSE, TRUE)
-qatd_cpp_fcm(toks, max(types), c(1, 1), FALSE, FALSE)
+cpp_fcm(toks, max(types), c(1, 1), FALSE, TRUE)
+cpp_fcm(toks, max(types), c(1, 1), FALSE, FALSE)
 
 # for c(1, 2, 2, 3), window = 2
 # 0 2 0
