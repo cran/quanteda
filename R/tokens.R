@@ -255,7 +255,6 @@ tokens.character <- function(x,
 
 #' @rdname tokens
 #' @noRd
-#' @importFrom stringi stri_startswith_fixed
 #' @importFrom utils getFromNamespace
 #' @export
 tokens.corpus <- function(x,
@@ -371,6 +370,7 @@ tokens.corpus <- function(x,
     } else if (tokenizer == "tokenize_word4") {
         result <- tokens_restore(result)
     }
+    
     result <- tokens(result,
                      remove_punct = remove_punct,
                      remove_symbols = remove_symbols,
@@ -408,7 +408,7 @@ tokens.corpus <- function(x,
 
 #' @rdname tokens
 #' @noRd
-#' @importFrom stringi stri_startswith_fixed
+#' @importFrom stringi stri_replace_all_fixed
 #' @export
 tokens.tokens_xptr <-  function(x,
                            what = "word",

@@ -1,11 +1,11 @@
 
 #' Conditionally format messages
 #' 
-#' @param x message template to be passed to [`stri_sprintf()`].
+#' @param x message template to be passed to [stringi::stri_sprintf()].
 #' @param values list of values to be used in the template. Coerced to list if vector is given.
 #' @param indices list of integer to specify which value to be used.
-#' @param pretty if `TRUE`, message is passed to [`prettyNum()`].
-#' @param ... additional arguments passed to [`prettyNum()`].
+#' @param pretty if `TRUE`, message is passed to [base::prettyNum()].
+#' @param ... additional arguments passed to [base::prettyNum()].
 #' @keywords internal development
 #' @examples 
 #' \dontrun{
@@ -80,3 +80,43 @@ message_select <- function(selection, nfeats, ndocs, nfeatspad = 0, ndocspad = 0
     catm("", appendLF = TRUE)
 }
 
+#' Message parameter documentation
+#' 
+#' Used in printing verbose messages for message_tokens() and message_dfm()
+#' @name messages
+#' @param verbose if `TRUE` print the number of tokens and documents before and
+#'   after the function is applied. The number of tokens does not include paddings.
+#' @param before,after object statistics before and after the operation.
+#' @seealso message_tokens() message_dfm()
+#' @keywords internal
+NULL
+
+#' Print messages in tokens methods
+#' @inheritParams messages
+#' @keywords message internal
+message_tokens <- function(operation, before, after) {
+    msg <- sprintf("Apply %s: changed from %d tokens (%d documents) to %d tokens (%d documents)",
+                   operation, before$ntoken, before$ndoc, after$ntoken, after$ndoc)
+    msg <- prettyNum(msg, big.mark = ",")
+    message(msg)
+}
+
+stats_tokens <- function(x) {
+    list(ndoc = ndoc(x),
+         ntoken = sum(ntoken(x, remove_padding = TRUE)))
+}
+
+#' Print messages in dfm methods
+#' @inheritParams messages
+#' @keywords message internal
+message_dfm <- function(operation, before, after) {
+    msg <- sprintf("Apply %s: changed from %d features (%d documents) to %d features (%d documents)",
+                   operation, before$nfeat, before$ndoc, after$nfeat, after$ndoc)
+    msg <- prettyNum(msg, big.mark = ",")
+    message(msg)
+}
+
+stats_dfm <- function(x) {
+    list(ndoc = ndoc(x),
+         nfeat = nfeat(dfm_remove(x, "")))
+}

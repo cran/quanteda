@@ -1,3 +1,22 @@
+# quanteda 4.1
+
+## Bug fixes and stability enhancements
+
+* Improved the handling of invisible control characters causing some tokens operations to crash (#2407).
+
+* Addressed #2358 and #2359 more thoroughly, at the C++ level, to convert list(integer(), integer(),...) to std::vector<std::vector<unsigned int>. This function removes negative values and NA_INTEGER.
+
+* Removed **RcppArmadillo** as a dependency in an effort to avoid UBSAN warnings in #2417.
+
+## Changes and additions
+
+* Added `tokens_trim()` function similar to `dfm_trim()` (#2419).
+
+* Added `keep_unigrams` argument to `tokens_compound()`, to keep in the returned object the unigrams that are to be compounded (#2399).
+
+* `print.tokens()` now allows passing arguments to base `print()` via `...`, providing for instance the ability to print tokens without surround quotes using `quote = FALSE` (#2381).
+
+
 # quanteda 4.0.2
 
 ## Bug fixes and stability enhancements

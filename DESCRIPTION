@@ -1,5 +1,5 @@
 Package: quanteda
-Version: 4.0.2
+Version: 4.1.0
 Title: Quantitative Analysis of Textual Data
 Description: A fast, flexible, and comprehensive framework for 
     quantitative text analysis in R.  Provides functionality for corpus management,
@@ -25,7 +25,7 @@ License: GPL-3
 Depends: R (>= 3.5.0), methods
 Imports: fastmatch, jsonlite, lifecycle, magrittr, Matrix (>= 1.5-0),
         Rcpp (>= 0.12.12), SnowballC, stopwords, stringi, xml2, yaml
-LinkingTo: Rcpp, RcppArmadillo (>= 0.7.600.1.0)
+LinkingTo: Rcpp
 NeedsCompilation: yes
 Suggests: rmarkdown, spelling, testthat, formatR, tm (>= 0.6), knitr,
         lsa, rlang, slam
@@ -37,7 +37,7 @@ BugReports: https://github.com/quanteda/quanteda/issues
 LazyData: TRUE
 VignetteBuilder: knitr
 Language: en-GB
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Collate: 'RcppExports.R' 'tokenizers.R' 'meta.R'
         'quanteda-documentation.R' 'aaa.R' 'bootstrap_dfm.R'
         'casechange-functions.R' 'char_select.R' 'convert.R'
@@ -60,9 +60,9 @@ Collate: 'RcppExports.R' 'tokenizers.R' 'meta.R'
         'tokens_group.R' 'tokens_lookup.R' 'tokens_ngrams.R'
         'tokens_replace.R' 'tokens_restore.R' 'tokens_sample.R'
         'tokens_segment.R' 'tokens_select.R' 'tokens_split.R'
-        'tokens_subset.R' 'tokens_xptr.R' 'utils.R' 'validator.R'
-        'wordstem.R' 'zzz.R'
-Packaged: 2024-04-24 10:02:20 UTC; kbenoit
+        'tokens_subset.R' 'tokens_trim.R' 'tokens_xptr.R' 'utils.R'
+        'validator.R' 'wordstem.R' 'zzz.R'
+Packaged: 2024-09-02 00:30:08 UTC; kbenoit
 Author: Kenneth Benoit [cre, aut, cph]
     (<https://orcid.org/0000-0002-0797-564X>),
   Kohei Watanabe [aut] (<https://orcid.org/0000-0001-6519-5265>),
@@ -77,4 +77,4 @@ Author: Kenneth Benoit [cre, aut, cph]
   European Research Council [fnd] (ERC-2011-StG 283794-QUANTESS)
 Maintainer: Kenneth Benoit <kbenoit@lse.ac.uk>
 Repository: CRAN
-Date/Publication: 2024-04-24 15:50:02 UTC
+Date/Publication: 2024-09-04 13:30:02 UTC

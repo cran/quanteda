@@ -59,6 +59,7 @@ TTR
 TX
 TermDocumentMatrix
 Tokenizers
+UBSAN
 Unlist
 VCorpus
 Vm
@@ -256,6 +257,8 @@ twitteR
 uXXXX
 underdispersion
 unescaped
+unigram
+unigrams
 valuetype
 vocab
 vol
@@ -279,3 +282,5 @@ XCode
 config
 gfortran
 pkg
+UBSAN
+

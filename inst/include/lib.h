@@ -5,7 +5,9 @@
 #define ARMA_64BIT_WORD
 #endif
 
-#include <RcppArmadillo.h>
+//#include <RcppArmadillo.h>
+#include <Rcpp.h>
+#include <atomic>
 #include <unordered_map>
 #include <unordered_set>
 #include <limits>
@@ -93,7 +95,7 @@ namespace quanteda{
     typedef std::vector<Triplet> Triplets; // for fcm_mt, ca_mt, wordfish_mt
 #endif    
     
-    
+        
     inline String join_strings(CharacterVector &tokens_, 
                                const String &delim_ = " "){
         
@@ -194,7 +196,8 @@ namespace quanteda{
     inline List as_list(Texts &texts){
       List texts_(texts.size());
       for (std::size_t h = 0; h < texts.size(); h++) {
-        IntegerVector text_ = IntegerVector(std::begin(texts[h]), std::end(texts[h]));
+        Text text = texts[h];
+        IntegerVector text_ = wrap(text);
         texts_[h] = text_;
       }
       return texts_;
@@ -234,11 +237,35 @@ namespace quanteda{
             return simil_;
         }
     }
-
-    inline std::vector<std::size_t> register_ngrams(List patterns_, SetNgrams &set) {
+    
+    inline Ngrams to_ngrams(List patterns, bool no_padding = false) {
+        Ngrams ngrams;
+        std::size_t I = patterns.size();
+        ngrams.reserve(I);
+        for (std::size_t i = 0; i < I; i++) {
+            if (!Rcpp::is<IntegerVector>(patterns[i]))
+                throw std::invalid_argument("Invalid patterns");
+            IntegerVector pattern = patterns[i];
+            std::size_t J = pattern.size();
+            Ngram ngram(J);
+            for (std::size_t j = 0; j < J; j++) {
+                if (no_padding && pattern[j] == 0)
+                    break;
+                if (pattern[j] < 0 || IntegerVector::is_na(pattern[j]))
+                    break;
+                ngram[j] = pattern[j];
+            }
+            ngrams.push_back(ngram);
+        }
+        return(ngrams);
+    }
+    
+    inline std::vector<std::size_t> register_ngrams(List patterns_, 
+                                                    SetNgrams &set,
+                                                    bool no_padding = false) {
         
         set.max_load_factor(GLOBAL_PATTERN_MAX_LOAD_FACTOR);
-        Ngrams patterns = Rcpp::as<Ngrams>(patterns_);
+        Ngrams patterns = to_ngrams(patterns_, no_padding);
         std::vector<std::size_t> spans(patterns.size());
         for (size_t g = 0; g < patterns.size(); g++) {
             set.insert(patterns[g]);
@@ -256,10 +283,13 @@ namespace quanteda{
         return spans;
     }
 
-    inline std::vector<std::size_t> register_ngrams(List patterns_, IntegerVector ids_, MapNgrams &map) {
+    inline std::vector<std::size_t> register_ngrams(List patterns_, 
+                                                    IntegerVector ids_, 
+                                                    MapNgrams &map,
+                                                    bool no_padding = false) {
 
         map.max_load_factor(GLOBAL_PATTERN_MAX_LOAD_FACTOR);
-        Ngrams patterns = Rcpp::as<Ngrams>(patterns_);
+        Ngrams patterns = to_ngrams(patterns_, no_padding);
         std::vector<unsigned int> ids = Rcpp::as< std::vector<unsigned int> >(ids_);
         std::vector<std::size_t> spans(patterns.size());
         for (size_t g = 0; g < std::min(patterns.size(), ids.size()); g++) {

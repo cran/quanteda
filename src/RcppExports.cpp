@@ -2,7 +2,6 @@
 // Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 #include "quanteda_types.h"
-#include <RcppArmadillo.h>
 #include <Rcpp.h>
 
 using namespace Rcpp;
@@ -124,8 +123,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_tokens_compound
-TokensPtr cpp_tokens_compound(TokensPtr xptr, const List& compounds_, const String& delim_, const bool& join, int window_left, int window_right, const LogicalVector bypass_, const int thread);
-RcppExport SEXP _quanteda_cpp_tokens_compound(SEXP xptrSEXP, SEXP compounds_SEXP, SEXP delim_SEXP, SEXP joinSEXP, SEXP window_leftSEXP, SEXP window_rightSEXP, SEXP bypass_SEXP, SEXP threadSEXP) {
+TokensPtr cpp_tokens_compound(TokensPtr xptr, const List& compounds_, const String& delim_, const bool& join, const bool& keep, int window_left, int window_right, const LogicalVector bypass_, const int thread);
+RcppExport SEXP _quanteda_cpp_tokens_compound(SEXP xptrSEXP, SEXP compounds_SEXP, SEXP delim_SEXP, SEXP joinSEXP, SEXP keepSEXP, SEXP window_leftSEXP, SEXP window_rightSEXP, SEXP bypass_SEXP, SEXP threadSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -133,11 +132,12 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const List& >::type compounds_(compounds_SEXP);
     Rcpp::traits::input_parameter< const String& >::type delim_(delim_SEXP);
     Rcpp::traits::input_parameter< const bool& >::type join(joinSEXP);
+    Rcpp::traits::input_parameter< const bool& >::type keep(keepSEXP);
     Rcpp::traits::input_parameter< int >::type window_left(window_leftSEXP);
     Rcpp::traits::input_parameter< int >::type window_right(window_rightSEXP);
     Rcpp::traits::input_parameter< const LogicalVector >::type bypass_(bypass_SEXP);
     Rcpp::traits::input_parameter< const int >::type thread(threadSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_tokens_compound(xptr, compounds_, delim_, join, window_left, window_right, bypass_, thread));
+    rcpp_result_gen = Rcpp::wrap(cpp_tokens_compound(xptr, compounds_, delim_, join, keep, window_left, window_right, bypass_, thread));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -321,26 +321,39 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_ntoken
-IntegerVector cpp_ntoken(TokensPtr xptr, bool padding);
-RcppExport SEXP _quanteda_cpp_ntoken(SEXP xptrSEXP, SEXP paddingSEXP) {
+IntegerVector cpp_ntoken(TokensPtr xptr, bool no_padding);
+RcppExport SEXP _quanteda_cpp_ntoken(SEXP xptrSEXP, SEXP no_paddingSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< TokensPtr >::type xptr(xptrSEXP);
-    Rcpp::traits::input_parameter< bool >::type padding(paddingSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_ntoken(xptr, padding));
+    Rcpp::traits::input_parameter< bool >::type no_padding(no_paddingSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_ntoken(xptr, no_padding));
     return rcpp_result_gen;
 END_RCPP
 }
 // cpp_ntype
-IntegerVector cpp_ntype(TokensPtr xptr, bool padding);
-RcppExport SEXP _quanteda_cpp_ntype(SEXP xptrSEXP, SEXP paddingSEXP) {
+IntegerVector cpp_ntype(TokensPtr xptr, bool no_padding);
+RcppExport SEXP _quanteda_cpp_ntype(SEXP xptrSEXP, SEXP no_paddingSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< TokensPtr >::type xptr(xptrSEXP);
-    Rcpp::traits::input_parameter< bool >::type padding(paddingSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_ntype(xptr, padding));
+    Rcpp::traits::input_parameter< bool >::type no_padding(no_paddingSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_ntype(xptr, no_padding));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_get_freq
+IntegerVector cpp_get_freq(TokensPtr xptr, bool no_padding, bool boolean);
+RcppExport SEXP _quanteda_cpp_get_freq(SEXP xptrSEXP, SEXP no_paddingSEXP, SEXP booleanSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< TokensPtr >::type xptr(xptrSEXP);
+    Rcpp::traits::input_parameter< bool >::type no_padding(no_paddingSEXP);
+    Rcpp::traits::input_parameter< bool >::type boolean(booleanSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_get_freq(xptr, no_padding, boolean));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -379,14 +392,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_dfm
-S4 cpp_dfm(TokensPtr xptr, bool recompile);
-RcppExport SEXP _quanteda_cpp_dfm(SEXP xptrSEXP, SEXP recompileSEXP) {
+S4 cpp_dfm(TokensPtr xptr, bool asis);
+RcppExport SEXP _quanteda_cpp_dfm(SEXP xptrSEXP, SEXP asisSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< TokensPtr >::type xptr(xptrSEXP);
-    Rcpp::traits::input_parameter< bool >::type recompile(recompileSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_dfm(xptr, recompile));
+    Rcpp::traits::input_parameter< bool >::type asis(asisSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_dfm(xptr, asis));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -476,7 +489,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_quanteda_cpp_serialize_add", (DL_FUNC) &_quanteda_cpp_serialize_add, 3},
     {"_quanteda_cpp_tokens_chunk", (DL_FUNC) &_quanteda_cpp_tokens_chunk, 4},
     {"_quanteda_cpp_tokens_combine", (DL_FUNC) &_quanteda_cpp_tokens_combine, 3},
-    {"_quanteda_cpp_tokens_compound", (DL_FUNC) &_quanteda_cpp_tokens_compound, 8},
+    {"_quanteda_cpp_tokens_compound", (DL_FUNC) &_quanteda_cpp_tokens_compound, 9},
     {"_quanteda_cpp_tokens_group", (DL_FUNC) &_quanteda_cpp_tokens_group, 3},
     {"_quanteda_cpp_tokens_lookup", (DL_FUNC) &_quanteda_cpp_tokens_lookup, 8},
     {"_quanteda_cpp_tokens_ngrams", (DL_FUNC) &_quanteda_cpp_tokens_ngrams, 5},
@@ -492,6 +505,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_quanteda_cpp_ndoc", (DL_FUNC) &_quanteda_cpp_ndoc, 1},
     {"_quanteda_cpp_ntoken", (DL_FUNC) &_quanteda_cpp_ntoken, 2},
     {"_quanteda_cpp_ntype", (DL_FUNC) &_quanteda_cpp_ntype, 2},
+    {"_quanteda_cpp_get_freq", (DL_FUNC) &_quanteda_cpp_get_freq, 3},
     {"_quanteda_cpp_get_types", (DL_FUNC) &_quanteda_cpp_get_types, 2},
     {"_quanteda_cpp_set_types", (DL_FUNC) &_quanteda_cpp_set_types, 2},
     {"_quanteda_cpp_recompile", (DL_FUNC) &_quanteda_cpp_recompile, 1},
