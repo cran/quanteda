@@ -2,13 +2,13 @@
 knitr::opts_chunk$set(collapse = FALSE, comment = "##")
 
 ## ----eval = FALSE-------------------------------------------------------------
-#  install.packages("quanteda")
+# install.packages("quanteda")
 
 ## ----eval = FALSE-------------------------------------------------------------
-#  remotes::install_github("quanteda/quanteda.corpora")
+# remotes::install_github("quanteda/quanteda.corpora")
 
 ## ----eval = FALSE-------------------------------------------------------------
-#  remotes::install_github("kbenoit/quanteda.dictionaries")
+# remotes::install_github("kbenoit/quanteda.dictionaries")
 
 ## ----message = FALSE----------------------------------------------------------
 library("quanteda")
@@ -26,41 +26,41 @@ docvars(corp_uk, "Year") <- 2010
 summary(corp_uk)
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  require(readtext)
-#  
-#  # Twitter json
-#  dat_json <- readtext("social_media/zombies/tweets.json")
-#  corp_twitter <- corpus(dat_json)
-#  summary(corp_twitter, 5)
-#  
-#  # generic json - needs a textfield specifier
-#  dat_sotu <- readtext("corpora/sotu/sotu.json", text_field = "text")
-#  summary(corpus(dat_sotu), 5)
-#  
-#  # text file
-#  dat_txtone <- readtext("corpora/project_gutenberg/pg2701.txt")
-#  summary(corpus(dat_txtone), 5)
-#  
-#  # multiple text files
-#  dat_txtmultiple1 <- readtext("corpora/inaugural/*.txt")
-#  summary(corpus(dat_txtmultiple1), 5)
-#  
-#  # multiple text files with docvars from filenames
-#  dat_txtmultiple2 <- readtext("corpora/inaugural/*.txt",
-#                               docvarsfrom = "filenames", sep = "-",
-#                               docvarnames = c("Year", "President"))
-#  summary(corpus(dat_txtmultiple2), 5)
-#  
-#  # XML data
-#  dat_xml <- readtext("xmlData/plant_catalog.xml", text_field = "COMMON")
-#  summary(corpus(dat_xml), 5)
-#  
-#  # csv file
-#  write.csv(data.frame(inaug_speech = as.character(data_corpus_inaugural),
-#                       docvars(data_corpus_inaugural)),
-#            file = "/tmp/inaug_texts.csv", row.names = FALSE)
-#  dat_csv <- readtext("/tmp/inaug_texts.csv", text_field = "inaug_speech")
-#  summary(corpus(dat_csv), 5)
+# require(readtext)
+# 
+# # Twitter json
+# dat_json <- readtext("social_media/zombies/tweets.json")
+# corp_twitter <- corpus(dat_json)
+# summary(corp_twitter, 5)
+# 
+# # generic json - needs a textfield specifier
+# dat_sotu <- readtext("corpora/sotu/sotu.json", text_field = "text")
+# summary(corpus(dat_sotu), 5)
+# 
+# # text file
+# dat_txtone <- readtext("corpora/project_gutenberg/pg2701.txt")
+# summary(corpus(dat_txtone), 5)
+# 
+# # multiple text files
+# dat_txtmultiple1 <- readtext("corpora/inaugural/*.txt")
+# summary(corpus(dat_txtmultiple1), 5)
+# 
+# # multiple text files with docvars from filenames
+# dat_txtmultiple2 <- readtext("corpora/inaugural/*.txt",
+#                              docvarsfrom = "filenames", sep = "-",
+#                              docvarnames = c("Year", "President"))
+# summary(corpus(dat_txtmultiple2), 5)
+# 
+# # XML data
+# dat_xml <- readtext("xmlData/plant_catalog.xml", text_field = "COMMON")
+# summary(corpus(dat_xml), 5)
+# 
+# # csv file
+# write.csv(data.frame(inaug_speech = as.character(data_corpus_inaugural),
+#                      docvars(data_corpus_inaugural)),
+#           file = "/tmp/inaug_texts.csv", row.names = FALSE)
+# dat_csv <- readtext("/tmp/inaug_texts.csv", text_field = "inaug_speech")
+# summary(corpus(dat_csv), 5)
 
 ## -----------------------------------------------------------------------------
 print(data_corpus_inaugural)
@@ -187,9 +187,9 @@ dfmat_inaug_post1991_dict <- tokens(corp_inaug_post1991) |>
 dfmat_inaug_post1991_dict
 
 ## ----eval = FALSE-------------------------------------------------------------
-#  dictliwc <- dictionary(file = "LIWC2001_English.dic", format = "LIWC")
-#  dfmat_inaug_subset <- tokens(data_corpus_inaugural[52:58]) |>
-#                        dfm() |>
-#                        dfm_lookup(dictionary = dictliwc)
-#  dfmat_inaug_subset[, 1:10]
+# dictliwc <- dictionary(file = "LIWC2001_English.dic", format = "LIWC")
+# dfmat_inaug_subset <- tokens(data_corpus_inaugural[52:58]) |>
+#                       dfm() |>
+#                       dfm_lookup(dictionary = dictliwc)
+# dfmat_inaug_subset[, 1:10]
 

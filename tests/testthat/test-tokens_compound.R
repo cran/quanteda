@@ -42,6 +42,11 @@ test_that("tokens_compound join tokens correctly", {
              c("aaa", "bbb", "ccc", "ddd", "eee", "fff", "ggg"),
              c("a_b", "b_c", "c_d", "d_e_e_f", "f_g"))
     )
+    
+    expect_message(
+        tokens_compound(toks, seqs, verbose = TRUE),
+        "tokens_compound() changed", fixed = TRUE
+    )
   
 })
 
@@ -134,20 +139,20 @@ test_that("tokens_compound works with padded tokens", {
 })
 
 test_that("tokens_compound works with different concatenators", {
-  toks <- tokens(c(doc1 = "a b c d e f g"))
+  toks <- tokens(c(doc1 = "a b c d e f g"), concatenator = " ")
   
   toks1 <- tokens_compound(toks, phrase("c d"), concatenator = "+")
+  expect_equal(meta(toks1, field = "concatenator", type = "object"), " ")
   expect_equal(sort(attr(toks1, "types")),
                sort(c("a", "b", "c+d", "e", "f", "g")))
-  expect_equal(meta(toks1, field = "concatenator", type = "object"), "+")
   
   toks2 <- tokens_compound(toks, phrase("c d"), concatenator = "&&")
-  expect_equal(meta(toks2, field = "concatenator", type = "object"), "&&")
+  expect_equal(meta(toks2, field = "concatenator", type = "object"), " ")
   expect_equal(sort(attr(toks2, "types")),
                sort(c("a", "b", "c&&d", "e", "f", "g")))
   
   toks3 <- tokens_compound(toks, phrase("c d"), concatenator = "")
-  expect_equal(meta(toks3, field = "concatenator", type = "object"), "")
+  expect_equal(meta(toks3, field = "concatenator", type = "object"), " ")
   expect_equal(sort(attr(toks3, "types")),
                sort(c("a", "b", "cd", "e", "f", "g")))
   expect_error(tokens_compound(toks, phrase("c d"), concatenator = character()),
@@ -155,9 +160,10 @@ test_that("tokens_compound works with different concatenators", {
   
   # update concatenator even without matches
   toks4 <- tokens_compound(toks, phrase("xxxx yyy"), concatenator = "++")
+  expect_equal(meta(toks4, field = "concatenator", type = "object"), " ")
   expect_equal(sort(attr(toks4, "types")),
                sort(c("a", "b", "c", "d", "e", "f", "g")))
-  expect_equal(meta(toks4, field = "concatenator", type = "object"), "++")
+ 
 })
 
 test_that("tokens_compound works with nested tokens", {
