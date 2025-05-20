@@ -1,5 +1,5 @@
 Package: quanteda
-Version: 4.2.0
+Version: 4.3.0
 Title: Quantitative Analysis of Textual Data
 Description: A fast, flexible, and comprehensive framework for 
     quantitative text analysis in R.  Provides functionality for corpus management,
@@ -22,7 +22,7 @@ Authors@R: c(
     person("European Research Council", role = "fnd", comment = "ERC-2011-StG 283794-QUANTESS")
     )
 License: GPL-3
-Depends: R (>= 3.5.0), methods
+Depends: R (>= 4.1.0), methods
 Imports: fastmatch, jsonlite, lifecycle, magrittr, Matrix (>= 1.5-0),
         Rcpp (>= 0.12.12), SnowballC, stopwords, stringi, xml2, yaml
 LinkingTo: Rcpp
@@ -42,16 +42,16 @@ Collate: 'RcppExports.R' 'tokenizers.R' 'meta.R'
         'quanteda-documentation.R' 'aaa.R' 'bootstrap_dfm.R'
         'casechange-functions.R' 'char_select.R' 'convert.R'
         'corpus-addsummary-metadata.R' 'corpus-methods.R' 'corpus.R'
-        'corpus_group.R' 'corpus_reshape.R' 'corpus_sample.R'
-        'corpus_segment.R' 'corpus_subset.R' 'corpus_trim.R'
-        'data-documentation.R' 'dfm-classes.R' 'dfm-methods.R'
-        'dfm-print.R' 'dfm-subsetting.R' 'dfm.R' 'dfm_compress.R'
-        'dfm_group.R' 'dfm_lookup.R' 'dfm_match.R' 'dfm_replace.R'
-        'dfm_sample.R' 'dfm_select.R' 'dfm_sort.R' 'dfm_subset.R'
-        'dfm_trim.R' 'dfm_weight.R' 'dictionaries.R' 'dimnames.R'
-        'fcm-classes.R' 'docnames.R' 'docvars.R' 'fcm-methods.R'
-        'fcm-print.R' 'fcm-subsetting.R' 'fcm.R' 'fcm_select.R'
-        'index.R' 'kwic.R' 'message.R' 'nfunctions.R'
+        'corpus_chunk.R' 'corpus_group.R' 'corpus_reshape.R'
+        'corpus_sample.R' 'corpus_segment.R' 'corpus_subset.R'
+        'corpus_trim.R' 'data-documentation.R' 'dfm-classes.R'
+        'dfm-methods.R' 'dfm-print.R' 'dfm-subsetting.R' 'dfm.R'
+        'dfm_compress.R' 'dfm_group.R' 'dfm_lookup.R' 'dfm_match.R'
+        'dfm_replace.R' 'dfm_sample.R' 'dfm_select.R' 'dfm_sort.R'
+        'dfm_subset.R' 'dfm_trim.R' 'dfm_weight.R' 'dictionaries.R'
+        'dimnames.R' 'fcm-classes.R' 'docnames.R' 'docvars.R'
+        'fcm-methods.R' 'fcm-print.R' 'fcm-subsetting.R' 'fcm.R'
+        'fcm_select.R' 'index.R' 'kwic.R' 'message.R' 'nfunctions.R'
         'object-builder.R' 'object2fixed.R' 'pattern2fixed.R'
         'phrases.R' 'quanteda-package.R' 'quanteda_options.R'
         'spacyr-methods.R' 'stopwords.R' 'summary.R' 'textmodel.R'
@@ -62,19 +62,20 @@ Collate: 'RcppExports.R' 'tokenizers.R' 'meta.R'
         'tokens_segment.R' 'tokens_select.R' 'tokens_split.R'
         'tokens_subset.R' 'tokens_trim.R' 'tokens_xptr.R' 'utils.R'
         'validator.R' 'wordstem.R' 'zzz.R'
-Packaged: 2025-01-08 09:58:53 UTC; kbenoit
-Author: Kenneth Benoit [cre, aut, cph]
-    (<https://orcid.org/0000-0002-0797-564X>),
-  Kohei Watanabe [aut] (<https://orcid.org/0000-0001-6519-5265>),
-  Haiyan Wang [aut] (<https://orcid.org/0000-0003-4992-4311>),
-  Paul Nulty [aut] (<https://orcid.org/0000-0002-7214-4666>),
-  Adam Obeng [aut] (<https://orcid.org/0000-0002-2906-4775>),
-  Stefan Müller [aut] (<https://orcid.org/0000-0002-6315-4125>),
-  Akitaka Matsuo [aut] (<https://orcid.org/0000-0002-3323-6330>),
-  William Lowe [aut] (<https://orcid.org/0000-0002-1549-6163>),
+Packaged: 2025-05-20 09:36:24 UTC; kbenoit
+Author: Kenneth Benoit [cre, aut, cph] (ORCID:
+    <https://orcid.org/0000-0002-0797-564X>),
+  Kohei Watanabe [aut] (ORCID: <https://orcid.org/0000-0001-6519-5265>),
+  Haiyan Wang [aut] (ORCID: <https://orcid.org/0000-0003-4992-4311>),
+  Paul Nulty [aut] (ORCID: <https://orcid.org/0000-0002-7214-4666>),
+  Adam Obeng [aut] (ORCID: <https://orcid.org/0000-0002-2906-4775>),
+  Stefan Müller [aut] (ORCID: <https://orcid.org/0000-0002-6315-4125>),
+  Akitaka Matsuo [aut] (ORCID: <https://orcid.org/0000-0002-3323-6330>),
+  William Lowe [aut] (ORCID: <https://orcid.org/0000-0002-1549-6163>),
   Christian Müller [ctb],
-  Olivier Delmarcelle [ctb] (<https://orcid.org/0000-0003-4347-070X>),
+  Olivier Delmarcelle [ctb] (ORCID:
+    <https://orcid.org/0000-0003-4347-070X>),
   European Research Council [fnd] (ERC-2011-StG 283794-QUANTESS)
 Maintainer: Kenneth Benoit <kbenoit@lse.ac.uk>
 Repository: CRAN
-Date/Publication: 2025-01-08 11:20:02 UTC
+Date/Publication: 2025-05-20 11:50:03 UTC

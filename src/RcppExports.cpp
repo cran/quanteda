@@ -173,8 +173,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_tokens_ngrams
-TokensPtr cpp_tokens_ngrams(TokensPtr xptr, const String delim_, const IntegerVector ns_, const IntegerVector skips_, const int thread);
-RcppExport SEXP _quanteda_cpp_tokens_ngrams(SEXP xptrSEXP, SEXP delim_SEXP, SEXP ns_SEXP, SEXP skips_SEXP, SEXP threadSEXP) {
+TokensPtr cpp_tokens_ngrams(TokensPtr xptr, const String delim_, const IntegerVector ns_, const IntegerVector skips_, const LogicalVector bypass_, const int thread);
+RcppExport SEXP _quanteda_cpp_tokens_ngrams(SEXP xptrSEXP, SEXP delim_SEXP, SEXP ns_SEXP, SEXP skips_SEXP, SEXP bypass_SEXP, SEXP threadSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -182,8 +182,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const String >::type delim_(delim_SEXP);
     Rcpp::traits::input_parameter< const IntegerVector >::type ns_(ns_SEXP);
     Rcpp::traits::input_parameter< const IntegerVector >::type skips_(skips_SEXP);
+    Rcpp::traits::input_parameter< const LogicalVector >::type bypass_(bypass_SEXP);
     Rcpp::traits::input_parameter< const int >::type thread(threadSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_tokens_ngrams(xptr, delim_, ns_, skips_, thread));
+    rcpp_result_gen = Rcpp::wrap(cpp_tokens_ngrams(xptr, delim_, ns_, skips_, bypass_, thread));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -249,6 +250,16 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const LogicalVector >::type bypass_(bypass_SEXP);
     Rcpp::traits::input_parameter< const int >::type thread(threadSEXP);
     rcpp_result_gen = Rcpp::wrap(cpp_tokens_select(xptr, words_, mode, padding, window_left, window_right, pos_from_, pos_to_, bypass_, thread));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_xptr
+TokensPtr cpp_xptr();
+RcppExport SEXP _quanteda_cpp_xptr() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(cpp_xptr());
     return rcpp_result_gen;
 END_RCPP
 }
@@ -503,11 +514,12 @@ static const R_CallMethodDef CallEntries[] = {
     {"_quanteda_cpp_tokens_compound", (DL_FUNC) &_quanteda_cpp_tokens_compound, 9},
     {"_quanteda_cpp_tokens_group", (DL_FUNC) &_quanteda_cpp_tokens_group, 3},
     {"_quanteda_cpp_tokens_lookup", (DL_FUNC) &_quanteda_cpp_tokens_lookup, 8},
-    {"_quanteda_cpp_tokens_ngrams", (DL_FUNC) &_quanteda_cpp_tokens_ngrams, 5},
+    {"_quanteda_cpp_tokens_ngrams", (DL_FUNC) &_quanteda_cpp_tokens_ngrams, 6},
     {"_quanteda_cpp_tokens_replace", (DL_FUNC) &_quanteda_cpp_tokens_replace, 5},
     {"_quanteda_cpp_tokens_restore", (DL_FUNC) &_quanteda_cpp_tokens_restore, 5},
     {"_quanteda_cpp_tokens_segment", (DL_FUNC) &_quanteda_cpp_tokens_segment, 5},
     {"_quanteda_cpp_tokens_select", (DL_FUNC) &_quanteda_cpp_tokens_select, 10},
+    {"_quanteda_cpp_xptr", (DL_FUNC) &_quanteda_cpp_xptr, 0},
     {"_quanteda_cpp_as_xptr", (DL_FUNC) &_quanteda_cpp_as_xptr, 2},
     {"_quanteda_cpp_copy_xptr", (DL_FUNC) &_quanteda_cpp_copy_xptr, 1},
     {"_quanteda_cpp_get_attributes", (DL_FUNC) &_quanteda_cpp_get_attributes, 1},
