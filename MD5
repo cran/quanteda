@@ -1,6 +1,6 @@
-e995715b5d11cee438d9a97de3813bac *DESCRIPTION
+3d08dae8a8ba54087916a1a20aa014d3 *DESCRIPTION
 35f4cf7f5b78694de046b08e13b0a5b3 *NAMESPACE
-31340563a08c875088502b05f7266689 *NEWS.md
+8fd321a3fee48ab353576aa1f5a57510 *NEWS.md
 ea9109c6b0847d4a0a11fcb470c88e2f *R/RcppExports.R
 1de50a1c93b30b8381158b3cf5fb7f5f *R/aaa.R
 4cddd3f33acfc8c2a7ed4df016636fc8 *R/bootstrap_dfm.R
@@ -84,7 +84,7 @@ f65eaa339285bc910d2104de56fbbbd8 *R/tokens_xptr.R
 dec36154d141826a1cc7ea23eb3480fc *R/validator.R
 c361943d05f1437b664c75c6eb5389b7 *R/wordstem.R
 f542bbd7b5d156b4701e08e7dc4883a7 *R/zzz.R
-43482a626eb91691ae5f7d3a6529579f *README.md
+d1333c762dc2433828ae97a6bc903a83 *README.md
 b52aabe9a2757fc86742763db9dafc9b *build/partial.rdb
 c3ac9abb5b742c67607e9482e0c6da4c *build/vignette.rds
 c42be5814898a011b3fb5a78854d8cf7 *cleanup
@@ -92,7 +92,7 @@ c73b9c97fb2713b0f51ec60c2f0bb991 *configure
 beca5128c9877391782d23ae41cd164d *configure.ac
 2d54be38b39a2c83cf8adae577fe01ed *data/data_char_sampletext.rda
 9002341250032df555d6aae14db540f9 *data/data_char_ukimmig2010.rda
-423119916b9f0b6f11e9ade09a518d7e *data/data_corpus_inaugural.rda
+99e1aa0025704a2f4487c55ee6f69242 *data/data_corpus_inaugural.rda
 4a744d9a437c85ed6784e27ce2d639b7 *data/data_dfm_lbgexample.rda
 61be8339dac122be64fa34eb41ffbb36 *data/data_dictionary_LSD2015.rda
 56ed661886406468d3338329c6f4c2e0 *inst/CITATION
@@ -103,7 +103,7 @@ f728a2f3fc11b4c7b939f0a3e179b3a5 *inst/breakrules/custom.yml
 69b05613a2cb091afedda4cf5ee2388e *inst/breakrules/word.txt
 bb2ef5f06046ba64adc5ccdcff7020d4 *inst/doc/quickstart.R
 33089f89b50acaf7648a383626249756 *inst/doc/quickstart.Rmd
-5a1aed0319f640138441bd618a76512d *inst/doc/quickstart.html
+277a27f8deaa5ec6e9e9a188b921d01e *inst/doc/quickstart.html
 ae85a11c59c3d7b869807fd05459023b *inst/extdata/LSD2015.lc3
 d8eb86c619a87ab01d1ea0fc2f79fb75 *inst/extdata/RID.cat
 41f59bf6227e672988becca34cc74e74 *inst/extdata/laver_garry.ykd
@@ -298,7 +298,7 @@ aae310761ffdfe0e770141bc91910caf *src/tokens_replace.cpp
 850ee46f552605d79dcce353b5167d08 *src/tokens_restore.cpp
 99b20e1c59d4fb54c7331e32b30641ae *src/tokens_segment.cpp
 3d2dd1890917179abe79343c9478b8a2 *src/tokens_select.cpp
-c3f327a6e0acd488362ceeb5257b2760 *src/tokens_xptr.cpp
+e529ab401340158f0d9f3d5f3ecadb5e *src/tokens_xptr.cpp
 3c6cc2c4699bf06acc46054f884e179b *src/utf8.h
 7cbf56cc5b62894b8f2ab252d69626f9 *src/utility.cpp
 98c8844f35dca1b6ef036aefac49223b *tests/cheatsheet/README.md
@@ -368,7 +368,7 @@ f2bf545f3c368c32b0178eeebc2cc662 *tests/testthat/test-casechanges.R
 2e8b0ab6b967507acf221f8f8422fe5b *tests/testthat/test-collocations.R
 4f5187fac4af766031b4619c3a4c9d62 *tests/testthat/test-convert.R
 e17c2ddfdfa635221e8619fd1fff4610 *tests/testthat/test-corpus.R
-f5fa08310f420865632de67891ec4d3e *tests/testthat/test-corpus_chunk.R
+d51914ee358352d73143bebe5a1d8a3a *tests/testthat/test-corpus_chunk.R
 dc3311535fc9323720a2b0c98d3c85dd *tests/testthat/test-corpus_group.R
 3eb4941497e9c436a05570d042102495 *tests/testthat/test-corpus_reshape.R
 4e0851fe0b4ef2f7d783cf1108d760af *tests/testthat/test-corpus_sample.R
@@ -385,7 +385,7 @@ ac15284527308ba0b79812d67476863b *tests/testthat/test-data.R
 ddfee05bad6031e182cf8fe5dd12d043 *tests/testthat/test-dfm_replace.R
 1e51a13c40ecd021f0d0ed4a72f12ef2 *tests/testthat/test-dfm_sample.R
 997718996bad6c21610ad919c291c7be *tests/testthat/test-dfm_select.R
-c62a75aae01b31251ced4cdbb2b3d27f *tests/testthat/test-dfm_subset.R
+879371843421d98d33763021bfc3bef5 *tests/testthat/test-dfm_subset.R
 9bff4f7d11259c9447f1739e5f41e468 *tests/testthat/test-dfm_trim.R
 93e3bffa55058c6a16fcefb7b8968a60 *tests/testthat/test-dfm_weight.R
 7027b9b33972e55f69e9ea75cbe03620 *tests/testthat/test-dfm_wordstem.R
@@ -432,7 +432,7 @@ d7206a32b0191a7f04e8c2b9364374f1 *tests/testthat/test-tokens_replace.R
 07cc89b975746c02f1b6fc1580af1b7d *tests/testthat/test-tokens_segment.R
 7df34ea792d7cef85e1c724353e1a115 *tests/testthat/test-tokens_select.R
 e8abe6dfc5bb5721284b194c124b125f *tests/testthat/test-tokens_split.R
-27bede14dac3db3008f015c3d35dadc0 *tests/testthat/test-tokens_subset.R
+85b1f0a112b9d3b6f0242b240e5990b5 *tests/testthat/test-tokens_subset.R
 7d7e030d912f7a8dcced274592b4c7e0 *tests/testthat/test-tokens_trim.R
 84f51d13a0586d3857ba5d8f3b2be375 *tests/testthat/test-tokens_wordstem.R
 abeb05396659965a73c0a8c03be168ec *tests/testthat/test-tokens_xptr.R

@@ -1,3 +1,14 @@
+# quanteda 4.3.1
+
+## Changes and additions
+
+* Improve the speed of `tokens_trim()` when tokens are very large.
+
+## Bug fixes
+
+* Fixed the Trump 2025 speech in `data_corpus_inaugural`, which was mistakenly a duplicate of Biden 2021.
+
+
 # quanteda 4.3.0
 
 ## Changes and additions
