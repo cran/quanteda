@@ -433,15 +433,15 @@ the 2010 election manifestos of the UK political parties (called
 <pre><code>## Corpus consisting of 9 documents, showing 9 documents:
 ## 
 ##          Text Types Tokens Sentences
-##           BNP  1125   3280        88
-##     Coalition   142    260         4
-##  Conservative   251    499        15
-##        Greens   322    679        21
-##        Labour   298    683        29
-##        LibDem   251    483        14
+##           BNP  1125   3280       136
+##     Coalition   142    260        12
+##  Conservative   251    499        21
+##        Greens   322    679        30
+##        Labour   298    683        33
+##        LibDem   251    483        26
 ##            PC    77    114         5
 ##           SNP    88    134         4
-##          UKIP   346    723        26</code></pre>
+##          UKIP   346    723        37</code></pre>
 <p>If we wanted, we could add some document-level variables – what
 quanteda calls <em>docvars</em> – to this corpus.</p>
 <p>We can do this using the R’s <code>names()</code> function to get the
@@ -453,15 +453,15 @@ assign this to a document variable (<em>docvar</em>).</p>
 <pre><code>## Corpus consisting of 9 documents, showing 9 documents:
 ## 
 ##          Text Types Tokens Sentences        Party Year
-##           BNP  1125   3280        88          BNP 2010
-##     Coalition   142    260         4    Coalition 2010
-##  Conservative   251    499        15 Conservative 2010
-##        Greens   322    679        21       Greens 2010
-##        Labour   298    683        29       Labour 2010
-##        LibDem   251    483        14       LibDem 2010
+##           BNP  1125   3280       136          BNP 2010
+##     Coalition   142    260        12    Coalition 2010
+##  Conservative   251    499        21 Conservative 2010
+##        Greens   322    679        30       Greens 2010
+##        Labour   298    683        33       Labour 2010
+##        LibDem   251    483        26       LibDem 2010
 ##            PC    77    114         5           PC 2010
 ##           SNP    88    134         4          SNP 2010
-##          UKIP   346    723        26         UKIP 2010</code></pre>
+##          UKIP   346    723        37         UKIP 2010</code></pre>
 </div>
 <div id="loading-in-files-using-the-readtext-package" class="section level3">
 <h3>Loading in files using the readtext package</h3>
@@ -557,10 +557,10 @@ attributes, use <code>as.character()</code>.</p>
 <pre><code>## Corpus consisting of 60 documents, showing 5 documents:
 ## 
 ##             Text Types Tokens Sentences Year  President FirstName
-##  1789-Washington   625   1537        23 1789 Washington    George
-##  1793-Washington    96    147         4 1793 Washington    George
+##  1789-Washington   625   1537        24 1789 Washington    George
+##  1793-Washington    96    147         5 1793 Washington    George
 ##       1797-Adams   826   2577        37 1797      Adams      John
-##   1801-Jefferson   717   1923        41 1801  Jefferson    Thomas
+##   1801-Jefferson   717   1923        43 1801  Jefferson    Thomas
 ##   1805-Jefferson   804   2380        45 1805  Jefferson    Thomas
 ##                  Party
 ##                   none
@@ -596,9 +596,9 @@ also concatenated.</p>
 <pre><code>## Corpus consisting of 4 documents, showing 4 documents:
 ## 
 ##             Text Types Tokens Sentences Year  President FirstName      Party
-##  1789-Washington   625   1537        23 1789 Washington    George       none
-##  1793-Washington    96    147         4 1793 Washington    George       none
-##       2021-Biden   812   2766       216 2021      Biden Joseph R. Democratic
+##  1789-Washington   625   1537        24 1789 Washington    George       none
+##  1793-Washington    96    147         5 1793 Washington    George       none
+##       2021-Biden   812   2766       229 2021      Biden Joseph R. Democratic
 ##       2025-Trump  1000   3347       177 2025      Trump Donald J. Republican</code></pre>
 </div>
 <div id="subsetting-corpus-objects" class="section level3">
@@ -610,21 +610,21 @@ logical conditions applied to <em>docvars</em>:</p>
 <pre><code>## Corpus consisting of 9 documents, showing 9 documents:
 ## 
 ##          Text Types Tokens Sentences Year President FirstName      Party
-##  1993-Clinton   642   1833        81 1993   Clinton      Bill Democratic
-##  1997-Clinton   773   2436       111 1997   Clinton      Bill Democratic
-##     2001-Bush   621   1806        97 2001      Bush George W. Republican
+##  1993-Clinton   642   1833        82 1993   Clinton      Bill Democratic
+##  1997-Clinton   773   2436       113 1997   Clinton      Bill Democratic
+##     2001-Bush   621   1806        98 2001      Bush George W. Republican
 ##     2005-Bush   772   2312        99 2005      Bush George W. Republican
-##    2009-Obama   938   2689       110 2009     Obama    Barack Democratic
-##    2013-Obama   814   2317        88 2013     Obama    Barack Democratic
-##    2017-Trump   582   1660        88 2017     Trump Donald J. Republican
-##    2021-Biden   812   2766       216 2021     Biden Joseph R. Democratic
+##    2009-Obama   938   2689       112 2009     Obama    Barack Democratic
+##    2013-Obama   814   2317        90 2013     Obama    Barack Democratic
+##    2017-Trump   582   1660        89 2017     Trump Donald J. Republican
+##    2021-Biden   812   2766       229 2021     Biden Joseph R. Democratic
 ##    2025-Trump  1000   3347       177 2025     Trump Donald J. Republican</code></pre>
 <div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">corpus_subset</span>(data_corpus_inaugural, President <span class="sc">==</span> <span class="st">&quot;Adams&quot;</span>))</span></code></pre></div>
 <pre><code>## Corpus consisting of 2 documents, showing 2 documents:
 ## 
 ##        Text Types Tokens Sentences Year President   FirstName
 ##  1797-Adams   826   2577        37 1797     Adams        John
-##  1825-Adams  1003   3147        74 1825     Adams John Quincy
+##  1825-Adams  1003   3147        75 1825     Adams John Quincy
 ##                  Party
 ##             Federalist
 ##  Democratic-Republican</code></pre>

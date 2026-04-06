@@ -1,5 +1,5 @@
 Package: quanteda
-Version: 4.3.1
+Version: 4.4
 Title: Quantitative Analysis of Textual Data
 Description: A fast, flexible, and comprehensive framework for 
     quantitative text analysis in R.  Provides functionality for corpus management,
@@ -28,7 +28,7 @@ Imports: fastmatch, jsonlite, lifecycle, magrittr, Matrix (>= 1.5-0),
 LinkingTo: Rcpp
 NeedsCompilation: yes
 Suggests: rmarkdown, spelling, testthat, formatR, tm (>= 0.6), knitr,
-        lsa, rlang, slam
+        lsa, rlang, slam, torch
 Enhances: dplyr, lda, purrr, spacyr, stm, text2vec, tibble, tidytext,
         tokenizers, topicmodels
 URL: https://quanteda.io
@@ -37,7 +37,7 @@ BugReports: https://github.com/quanteda/quanteda/issues
 LazyData: TRUE
 VignetteBuilder: knitr
 Language: en-GB
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Collate: 'RcppExports.R' 'tokenizers.R' 'meta.R'
         'quanteda-documentation.R' 'aaa.R' 'bootstrap_dfm.R'
         'casechange-functions.R' 'char_select.R' 'convert.R'
@@ -56,13 +56,13 @@ Collate: 'RcppExports.R' 'tokenizers.R' 'meta.R'
         'phrases.R' 'quanteda-package.R' 'quanteda_options.R'
         'spacyr-methods.R' 'stopwords.R' 'summary.R' 'textmodel.R'
         'textplot.R' 'texts.R' 'textstat.R' 'tokens-methods.R'
-        'tokens.R' 'tokens_chunk.R' 'tokens_compound.R'
-        'tokens_group.R' 'tokens_lookup.R' 'tokens_ngrams.R'
-        'tokens_replace.R' 'tokens_restore.R' 'tokens_sample.R'
-        'tokens_segment.R' 'tokens_select.R' 'tokens_split.R'
-        'tokens_subset.R' 'tokens_trim.R' 'tokens_xptr.R' 'utils.R'
-        'validator.R' 'wordstem.R' 'zzz.R'
-Packaged: 2025-07-02 16:53:31 UTC; kbenoit
+        'tokens.R' 'tokens_annotate.R' 'tokens_chunk.R'
+        'tokens_compound.R' 'tokens_group.R' 'tokens_lookup.R'
+        'tokens_ngrams.R' 'tokens_replace.R' 'tokens_restore.R'
+        'tokens_sample.R' 'tokens_segment.R' 'tokens_select.R'
+        'tokens_split.R' 'tokens_subset.R' 'tokens_trim.R'
+        'tokens_xptr.R' 'utils.R' 'validator.R' 'wordstem.R' 'zzz.R'
+Packaged: 2026-04-05 11:23:59 UTC; kbenoit
 Author: Kenneth Benoit [cre, aut, cph] (ORCID:
     <https://orcid.org/0000-0002-0797-564X>),
   Kohei Watanabe [aut] (ORCID: <https://orcid.org/0000-0001-6519-5265>),
@@ -78,4 +78,4 @@ Author: Kenneth Benoit [cre, aut, cph] (ORCID:
   European Research Council [fnd] (ERC-2011-StG 283794-QUANTESS)
 Maintainer: Kenneth Benoit <kbenoit@lse.ac.uk>
 Repository: CRAN
-Date/Publication: 2025-07-10 12:50:05 UTC
+Date/Publication: 2026-04-06 19:00:02 UTC
