@@ -114,6 +114,16 @@ test_that("dfm.dfm works as expected", {
     expect_identical(dfmt, dfm(dfmt, tolower = FALSE))
     expect_identical(dfm_tolower(dfmt), dfm(dfmt, tolower = TRUE))
 
+    # make dfm with empty columns
+    feat <- featnames(dfmt)
+    dfmt2 <- dfm_trim(dfmt, min_termfreq = 100) %>% 
+        dfm_match(feat)
+    
+    expect_identical(
+        dfm(dfmt2, tolower = FALSE, trim = TRUE),
+        dfm_trim(dfmt2)
+    )
+    
     # REMOVED in v3
     # expect_true({
     #     sum(suppressWarnings(dfm(tokens(corp), select = c("The", "a", "an")))) >
@@ -374,29 +384,29 @@ test_that("dfm print works with options as expected", {
                 remove_punct = FALSE, remove_numbers = FALSE, split_hyphens = TRUE))
     expect_output(
         print(dfmt, max_ndoc = 6, max_nfeat = 10, show_summary = TRUE),
-        paste0("^Document-feature matrix of: 14 documents, 4,452 features \\(81\\.97% sparse\\) and 4 docvars",
+        paste0("^Document-feature matrix of: 14 documents, 4,452 features \\(81\\.97% sparse\\) and 4\ndocvars",
                ".*",
-               "\\[ reached max_ndoc \\.\\.\\. 8 more documents, reached max_nfeat \\.\\.\\. 4,442 more features \\]$")
+               "\\[ reached max_ndoc \\.\\.\\. 8 more documents, reached max_nfeat \\.\\.\\. 4,442 more\nfeatures \\]$")
     )
     expect_output(
         print(dfmt[1:5, 1:5], max_ndoc = 6, max_nfeat = 10, show_summary = TRUE),
-        paste0("^Document-feature matrix of: 5 documents, 5 features \\(4\\.00% sparse\\) and 4 docvars\\.",
+        paste0("^Document-feature matrix of: 5 documents, 5 features \\(4\\.00% sparse\\) and 4\ndocvars\\.",
                ".*",
                "1789-Washington\\s+3\\s+2\\s+5\\s+71\\s+116")
     )
     expect_output(
         print(dfmt[1:5, 1:5], max_ndoc = -1, max_nfeat = -1, show_summary = TRUE),
-        paste0("^Document-feature matrix of: 5 documents, 5 features \\(4\\.00% sparse\\) and 4 docvars\\.",
+        paste0("^Document-feature matrix of: 5 documents, 5 features \\(4\\.00% sparse\\) and 4\ndocvars\\.",
                ".*",
                "1805-Jefferson\\s+8\\s+1\\s+10\\s+101\\s+143")
     )
     expect_output(
         print(dfmt[1:5, 1:5], max_ndoc = 0, max_nfeat = -1, show_summary = TRUE),
-        "^Document-feature matrix of: 5 documents, 5 features \\(4\\.00% sparse\\) and 4 docvars\\.$"
+        "^Document-feature matrix of: 5 documents, 5 features \\(4\\.00% sparse\\) and 4\ndocvars\\.$"
     )
     expect_output(
         print(dfmt[1:5, 1:5], max_ndoc = -1, max_nfeat = 0, show_summary = TRUE),
-        paste0("^Document-feature matrix of: 5 documents, 5 features \\(4\\.00% sparse\\) and 4 docvars\\.",
+        paste0("^Document-feature matrix of: 5 documents, 5 features \\(4\\.00% sparse\\) and 4\ndocvars\\.",
                "\\n",
                "\\[ reached max_nfeat \\.\\.\\. 5 more features ]$")
     )
@@ -404,7 +414,7 @@ test_that("dfm print works with options as expected", {
         print(dfmt, max_ndoc = 6, max_nfeat = 10, show_summary = FALSE),
         paste0("^\\s+features",
                ".*",
-               "\\[ reached max_ndoc \\.\\.\\. 8 more documents, reached max_nfeat \\.\\.\\. 4,442 more features \\]$")
+               "\\[ reached max_ndoc \\.\\.\\. 8 more documents, reached max_nfeat \\.\\.\\. 4,442 more\nfeatures \\]$")
     )
     expect_error(print(dfmt, max_ndoc = -2),
                  "The value of max_ndoc must be between -1 and Inf")
@@ -560,7 +570,7 @@ test_that("test null dfm is handled properly", {
     expect_equal(cbind(mx, mx), mx)
 
     expect_output(print(mx),
-                  "Document-feature matrix of: 0 documents, 0 features (0.00% sparse) and 0 docvars.", fixed = TRUE)
+                  "Document-feature matrix of: 0 documents, 0 features (0.00% sparse) and 0\ndocvars.", fixed = TRUE)
 })
 
 test_that("test empty dfm is handled properly (#1419)", {
@@ -927,4 +937,41 @@ test_that("dfm works with no-breaking space (#2407)", {
                dimnames = list(docs = "text1", features = c("AAA", "aaa", "\U0001f600"))
         )
     )
+})
+
+test_that("trim is working", { 
+
+    txt <- c("a b , c", "b b b a", "c , c b")
+    toks <- tokens(txt, remove_punct = TRUE, padding = TRUE)
+    
+    expect_equal(
+        dfm(toks),
+        dfm(tokens_match(toks, c("a", "b", "c", "x"))) 
+    )
+    
+    expect_equal(
+        dfm_match(dfm(toks), c("a", "b", "c", "x")),
+        dfm(tokens_match(toks, c("a", "b", "c", "x")), remove_padding = TRUE, trim = FALSE)
+    )
+    
+    expect_equal(
+        featnames(dfm(toks[3], remove_padding = FALSE, trim = FALSE)),
+        c("", "a", "b", "c")
+    )
+    
+    expect_equal(
+        featnames(dfm(toks[3], remove_padding = TRUE, trim = FALSE)),
+        c("a", "b", "c")
+    )
+    
+    expect_equal(
+        featnames(dfm(toks[3], remove_padding = FALSE, trim = TRUE)),
+        c("", "c", "b")
+    )
+    
+    expect_equal(
+        featnames(dfm(toks[3], remove_padding = TRUE, trim = TRUE)),
+        c("c", "b")
+    )
+
 })

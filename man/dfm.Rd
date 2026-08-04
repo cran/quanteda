@@ -8,6 +8,7 @@ dfm(
   x,
   tolower = TRUE,
   remove_padding = FALSE,
+  trim = TRUE,
   verbose = quanteda_options("verbose"),
   ...
 )
@@ -20,12 +21,15 @@ dfm(
 \item{remove_padding}{logical; if \code{TRUE}, remove the "pads" left as empty tokens after
 calling \code{\link[=tokens]{tokens()}} or \code{\link[=tokens_remove]{tokens_remove()}} with \code{padding = TRUE}.}
 
+\item{trim}{logical; if \code{TRUE}, remove columns for features with all zeros.
+This is always \code{FALSE} when \code{x} records dictionary keys.}
+
 \item{verbose}{display messages if \code{TRUE}.}
 
 \item{...}{not used.}
 }
 \value{
-a \linkS4class{dfm} object
+a \link[=dfm-class]{dfm} object
 }
 \description{
 Construct a sparse document-feature matrix from a \link{tokens} or \link{dfm} object.
@@ -55,6 +59,6 @@ dfm(toks) |>
 dfm(toks, tolower = FALSE)
 }
 \seealso{
-\code{\link[=as.dfm]{as.dfm()}}, \code{\link[=dfm_select]{dfm_select()}}, \linkS4class{dfm}
+\code{\link[=as.dfm]{as.dfm()}}, \code{\link[=dfm_select]{dfm_select()}}, \link[=dfm-class]{dfm}
 }
 \keyword{dfm}

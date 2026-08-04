@@ -16,7 +16,7 @@ TokensPtr cpp_as_xptr(const List text_,
 
     Texts texts = Rcpp::as<Texts>(text_);
     Types types = Rcpp::as<Types>(types_);
-    TokensObj *ptr = new TokensObj(texts, types);
+    TokensObj *ptr = new TokensObj(texts, types, true);
     return TokensPtr(ptr, true);
 }
 
@@ -38,6 +38,11 @@ List cpp_get_attributes(TokensPtr xptr) {
 
 // [[Rcpp::export]]
 List cpp_as_tokens(TokensPtr xptr) {
+    
+#ifdef QUANTEDA_DEBUG
+    Rcout << "call cpp_as_tokens()\n";
+#endif
+    
     xptr->recompile();
     List texts_ = as_list(xptr->texts);
     texts_.attr("types") = encode(xptr->types);
@@ -74,7 +79,11 @@ int cpp_ndoc(TokensPtr xptr) {
 
 // [[Rcpp::export]]
 IntegerVector cpp_ntoken(TokensPtr xptr, bool no_padding = false) {
-    xptr->recompile();
+
+#ifdef QUANTEDA_DEBUG
+    Rcout << "call cpp_ntoken()\n";
+#endif
+    
     std::size_t H = xptr->texts.size();
     IntegerVector ls_(H, 0);
     if (no_padding) {
@@ -96,7 +105,11 @@ IntegerVector cpp_ntoken(TokensPtr xptr, bool no_padding = false) {
 
 // [[Rcpp::export]]
 IntegerVector cpp_ntype(TokensPtr xptr, bool no_padding = false) {
-    xptr->recompile();
+    
+#ifdef QUANTEDA_DEBUG
+    Rcout << "call cpp_ntype()\n";
+#endif
+    
     std::size_t H = xptr->texts.size();
     IntegerVector ns_(H);
     for (std::size_t h = 0; h < H; h++) {
@@ -118,7 +131,11 @@ IntegerVector cpp_ntype(TokensPtr xptr, bool no_padding = false) {
 // [[Rcpp::export]]
 IntegerVector cpp_get_freq(TokensPtr xptr, bool no_padding = false,
                            bool boolean = false) {
-    xptr->recompile();
+    
+#ifdef QUANTEDA_DEBUG
+    Rcout << "call cpp_get_freq()\n";
+#endif
+    
     std::size_t G = xptr->types.size();
     if (!no_padding)
         G++;
@@ -126,7 +143,7 @@ IntegerVector cpp_get_freq(TokensPtr xptr, bool no_padding = false,
     std::vector<bool> flag(G);
     std::size_t H = xptr->texts.size();
     for (std::size_t h = 0; h < H; h++) {
-        Text text = xptr->texts[h];
+        const Text &text = xptr->texts[h];
         std::fill(flag.begin(), flag.end(), false);
         std::size_t I = text.size();
         for (std::size_t i = 0; i < I; i++) {
@@ -153,109 +170,68 @@ IntegerVector cpp_get_freq(TokensPtr xptr, bool no_padding = false,
 
 
 // [[Rcpp::export]]
-CharacterVector cpp_get_types(TokensPtr xptr, bool recompile = false) {
-    //Rcout << "cpp_types()\n";
-    if (recompile)
-        xptr->recompile();
+CharacterVector cpp_get_types(TokensPtr xptr) {
+    
+#ifdef QUANTEDA_DEBUG
+    Rcout << "call cpp_get_types()\n";
+#endif
+
     return encode(xptr->types);
+}
+
+// [[Rcpp::export]]
+int cpp_count_types(TokensPtr xptr) {
+    
+#ifdef QUANTEDA_DEBUG
+    Rcout << "call cpp_count_types()\n";
+#endif
+    
+    return xptr->types.size();
 }
 
 // [[Rcpp::export]]
 TokensPtr cpp_set_types(TokensPtr xptr, const CharacterVector types_) {
     Types types = Rcpp::as<Types>(types_);
-    xptr->types = types;
-    xptr->recompiled = false;
+    if (xptr->types != types) {
+        xptr->types = types;
+        xptr->recompiled = false;
+    }
     return xptr;
 }
 
 // [[Rcpp::export]]
-void cpp_recompile(TokensPtr xptr) {
-    xptr->recompile();
+TokensPtr cpp_set_recompiled(TokensPtr xptr, bool recompiled) {
+    xptr->recompiled = recompiled;
+    return xptr;
 }
 
 // [[Rcpp::export]]
-S4 cpp_dfm(TokensPtr xptr, bool asis = true) {
-
-    xptr->recompiled = asis;
-    xptr->recompile();
-    std::size_t H = xptr->texts.size();
-    std::size_t G = xptr->types.size();
-
-    int N = 0;
-    for (std::size_t h = 0; h < H; h++)
-        N += xptr->texts[h].size();
-    std::vector<double> slot_x;
-    std::vector<int> slot_i, slot_p;
-    slot_i.reserve(N);
-    slot_x.reserve(N);
-    slot_p.reserve(H + 1);
-    int p = 0;
-
-    slot_p.push_back(p);
-    for (std::size_t h = 0; h < H; h++) {
-        // assign new token IDs in the order of their occurrence
-        Text text = xptr->texts[h];
-        std::size_t I = text.size();
-
-        // aggregate the same token IDs
-        std::sort(text.begin(), text.end()); // rows must be sorted in dgCMatrix
-        int n = 1;
-        for (std::size_t i = 0; i < I; i++) {
-            if (i + 1 == text.size() || text[i] != text[i + 1]) {
-                slot_i.push_back(text[i]);
-                slot_x.push_back(n);
-                p++;
-                n = 1;
-            } else {
-                n++;
-            }
-        }
-        slot_p.push_back(p);
-    }
-    IntegerVector slot_p_ = Rcpp::wrap(slot_p);
-    slot_p.clear();
-    //Rcout << "p: " << slot_p_ << "\n";
-    DoubleVector slot_x_ = Rcpp::wrap(slot_x);
-    slot_x.clear();
-    //Rcout << "x: " << slot_x_ << "\n";
-    IntegerVector slot_i_ = Rcpp::wrap(slot_i);
-    slot_i.clear();
-    //Rcout << "i: " << slot_i_ << "\n";
-    CharacterVector types_ = encode(xptr->types);
-
-    //Rcout << "types: " << types_ << "\n";
-
-    if (!xptr->padded) {
-        slot_i_ = slot_i_ - 1; // use zero for other tokens
-    } else {
-        G++;
-        types_.push_front("");
-    }
-
-    IntegerVector dim_ = IntegerVector::create(G, H);
-    List dimnames_ = List::create(types_, R_NilValue);
-
-    S4 dfm_("dgCMatrix");
-    dfm_.slot("p") = slot_p_;
-    dfm_.slot("i") = slot_i_;
-    dfm_.slot("x") = slot_x_;
-    dfm_.slot("Dim") = dim_;
-    dfm_.slot("Dimnames") = dimnames_;
-    return(dfm_);
+bool cpp_get_recompiled(TokensPtr xptr) {
+    return xptr->recompiled;
 }
+
+// [[Rcpp::export]]
+TokensPtr cpp_recompile(TokensPtr xptr, bool force = false) {
+
+#ifdef QUANTEDA_DEBUG
+    Rcout << "call cpp_recompile(force = " << force << ")\n";
+#endif
+    if (force)
+        xptr->recompiled = false;
+    xptr->recompile();
+    return xptr;
+}
+
 
 
 /***R
 require(quanteda)
-toks <- tokens(c("b c b a,", "a b a c."), remove_punct = FALSE, padding = TRUE)
+toks <- tokens(c("b c b a,", "a b a d."), remove_punct = FALSE, padding = TRUE)
 xtoks <- as.tokens_xptr(toks)
-xtoks_dict <- tokens_lookup(xtoks, dictionary(list(A = "a", Z = "z", B = "b")))
-#xtoks_dict <- tokens_lookup(xtoks, dictionary(list(A = "a", B = "b")))
-quanteda:::cpp_get_attributes(xtoks_dict)
-quanteda:::cpp_get_types(xtoks_dict)
-print(xtoks_dict)
-cpp_dfm(as.tokens_xptr(xtoks_dict), FALSE)
-cpp_dfm(as.tokens_xptr(xtoks_dict), TRUE)
-
-
+cpp_as_list(xtoks)
+cpp_get_types(xtoks)
+cpp_get_types(cpp_subset(xtoks, 1))
+cpp_get_types(cpp_subset(xtoks, 2))
+cpp_get_types(cpp_subset(xtoks, 1))
+cpp_get_types(cpp_subset(xtoks, 2))
 */

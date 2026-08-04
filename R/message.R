@@ -3,25 +3,58 @@
 #' Conditionally format messages
 #'
 #' @inheritParams stringi::stri_sprintf
-#' @param pretty if `TRUE`, message is passed to [base::prettyNum()].
+#' @param prepend text is added before the message
+#' @param append text is added after the message
 #' @keywords internal development
 #' @seealso [stringi::stri_sprintf]
 #' @examples
 #' quanteda:::msg("you cannot delete %s %s", 2000, "documents")
-msg <- function(format, ..., pretty = TRUE) {
+msg <- function(format, ..., prepend = "", append = "") {
     args <- list(...)
-    if (pretty) {
-        args <- lapply(args, prettyNum, big.mark = ",")
-    } else {
-        args <- lapply(args, as.character)
-    }
+    args <- lapply(args, function(x) {
+        if (is.numeric(x)) {
+            prettyNum(x, big.mark = ",")
+        } else {
+            as.character(x)
+        }
+    })
     args$format <- format
-    do.call(stringi::stri_sprintf, args)
+    paste0(prepend, do.call(stringi::stri_sprintf, args), append)
+}
+
+#' Wrap and print long lines
+#' 
+#' @param x a character string to wrap.
+#' @param ... extra arguments passed to [stringi::stri_wrap]`.
+#' @keywords internal development
+#' @importFrom stringi stri_wrap
+wrap <- function(x, ...) {
+    cat(stri_wrap(x, getOption("width"), ...), sep = "\n")
+}
+
+#' Return inflected forms of words
+
+#' @param n the number of elements.
+#' @param word singular form of the word.
+#' @keywords internal development
+inflect <- function(word, n) {
+    v <- c("document" = "documents",
+           "feature" = "features",
+           "docvar" = "docvars",
+           "token" = "tokens",
+           "entry" = "entries",
+           "key" = "keys",
+           "match" = "matches")
+    if (n == 1)
+        return(word)
+    return(v[word])
+    
 }
 
 # rdname catm
 # messages() with some of the same syntax as cat(): takes a sep argument and
 # does not append a newline by default
+# NOTE: consider changing to message0() with wrapping
 catm <- function(..., sep = " ", appendLF = FALSE) {
     message(paste(..., sep = sep), appendLF = appendLF)
 }
@@ -39,7 +72,7 @@ message_finish <- function(x, time) {
         message(msg("Finished constructing a %s x %s sparse dfm.",
                     nrow(x), ncol(x)))
     } else {
-        m <- length(types(x))
+        m <- count_types(x)
         n <- ndoc(x)
         message(msg(" ...%s unique %s",
                     m, if (m == 1) "type" else "types"))
@@ -81,13 +114,14 @@ stats_corpus <- function(x) {
 #' @inheritParams messages
 #' @keywords message internal
 message_tokens <- function(operation, before, after) {
-    message(msg("%s changed from %s tokens (%s documents) to %s tokens (%s documents)",
-                operation, before$ntoken, before$ndoc, after$ntoken, after$ndoc))
+    message(msg("%s changed from %s types (%s documents, %s tokens) to %s types (%s documents, %s tokens)",
+                operation, before$ntype, before$ndoc, before$ntoken, after$ntype, after$ndoc, after$ntoken))
 }
 
 stats_tokens <- function(x) {
     list(ndoc = ndoc(x),
-         ntoken = sum(ntoken(x, remove_padding = TRUE)))
+         ntoken = sum(ntoken(x, remove_padding = TRUE)),
+         ntype = count_types(x))
 }
 
 #' Print messages in dfm methods

@@ -10,10 +10,7 @@ test_that("tokens indexing works as expected", {
     expect_equal(as.list(toks["d2"]), list(d2 = c("four", "five", "six")))
     expect_equal(as.list(toks[2]), list(d2 = c("four", "five", "six")))
     expect_equal(as.list(toks[c(-1, -3)]), list(d2 = c("four", "five", "six"))) # issue #1830
-
-    # issue #370
-    expect_equal(attr(toks[1], "types"), c("one", "two", "three"))
-    expect_equal(attr(toks[2], "types"), c("four", "five", "six"))
+    expect_equal(toks[], toks)
 
     # issue #1308
     expect_error(toks[4], "Subscript out of bounds")
@@ -29,7 +26,7 @@ test_that("tokens_recompile combine duplicates is working", {
     expect_equivalent(attr(tokens_tolower(toks), "types"),
                       c("a", "b", "c", "d"))
     attr(toks, "types") <- char_tolower(attr(toks, "types"))
-    expect_equivalent(attr(quanteda:::tokens_recompile(toks), "types"),
+    expect_equivalent(attr(tokens_recompile(toks, force = TRUE), "types"),
                       c("a", "b", "c", "d"))
 
 })
@@ -820,6 +817,11 @@ test_that("tokens printing works", {
         print(toks, max_ndoc = 0, max_ntoken = 0, show_summary = TRUE),
         "Tokens consisting of 14 documents and 4 docvars.",
         fixed = TRUE
+    )
+    expect_output(
+        print(as.tokens_xptr(toks), max_ndoc = 0, max_ntoken = 0, show_summary = TRUE),
+        "Tokens consisting of 14 documents and 4 docvars \\(pointer to [0-9a-z]+\\)\\.",
+        fixed = FALSE
     )
     expect_output(
         print(toks, max_ndoc = 2, max_ntoken = 3, show_summary = TRUE),

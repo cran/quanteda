@@ -44,17 +44,17 @@ get_docvars <- function(x, field = NULL, user = TRUE, system = FALSE, drop = FAL
     UseMethod("get_docvars")
 }
 
-#' @method get_docvars corpus
+#' @exportS3Method get_docvars corpus
 get_docvars.corpus <- function(x, field = NULL, user = TRUE, system = FALSE, drop = FALSE) {
     select_docvars(attr(x, "docvars"), field, user, system, drop)
 }
 
-#' @method get_docvars tokens
+#' @exportS3Method get_docvars tokens
 get_docvars.tokens <- function(x, field = NULL, user = TRUE, system = FALSE, drop = FALSE) {
     select_docvars(attr(x, "docvars"), field, user, system, drop)
 }
 
-#' @method get_docvars dfm
+#' @exportS3Method get_docvars dfm
 get_docvars.dfm <- function(x, field = NULL, user = TRUE, system = FALSE, drop = FALSE) {
     select_docvars(x@docvars, field, user, system, drop)
 }
@@ -247,6 +247,12 @@ docvars.tokens <- function(x, field = NULL) {
 
 #' @noRd
 #' @export
+docvars.tokens_xptr <- function(x, field = NULL) {
+    select_docvars(attr(x, "docvars"), field, user = TRUE, system = FALSE, drop = TRUE)
+}
+
+#' @noRd
+#' @export
 docvars.dfm <- function(x, field = NULL) {
     x <- as.dfm(x)
     select_docvars(x@docvars, field, user = TRUE, system = FALSE, drop = TRUE)
@@ -297,6 +303,13 @@ docvars.dfm <- function(x, field = NULL) {
 
 #' @export
 "docvars<-.tokens" <- function(x, field = NULL, value) {
+    x <- as.tokens(x)
+    set_docvars(attr(x, "docvars"), field) <- value
+    return(x)
+}
+
+#' @export
+"docvars<-.tokens_xptr" <- function(x, field = NULL, value) {
     set_docvars(attr(x, "docvars"), field) <- value
     return(x)
 }

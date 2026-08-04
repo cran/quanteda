@@ -136,11 +136,13 @@ test_that("indexing for dictionary objects works", {
 
     expect_output(
         print(testdict),
-        "Dictionary object with 9 primary key entries and 2 nested levels"
+        "Dictionary object with 9 primary key entries and 2 nested levels.",
+        fixed = TRUE
     )
     expect_output(
         print(testdict[1]),
-        "Dictionary object with 1 primary key entry and 2 nested levels"
+        "Dictionary object with 1 primary key entry and 2 nested levels.",
+        fixed = TRUE
     )
 })
 
@@ -228,6 +230,12 @@ test_that("dictionary printing works", {
       print(dict, 0, 0),
       "Dictionary object with 2 key entries.",
       fixed = TRUE
+    )
+    
+    # lines wrapping
+    expect_output(
+      print(data_dictionary_LSD2015),
+      "(.{0,90}\n)+"
     )
 })
 
@@ -636,7 +644,7 @@ test_that("tokenize is working", {
     expect_equivalent(
         dict4,
         list(ASIA = list("IN" = "印度", 
-                         "ID" = "印度_尼西亚"))
+                         "ID" = "印度 尼西亚"))
     )
     
     # with wildcard
@@ -682,14 +690,18 @@ test_that("tokenize is working", {
         ))
     )
     
-    # error with separator
-    expect_error(
-        dictionary(list(ASIA = list("MY" = "Kuala Lumpur", 
-                                    "ID" = "Indonasia")), 
+    # works with separator
+    expect_equivalent(
+        dictionary(list(CARIB = list("TC" = "Turks&Caicos Islands", 
+                                     "SX" = "St. Maarten")), 
                         tokenize = TRUE),
-        "Dictionary values are already tokenized"
+        list(AFRICA = list(
+            "TC" =  "turks & caicos islands",
+            "SX" = "st . maarten"
+        ))
     )
     
+    # errors
     expect_error(
         dictionary(list(ASIA = list("IN" = "印度", 
                                     "ID" = "印度尼西亚")), 
@@ -702,7 +714,7 @@ test_that("tokenize is working", {
 test_that("levels is working", {
     
     dict <- dictionary(file = "../data/dictionaries/newsmap2.yml", 
-                       tolower = FALSE, levels = 1:2)
+                       tolower = FALSE, levels = 1:2, separator = "_")
 
     # dictionary
     
@@ -780,7 +792,8 @@ test_that("as.yaml is commutative", {
         list("US" = list("Washington DC",
                          "MA" = "Boston",
                          "CA" = "Sacramento"),
-             "JP" = list("Tokyo")), tolower = FALSE)
+             "JP" = list("Tokyo")), 
+        tolower = FALSE)
     
     # write and read
     f <- paste0(tempfile(), ".yml")
@@ -789,5 +802,36 @@ test_that("as.yaml is commutative", {
     expect_identical(
         dict, 
         dictionary(file = f, tolower = FALSE)
+    )
+    
+})
+
+
+test_that("separator is working", {
+    
+    dict1 <- dictionary(
+        list("US" = list("Washington_DC",
+                         "MA" = "Boston",
+                         "CA" = "Sacramento"),
+             "JP" = list("Tokyo")), 
+        tolower = FALSE, separator = "_")
+    
+    expect_equal(dict1@meta$object$separator, "_")
+    expect_true(
+        any(stri_detect_fixed(unlist(dict1), " "))
+    )
+    expect_false(
+        any(stri_detect_fixed(unlist(dict1), "_"))
+    )
+    
+    dict2 <- dictionary(file = "../data/dictionaries/newsmap2.yml", 
+                        tolower = FALSE, separator = "_")
+    
+    expect_equal(dict2@meta$object$separator, "_")
+    expect_true(
+        any(stri_detect_fixed(unlist(dict2), " "))
+    )
+    expect_false(
+        any(stri_detect_fixed(unlist(dict2), "_"))
     )
 })

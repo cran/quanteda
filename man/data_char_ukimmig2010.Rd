@@ -8,15 +8,15 @@
 A named character vector of plain ASCII texts
 }
 \usage{
-data_char_ukimmig2010
+data(data_char_ukimmig2010)
 }
 \description{
 Extracts from the election manifestos of 9 UK political parties from 2010, related
 to immigration or asylum-seekers.
 }
 \examples{
-data_corpus_ukimmig2010 <- 
-    corpus(data_char_ukimmig2010, 
+data_corpus_ukimmig2010 <-
+    corpus(data_char_ukimmig2010,
            docvars = data.frame(party = names(data_char_ukimmig2010)))
 summary(data_corpus_ukimmig2010, showmeta = TRUE)
 }

@@ -1,3 +1,43 @@
+# quanteda 4.5
+
+## Bug fixes
+
+* Fix `dictionary()` to handle `separator` correctly when a YAML file is provided.
+
+## Changes and additions
+
+* Added `tokens_recompile()` to reassign token IDs and remove duplicate or
+  unused types from `tokens` and `tokens_xptr` objects. (#2506)
+
+* Query functions such as `types()`, `ntype()`, and `ntoken()` no longer
+  recompile `tokens_xptr` objects. Subsetting documents now preserves the
+  complete type table, consistently with `dfm` objects. (#2506)
+
+* Improve `print` methods for corpus, tokens, dfm, fcm, dictionary and kwic objects to wrap long lines at `getOption("width")`.
+
+* Added `tokens_match()` to match token IDs in separately tokenized objects.
+
+* Added an `as.matrix()` method for `tokens` objects, returning a dense
+  [document × position] integer matrix of token IDs, with `length`, `extract`,
+  and `drop` arguments. (#2497)
+
+* `as.tensor()` for `tokens` now returns a dense tensor rather than a sparse COO
+  tensor, gains an `extract` argument for selecting documents, and passes `...`
+  through to `torch::torch_tensor()`. (#2497)
+
+* Added `docvars()` and `docvars<-()` methods for `tokens_xptr` objects,
+  allowing document variables to be read and assigned without recompiling the
+  tokens. (#2497)
+  
+* Added `trim = TRUE` to `dfm()` to allow users to disable trimming of features.
+
+* Add the `drop0()` method for dfm and fcm (#2460).
+
+* Added the `max_n` argument to `dfm_trim()` and `tokens_trim()` to keep only
+  the most frequent features, with ties broken by feature order. (#2496)
+  
+* Improved the C++ code for `tokens` and `tokens_xptr` objects to reduce memory usage.
+
 # quanteda 4.4
 
 ## Changes and additions
@@ -1894,4 +1934,3 @@ more complete documentation
 
 * quanteda.pdf provides a pdf version of the function documentation in one easy-to-access
   document
-
