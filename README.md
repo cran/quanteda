@@ -6,7 +6,7 @@ data](https://cdn.rawgit.com/quanteda/quanteda/master/images/quanteda_logo.svg)]
 
 [![CRAN
 Version](https://www.r-pkg.org/badges/version/quanteda)](https://CRAN.R-project.org/package=quanteda)
-[![](https://img.shields.io/badge/devel%20version-4.5.0.9000-royalblue.svg)](https://github.com/quanteda/quanteda)
+[![](https://img.shields.io/badge/devel%20version-4.5.1-royalblue.svg)](https://github.com/quanteda/quanteda)
 [![Downloads](https://cranlogs.r-pkg.org/badges/quanteda)](https://CRAN.R-project.org/package=quanteda)
 [![Total
 Downloads](https://cranlogs.r-pkg.org/badges/grand-total/quanteda?color=orange)](https://CRAN.R-project.org/package=quanteda)
@@ -233,7 +233,7 @@ Contributions in the form of feedback, comments, code, and bug reports
 are most welcome. How to contribute:
 
 - Fork the source code, modify, and issue a [pull
-  request](https://help.github.com/articles/creating-a-pull-request-from-a-fork/)
+  request](https://docs.github.com/articles/creating-a-pull-request-from-a-fork)
   through the [project GitHub
   page](https://github.com/quanteda/quanteda). See our [Contributor Code
   of

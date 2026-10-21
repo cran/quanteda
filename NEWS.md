@@ -1,3 +1,39 @@
+# quanteda 4.5.1
+
+## Bug fixes
+
+* Fixed tests that failed under tm 0.7-20, which no longer attaches the **NLP** package, causing CRAN check errors on r-devel.
+
+* Fixed a bug in `tokens()` when the object's concatenator is an empty character. 
+
+* Fixed a bug to create a redundant copy of `tokens_xptr` when `dfm` is constructed.
+
+## Changes and additions
+
+* Verbose messages from `corpus`, `tokens`, `dfm` and `fcm` methods now
+  summarise the object returned, in the form "Returning tokens of 5,394
+  documents (55,866 tokens, 1,000 types) from tokens_trim()", instead of
+  comparing counts before and after the operation. `fcm_select()`,
+  `fcm_keep()` and `fcm_remove()` now report on the fcm they return, not on
+  an intermediate dfm. (#2016, #2518)
+
+* The summary line printed by `print()` for `corpus`, `tokens`, `dfm` and
+  `fcm` objects now has a common format, e.g. "tokens of 9 documents (6,855
+  tokens, 1,812 types)." It replaces "Corpus consisting of", "Tokens
+  consisting of", "Document-feature matrix of:" and "Feature co-occurrence
+  matrix of:", and adds the number of characters (corpus), tokens and types
+  (tokens), occurrences (dfm), and co-occurrences and sparsity (fcm). Code
+  or tests that match the old text will need updating. (#2518)
+
+* `featfreq()` and `docfreq()` now work on `tokens` and `tokens_xptr`
+  objects, computing feature and document frequencies directly without
+  first creating a dfm. `docfreq()` supports all weighting schemes for these
+  objects, but `threshold` is only supported for a dfm. (#2523)
+  
+* Reduce memory usage for constructing a `dfm` from a large `tokens` object
+  by excluding paddings from allocating memory when `remove_padding = TRUE`. 
+  If the object is too large, raises a user-friendly error.
+
 # quanteda 4.5
 
 ## Bug fixes
